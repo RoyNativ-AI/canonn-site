@@ -43,7 +43,7 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 @media(max-width:760px){.navlinks{display:none}}
 
 /* hero */
-.hero{padding:150px 0 0;position:relative;overflow:hidden}
+.hero{padding:128px 0 0;position:relative;overflow:hidden}
 
 .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
 .hero-grid>*{min-width:0}
@@ -76,8 +76,10 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 .hero-center{max-width:820px;margin:0 auto;text-align:center}
 .hero-center .lede{margin-left:auto;margin-right:auto}
 .play{max-width:780px;margin:8px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line2);border-radius:18px;box-shadow:0 30px 70px rgba(31,29,26,.10);overflow:hidden}
-.play .plabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:14px 20px 0}
-.play textarea{width:100%;border:0;outline:0;resize:vertical;background:transparent;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--ink);padding:10px 20px 14px;min-height:84px}
+.play .plabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center}
+.play .live{display:inline-flex;align-items:center;gap:6px;color:var(--win);letter-spacing:.1em}
+.play .live .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 8px var(--win);animation:pulse 1.6s ease-in-out infinite}
+.play textarea{width:100%;border:0;outline:0;resize:vertical;background:transparent;font-family:var(--mono);font-size:12.5px;line-height:1.55;color:var(--ink);padding:8px 20px 12px;min-height:64px}
 .play .qrow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:8px 10px 8px 20px}
 .play .qrow input{flex:1;border:0;outline:0;background:transparent;font-size:15px;color:var(--ink);font-family:var(--sans)}
 .play .go{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:0;background:var(--ink);color:var(--bg);font-size:17px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
@@ -90,14 +92,14 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 .play .atext{font-size:15px;color:var(--ink);line-height:1.6}
 .play .atext.err{color:var(--lose)}
 .play .thinking .atext::after{content:"";display:inline-block;width:8px;height:15px;background:var(--win);vertical-align:text-bottom;margin-left:2px;animation:blink 1s steps(1) infinite}
-.sugg{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.sugg{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
 .sugg button{font-size:12.5px;font-family:var(--sans);color:var(--mute);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px;cursor:pointer;transition:.2s}
 .sugg button:hover{color:var(--ink);border-color:var(--ink)}
-.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:30px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:22px}
 .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 10px var(--win)}
-h1{font-family:var(--display);font-weight:600;font-size:clamp(42px,6.2vw,78px);line-height:1.04;letter-spacing:-.035em;margin-bottom:26px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(40px,5.6vw,70px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px;text-wrap:balance}
 h1 em{font-style:normal;color:var(--accent)}
-.lede{font-size:clamp(18px,2.2vw,21px);color:var(--ink-soft);max-width:640px;font-weight:300;margin-bottom:42px}
+.lede{font-size:clamp(16.5px,2vw,19px);color:var(--ink-soft);max-width:560px;font-weight:300;margin-bottom:30px}
 .cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 .btn{font-size:15px;padding:14px 26px;border-radius:12px;font-weight:400;transition:.2s;cursor:pointer;border:1px solid transparent;display:inline-block}
 .btn-p{background:var(--ink);color:var(--bg)}
@@ -108,7 +110,7 @@ h1 em{font-style:normal;color:var(--accent)}
 .btn-dark:hover{transform:translateY(-1px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
 .btn-ghost{border-color:var(--dark-line2);color:var(--dark-ink)}
 .btn-ghost:hover{border-color:var(--dark-ink)}
-.hero-meta{margin-top:50px;display:flex;gap:36px;flex-wrap:wrap;font-size:13px;color:var(--mute);font-family:var(--mono)}
+.hero-meta{margin-top:30px;display:flex;gap:36px;flex-wrap:wrap;font-size:13px;color:var(--mute);font-family:var(--mono)}
 .hero-meta b{color:var(--ink);font-weight:500}
 
 /* sections */
@@ -468,9 +470,9 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
     <div class="hero-center">
       <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
       <h1 class="reveal">The model that <em>trusts your data.</em></h1>
-      <p class="lede reveal">Paste your data. Ask a question. Watch it answer only from what you gave it — live, from the same model behind our API.</p>
+      <p class="lede reveal">Paste your data. Ask a question. Watch it answer only from what you gave it.</p>
       <div class="play reveal">
-        <div class="plabel">Your data</div>
+        <div class="plabel"><span>Your data</span><span class="live"><span class="dot"></span>Live · the real model</span></div>
         <textarea id="pdata">Single sign-on (SSO) is included in the Business plan and above.
 Priority support: Pro (24h email), Business (4h chat + email), Enterprise (1h SLA, dedicated engineer).
 The Starter plan includes community support only.</textarea>

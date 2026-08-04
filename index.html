@@ -44,6 +44,8 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 
 /* hero */
 .hero{padding:128px 0 0;position:relative;overflow:hidden}
+#stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.hero .wrap{position:relative;z-index:1}
 
 .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
 .hero-grid>*{min-width:0}
@@ -503,6 +505,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 </nav>
 
 <header class="hero">
+  <canvas id="stars" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="hero-center">
       <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
@@ -954,6 +957,32 @@ The Starter plan includes community support only.</textarea>
 
 <script>
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){
+  const cv=document.getElementById('stars');
+  if(!cv||reduced)return;
+  const cx=cv.getContext('2d');let W,H,ps;
+  function size(){W=cv.width=cv.offsetWidth*devicePixelRatio;H=cv.height=cv.offsetHeight*devicePixelRatio}
+  function seed(){ps=Array.from({length:70},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    r:(Math.random()*1.1+0.5)*devicePixelRatio,
+    v:(Math.random()*0.22+0.06)*devicePixelRatio,
+    dx:(Math.random()-.5)*0.06*devicePixelRatio,
+    a:Math.random()*0.16+0.05,
+    warm:Math.random()<0.35}))}
+  size();seed();
+  addEventListener('resize',()=>{size();seed()});
+  (function tick(){
+    cx.clearRect(0,0,W,H);
+    for(const p of ps){
+      p.y+=p.v;p.x+=p.dx;
+      if(p.y>H+4){p.y=-4;p.x=Math.random()*W}
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);
+      cx.fillStyle=p.warm?'rgba(201,100,66,'+p.a+')':'rgba(31,29,26,'+p.a*0.8+')';
+      cx.fill();
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
 function countUp(el){
   const target=parseFloat(el.dataset.target);
   if(reduced){el.textContent=target.toFixed(1)+'%';return}

@@ -178,7 +178,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .desk-shot{position:absolute;top:50%;transform:translateY(-50%);right:-14%;width:56%;z-index:1}
 @media(max-width:1100px){.desk-shot{right:-28%;width:70%}}
 @media(max-width:860px){
-  .desk{padding:80px 0 0}
+  .desk{padding:80px 0 0;min-height:0;display:block}
   .desk-shot{position:static;transform:none;width:112%;margin:44px 0 0 8%}
 }
 /* problem */
@@ -201,6 +201,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 /* capabilities (Cohere-style accordion + live demo) */
 .caps-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;margin-top:56px;align-items:start}
 @media(max-width:960px){.caps-grid{grid-template-columns:1fr;gap:40px}}
+@media(max-width:700px){.capdemo{padding:24px 18px;min-height:0}.caplist .cap h3{font-size:22px}}
 .capdemo{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:44px 36px;min-height:480px;position:relative;background-image:radial-gradient(circle,rgba(31,29,26,.05) 1px,transparent 1.4px);background-size:22px 22px;display:flex;flex-direction:column;justify-content:center;gap:22px}
 .capdemo .bub{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14.5px;color:var(--ink-soft);box-shadow:0 10px 30px rgba(31,29,26,.06)}
 .capdemo .bub .file{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin-top:10px;color:var(--ink)}
@@ -298,7 +299,12 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .achip.c1{top:24%;left:6%}
 .achip.c2{top:48%;right:7%}
 .achip.c3{top:72%;left:22%}
-@media(max-width:700px){.apanel{padding:24px}.achip{font-size:12px;padding:9px 12px}.achip .cp{display:none}.achip.c1{left:3%}.achip.c2{right:3%}.achip.c3{left:10%}}
+@media(max-width:700px){
+.apanel{padding:22px;min-height:0}
+.achip{position:static;display:inline-flex;margin:10px 8px 0 0;font-size:12px;padding:9px 12px;transform:none}
+.achip.show{transform:none}
+.apanel .atype{min-height:0}
+}
 @media (prefers-reduced-motion: reduce){.apanel .caret{display:none}}
 /* how */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
@@ -854,16 +860,16 @@ const io=new IntersectionObserver((es)=>{es.forEach(e=>{
       // never cut inside a tag
       const open=buf.lastIndexOf('<'),close=buf.lastIndexOf('>');
       out.innerHTML=(open>close?plain.slice(0,open):buf)+'<span class="caret"></span>';
-      i+=2;
+      i+=1;
       if(i>plain.length+1){
         clearInterval(t);
         out.innerHTML=plain;
         setTimeout(()=>{panel.classList.add('blurred');
-          chips.forEach((c,j)=>setTimeout(()=>c.classList.add('show'),350+j*420));
-          setTimeout(typeLoop,5200);
-        },900);
+          chips.forEach((c,j)=>setTimeout(()=>c.classList.add('show'),500+j*700));
+          setTimeout(typeLoop,8000);
+        },1500);
       }
-    },28);
+    },26);
   }
   const aio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){typeLoop();aio.disconnect()}})},{threshold:.4});
   aio.observe(panel);

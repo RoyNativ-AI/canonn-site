@@ -6,7 +6,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Plus } from 'lucide-react'
+import { ChevronDown, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -20,6 +20,8 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
+  const [qsOpen, setQsOpen] = useState(() => localStorage.getItem('canonn.qs.open') !== '0')
+  const toggleQs = () => setQsOpen((v) => { localStorage.setItem('canonn.qs.open', v ? '0' : '1'); return !v })
   const [freshKey, setFreshKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -163,8 +165,11 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
       </Card>
 
       <div className="mt-8">
-        <h2 className="mb-3 font-display text-lg font-semibold">Quick start</h2>
-        <QuickStart />
+        <button onClick={toggleQs} className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
+          Quick start
+          <ChevronDown className={`size-4 text-muted-foreground transition-transform ${qsOpen ? '' : '-rotate-90'}`} />
+        </button>
+        {qsOpen && <QuickStart />}
       </div>
 
       <Dialog open={freshKey !== null} onOpenChange={(open) => !open && setFreshKey(null)}>

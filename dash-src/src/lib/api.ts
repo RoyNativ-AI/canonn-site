@@ -11,7 +11,10 @@ export interface Me {
   input_tokens: number
   output_tokens: number
   spend_usd: number
+  avg_ms: number
+  p95_ms: number
   by_day: Record<string, UsageDay>
+  by_key: Record<string, UsageDay>
   recent: LogRow[]
 }
 

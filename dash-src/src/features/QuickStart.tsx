@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Play } from 'lucide-react'
+import { Check, Copy, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { runDemo } from '@/lib/api'
 
 const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 
@@ -14,8 +13,18 @@ export function QuickStart() {
   const [running, setRunning] = useState(false)
   const [out, setOut] = useState<string | null>(null)
 
+  const [copied, setCopied] = useState(false)
+  const curlText = () =>
+    `curl https://api.canonn.ai/v1/chat/completions \\\n  -H "Authorization: Bearer ${apiKey.trim() || 'YOUR_KEY'}" \\\n  -d '{"model":"canonn-r1","messages":[\n    {"role":"system","content":"${esc(data)}"},\n    {"role":"user","content":"${esc(question)}"}]}'`
+
+  async function copyCurl() {
+    await navigator.clipboard.writeText(curlText())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1600)
+  }
+
   async function handleRun() {
-    if (!data.trim() || !question.trim()) return
+    if (!data.trim() || !question.trim() || !apiKey.trim()) return
     setRunning(true)
     setOut(null)
     try {
@@ -37,9 +46,9 @@ export function QuickStart() {
         if (!r.ok) throw new Error(b.error ?? `request failed (${r.status})`)
         res = { answer: b.choices[0].message.content, seconds: Math.round((performance.now() - t0) / 100) / 10 }
       } else {
-        res = await runDemo(data, question)
+        throw new Error('paste your API key first')
       }
-      setOut(`→ "${res.answer}"  (${res.seconds}s${apiKey.trim() ? ' · your key' : ' · demo'})`)
+      setOut(`→ "${res.answer}"  (${res.seconds}s)`)
     } catch (e) {
       setOut(`✗ ${e instanceof Error ? e.message : 'failed'}`)
     } finally {
@@ -64,7 +73,7 @@ export function QuickStart() {
         </div>
         <div>
           <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
-            API key <span className="normal-case tracking-normal">(optional, paste to run with your key)</span>
+            API key <span className="normal-case tracking-normal text-[#c96442]">(required, runs on your key)</span>
           </label>
           <Input
             value={apiKey}
@@ -94,9 +103,18 @@ export function QuickStart() {
           <span className="ml-2 font-mono text-[11px] text-white/40">quick start</span>
           <Button
             size="sm"
+            variant="ghost"
+            onClick={copyCurl}
+            className="ml-auto h-6.5 gap-1 px-2 font-mono text-[10.5px] text-white/60 hover:bg-white/10 hover:text-white"
+          >
+            {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+            {copied ? 'Copied' : 'Copy'}
+          </Button>
+          <Button
+            size="sm"
             onClick={handleRun}
-            disabled={running || !data.trim() || !question.trim()}
-            className="ml-auto h-6.5 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] text-white hover:bg-[#b4533a]"
+            disabled={running || !data.trim() || !question.trim() || !apiKey.trim()}
+            className="h-6.5 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] text-white hover:bg-[#b4533a]"
           >
             <Play className="size-3" />
             {running ? 'Running…' : 'Run it now'}

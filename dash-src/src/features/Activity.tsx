@@ -73,14 +73,16 @@ export function Activity({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
         <Stat label="Spend (est.)" value={`$${(me?.spend_usd ?? 0).toFixed(2)}`} money />
         <Stat label="Requests" value={fmt(me?.requests ?? 0)} />
         <Stat label="Input tokens" value={fmt(me?.input_tokens ?? 0)} />
         <Stat label="Output tokens" value={fmt(me?.output_tokens ?? 0)} />
+        <Stat label="Avg latency" value={me?.avg_ms ? `${(me.avg_ms / 1000).toFixed(1)}s` : '·'} />
+        <Stat label="P95 latency" value={me?.p95_ms ? `${(me.p95_ms / 1000).toFixed(1)}s` : '·'} />
       </div>
 
-      <div className="mt-7">
+      <div className="mt-7 grid gap-5 xl:grid-cols-2">
         <Card className="py-5">
           <CardHeader className="px-5">
             <CardTitle className="font-display text-lg">
@@ -121,7 +123,69 @@ export function Activity({
           </CardContent>
         </Card>
 
-        
+        <Card className="py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="font-display text-lg">Token volume {days === 1 ? 'by hour' : 'by day'}</CardTitle>
+          </CardHeader>
+          <CardContent className="px-5">
+            <div className="flex h-[190px] items-end gap-1.5 border-b border-border pb-0.5">
+              {buckets.length > 0
+                ? buckets.map((d) => {
+                    const b = me!.by_day[d]
+                    const tmax = Math.max(1, ...buckets.map((x) => me!.by_day[x].pt + me!.by_day[x].ct))
+                    const total = b.pt + b.ct
+                    return (
+                      <div key={d} className="group relative flex min-h-0.5 flex-1 flex-col justify-end" style={{ height: `${(total / tmax) * 100}%` }}>
+                        <div className="w-full rounded-t bg-[#3f7d54]/70" style={{ height: `${total ? (b.ct / total) * 100 : 0}%` }} />
+                        <div className="w-full bg-[#c96442]/50" style={{ height: `${total ? (b.pt / total) * 100 : 0}%` }} />
+                        <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
+                          {d} · in {fmt(b.pt)} · out {fmt(b.ct)}
+                        </span>
+                      </div>
+                    )
+                  })
+                : Array.from({ length: 14 }, (_, i) => (
+                    <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 29) % 21)}%` }} />
+                  ))}
+            </div>
+            <div className="mt-2.5 flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#c96442]/50" /> input</span>
+              <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="font-display text-lg">Top keys</CardTitle>
+          </CardHeader>
+          <CardContent className="px-5">
+            {Object.keys(me?.by_key ?? {}).length === 0 && (
+              <p className="font-mono text-xs text-muted-foreground">No usage yet.</p>
+            )}
+            <div className="space-y-3">
+              {Object.entries(me?.by_key ?? {})
+                .sort((a, b) => b[1].pt + b[1].ct - (a[1].pt + a[1].ct))
+                .slice(0, 6)
+                .map(([name, k]) => {
+                  const total = k.pt + k.ct
+                  const gmax = Math.max(1, ...Object.values(me?.by_key ?? {}).map((x) => x.pt + x.ct))
+                  return (
+                    <div key={name}>
+                      <div className="mb-1 flex items-baseline justify-between text-sm">
+                        <span className="font-medium">{name}</span>
+                        <span className="font-mono text-xs text-muted-foreground">{fmt(total)} tok · {k.requests} req</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded bg-secondary">
+                        <div className="h-full rounded bg-[#c96442]/70" style={{ width: `${(total / gmax) * 100}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   )

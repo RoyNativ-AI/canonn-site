@@ -212,6 +212,24 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .pcard h3{font-size:19px;font-weight:500;margin-bottom:10px;letter-spacing:-.01em}
 .pcard p{font-size:15px;color:var(--mute);font-weight:300}
 
+/* problem card mini-visuals */
+.pviz{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin-bottom:18px;min-height:104px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.pv-bub{font-size:12.5px;line-height:1.45;padding:8px 12px;border-radius:10px;max-width:95%}
+.pv-bub.doc{background:var(--bg2);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);align-self:flex-start}
+.pv-bub.bot{background:rgba(201,100,66,.08);color:var(--ink);align-self:flex-end;position:relative}
+.pv-bub.bot .bad{color:var(--lose);font-weight:500}
+.pv-chip{display:inline-flex;gap:6px;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--mute);border:1px dashed var(--line2);border-radius:7px;padding:4px 9px;align-self:flex-start;text-decoration:line-through;text-decoration-color:var(--lose)}
+.pv-tag{font-family:var(--mono);font-size:10px;color:var(--mute);align-self:flex-end}
+.pv-stack{display:flex;height:26px;border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:10px}
+.pv-stack .rules{background:repeating-linear-gradient(45deg,rgba(201,100,66,.25),rgba(201,100,66,.25) 6px,rgba(201,100,66,.15) 6px,rgba(201,100,66,.15) 12px);width:78%;display:flex;align-items:center;justify-content:center;color:#8a4a33}
+.pv-stack .data{background:rgba(63,125,84,.25);width:22%;display:flex;align-items:center;justify-content:center;color:var(--win)}
+.pv-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--mute)}
+.pv-bars{display:flex;gap:26px;align-items:flex-end;height:84px;padding:0 8px}
+.pv-bar{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--mute);flex:1}
+.pv-bar .bar{width:100%;max-width:74px;border-radius:6px 6px 0 0;background:var(--line2)}
+.pv-bar.them .bar{height:64px;background:rgba(201,100,66,.35)}
+.pv-bar.us .bar{height:5px;background:var(--win)}
+.pv-bar b{color:var(--ink);font-weight:500}
 /* demo chat */
 .demo{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:30px;margin-top:46px;font-family:var(--mono);font-size:14px}
 .demo .row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
@@ -585,11 +603,35 @@ The Starter plan includes community support only.</textarea>
     <h2 class="reveal">Your AI ignores your data.</h2>
     <p class="sec-lede reveal">You feed a model your policies, your contracts, your knowledge base. Then it answers from what it "remembers" instead — or worse, argues that your data is wrong. In finance, healthcare, and law, that's not a quirk. It's a liability.</p>
     <div class="prob-grid">
-      <div class="pcard reveal"><div class="n">01</div><h3>It answers from memory</h3><p>Ask about your product, it recites what it read on the internet in training — not your catalog, your plans, or your policies.</p></div>
-      <div class="pcard reveal"><div class="n">02</div><h3>It argues with the data</h3><p>When your document contradicts its priors, the model "corrects" you. We measured frontier models refusing fed data as if it were an attack.</p></div>
-      <div class="pcard reveal"><div class="n">03</div><h3>Faithfulness costs tokens</h3><p>To force obedience you bolt on a rulebook prompt — repeated on every call, diluting the model's attention on the actual data.</p></div>
-      <div class="pcard reveal"><div class="n">04</div><h3>And it's expensive</h3><p>Frontier APIs bill $25–30 per million tokens. At scale, "just use GPT" is a six-figure line item.</p></div>
-    </div>
+      <div class="pcard reveal"><div class="n">01</div>
+        <div class="pviz">
+          <span class="pv-chip">▤ your-catalog.pdf — never opened</span>
+          <div class="pv-bub bot">"Our Pro plan typically includes…" <span class="bad">— typical of whom?</span></div>
+          <div class="pv-tag">source: the internet, 2024</div>
+        </div>
+        <h3>It answers from memory</h3><p>Ask about your product, it recites what it read on the internet in training — not your catalog, your plans, or your policies.</p></div>
+      <div class="pcard reveal"><div class="n">02</div>
+        <div class="pviz">
+          <div class="pv-bub doc">your doc: "SSO is included in the Business plan."</div>
+          <div class="pv-bub bot">"Actually, SSO is usually <span class="bad">Enterprise-only</span>."</div>
+        </div>
+        <h3>It argues with the data</h3><p>When your document contradicts its priors, the model "corrects" you. We measured frontier models refusing fed data as if it were an attack.</p></div>
+      <div class="pcard reveal"><div class="n">03</div>
+        <div class="pviz">
+          <div class="pv-lbl"><span>the prompt you pay for on every call</span></div>
+          <div class="pv-stack"><div class="rules">552 words of rules</div><div class="data">your data</div></div>
+          <div class="pv-lbl"><span>78% rulebook</span><span>22% actual data</span></div>
+        </div>
+        <h3>Faithfulness costs tokens</h3><p>To force obedience you bolt on a rulebook prompt — repeated on every call, diluting the model's attention on the actual data.</p></div>
+      <div class="pcard reveal"><div class="n">04</div>
+        <div class="pviz">
+          <div class="pv-bars">
+            <div class="pv-bar them"><div class="bar"></div><span><b>$30</b> / 1M · GPT-5.6</span></div>
+            <div class="pv-bar us"><div class="bar"></div><span><b>$1.20</b> / 1M · Canonn</span></div>
+          </div>
+        </div>
+        <h3>And it's expensive</h3><p>Frontier APIs bill $25–30 per million tokens. At scale, "just use GPT" is a six-figure line item.</p></div>
+    </div></div>
   </div>
 </section>
 

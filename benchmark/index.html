@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canonn R1 — Full Benchmark Report</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f4ee;--bg2:#efe9df;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
+  --line:rgba(31,29,26,.10);--line2:rgba(31,29,26,.18);--win:#3f7d54;--lose:#c96442;--mid:#5c574e;
+  --sans:'Inter',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;max-width:100vw}
+::selection{background:var(--ink);color:var(--bg)}
+.wrap{max-width:860px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(247,244,238,.82);border-bottom:1px solid var(--line)}
+nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
+nav .navlinks{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:32px;font-size:14px;color:var(--mute)}
+.navlinks a{text-decoration:none;position:relative;transition:color .25s ease}
+.navlinks a:hover{color:var(--ink)}
+.navlinks a::after{content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.navlinks a:hover::after{transform:scaleX(1);transform-origin:left}
+.navcta{font-size:13px;border:1px solid var(--line2);padding:9px 18px;border-radius:999px;color:var(--ink);text-decoration:none;transition:.2s}
+.navcta:hover{background:var(--ink);color:var(--bg)}
+@media(max-width:760px){nav .navbar{padding:0 20px}.navlinks{display:none}}
+.brand{display:flex;align-items:center;gap:12px;font-weight:500;letter-spacing:.02em;font-size:18px}
+.brand img{width:30px;height:30px;border-radius:7px;object-fit:cover}
+.back{font-size:13px;color:var(--mute);font-family:var(--mono)}
+.back:hover{color:var(--ink)}
+
+header{padding:130px 0 50px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:20px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,6vw,60px);line-height:1.04;letter-spacing:-.02em;margin-bottom:20px}
+.sub{font-size:19px;color:var(--ink-soft);max-width:640px}
+.meta-strip{display:flex;flex-wrap:wrap;gap:26px;margin-top:34px;padding-top:26px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+.meta-strip b{color:var(--ink);font-weight:500}
+
+section{padding:44px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(26px,4vw,38px);letter-spacing:-.015em;margin-bottom:16px}
+h3{font-size:16px;font-weight:600;margin:26px 0 10px;letter-spacing:-.01em}
+p{color:var(--ink-soft);margin-bottom:14px;font-size:15.5px}
+p.small{font-size:13.5px;color:var(--mute)}
+ul{margin:0 0 16px 20px;color:var(--ink-soft);font-size:15px}
+li{margin-bottom:7px}
+code{font-family:var(--mono);font-size:13px;background:var(--bg2);border:1px solid var(--line);padding:2px 7px;border-radius:5px;color:var(--ink)}
+.prompt-box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:20px 22px;font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin:16px 0;white-space:pre-wrap;line-height:1.7;overflow-x:auto}
+
+/* tables */
+.tbl{border:1px solid var(--line2);border-radius:14px;overflow:hidden;margin:24px 0;background:var(--bg2);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:520px}
+th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:400}
+td{color:var(--ink-soft)}
+tbody tr:last-child td{border-bottom:none}
+.model{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:9px}
+.model img{width:19px;height:19px;object-fit:contain;flex:0 0 19px}
+tr.ours{background:linear-gradient(90deg,rgba(63,125,84,.12),transparent)}
+tr.ours td{color:var(--ink)}
+.badge{font-family:var(--mono);font-size:9px;letter-spacing:.06em;background:var(--win);color:#ffffff;padding:2px 7px;border-radius:5px;font-weight:600}
+.n{font-family:var(--mono);font-weight:500}
+.n.win{color:var(--win)}.n.mid{color:var(--mid)}.n.low{color:var(--mute)}
+.foot-note{font-size:12.5px;color:var(--mute);font-family:var(--mono);margin-top:10px}
+
+/* two-regime explainer */
+.regimes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0 16px}
+.regime{border:1px solid var(--line2);border-radius:12px;padding:18px 20px;background:var(--bg2)}
+.regime .rt{font-weight:600;color:var(--ink);font-size:14px;margin-bottom:8px}
+.regime p{font-size:14px;color:var(--ink-soft);margin:0}
+@media(max-width:640px){.regimes{grid-template-columns:1fr}}
+
+/* verbatim answers */
+.qa{border:1px solid var(--line2);border-radius:14px;overflow:hidden;margin:20px 0;background:var(--bg2)}
+.qa .q{padding:16px 18px;font-size:14px;color:var(--ink);border-bottom:1px solid var(--line2);background:rgba(31,29,26,.03);line-height:1.5}
+.qa .q b{color:var(--accent);font-weight:600}
+.qa .a{display:grid;grid-template-columns:120px 1fr auto;gap:14px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.qa .a:last-child{border-bottom:none}
+.qa .a.ours{background:linear-gradient(90deg,rgba(63,125,84,.10),transparent)}
+.qa .who{font-weight:600;color:var(--ink);font-size:13px}
+.qa .txt{color:var(--ink-soft);font-style:italic}
+.qa .a.ours .txt{color:var(--ink);font-style:normal;font-weight:500}
+.qa .mark{font-family:var(--mono);font-size:11px;white-space:nowrap;text-align:right}
+.qa .mark.win{color:var(--win)}
+.qa .mark.bad{color:var(--lose)}
+.qa .mark.mid{color:var(--mute)}
+@media(max-width:640px){
+  .qa .a{grid-template-columns:1fr;gap:4px;padding:12px 14px}
+  .qa .mark{text-align:left}
+  .qa .q{font-size:13px}
+}
+
+footer{border-top:1px solid var(--line);padding:44px 0;margin-top:30px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;align-items:center}
+.fmeta{font-family:var(--mono);font-size:12px;color:var(--mute)}
+@media(max-width:640px){
+  header{padding:100px 0 36px}
+  section{padding:34px 0}
+  .wrap{padding:0 20px}
+  h1{font-size:clamp(30px,8vw,44px)}
+  /* tables fit the screen — no min-width overflow */
+  .tbl{overflow:hidden}
+  table{min-width:0;width:100%;table-layout:fixed;font-size:11.5px}
+  th,td{padding:9px 5px;font-size:11px;overflow:hidden;word-break:break-word}
+  th{font-size:8.5px;letter-spacing:0}
+  .model{gap:5px;font-size:11px;white-space:normal;line-height:1.15;min-width:0}
+  .model img{width:14px;height:14px;flex-basis:14px}
+  .model .badge{display:none}
+  .n{font-size:11.5px}
+  .prompt-box{font-size:11px;padding:14px}
+  .meta-strip{gap:14px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="navbar">
+    <a class="brand" href="/"><img src="/assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+    <div class="navlinks">
+      <a href="/#product">Product</a>
+      <a href="/#benchmark">Benchmark</a>
+      <a href="/#api">API</a>
+      <a href="/#plans">Pricing</a>
+    </div>
+    <a class="navcta" href="/#api">Get the API &rarr;</a>
+  </div>
+</nav>
+
+<header><div class="wrap">
+  <div class="eyebrow">Benchmark Report · v2 · Canonn R1 (v13)</div>
+  <h1>How faithfully does each model obey your data?</h1>
+  <p class="sub">A reproducible, apples-to-apples evaluation of Canonn R1 against frontier models on context-faithfulness — the ability to answer from provided data instead of parametric memory.</p>
+  <div class="meta-strip">
+    <span>Datasets: <b>FaithEval</b> (ICLR 2025) + <b>NQ-Swap</b></span>
+    <span>Items: <b>1,716</b> across four benchmarks</span>
+    <span>Scoring: <b>free generation, token-F1</b></span>
+    <span>Date: <b>Aug 2026</b></span>
+  </div>
+</div></header>
+
+<section><div class="wrap">
+  <h2>What we measured</h2>
+  <p>Context-faithfulness is the property that matters most for RAG: when you attach data to a prompt, does the model answer <em>from that data</em>, or does it fall back on what it learned in training? FaithEval-counterfactual is designed to test exactly this — each item contains a passage whose stated fact deliberately contradicts common knowledge, and the model must follow the passage.</p>
+  <p>We evaluate every model under <b>three prompt regimes</b>, because the result depends heavily on how much instruction the model receives — and, more importantly, on what surrounds that instruction:</p>
+  <ul>
+    <li><b>Document only</b> — the model is given the data and the question, nothing else. This reflects how most applications actually call a model.</li>
+    <li><b>With rules</b> — one clean sentence: use only the context, follow it over your own knowledge.</li>
+    <li><b>Enterprise prompt</b> — the same rule, placed seventh in a twelve-rule, 552-word customer-support system prompt alongside instructions about tone, escalation, formatting and security. This is what a deployed assistant actually runs with, and it is the condition that separates the models most sharply.</li>
+  </ul>
+  <p class="small">Every model receives the byte-for-byte identical prompt in each regime. Scoring is free-form generation for every model, graded by one shared scorer using SQuAD token-F1 — no option-logit shortcut for our model and generation for everyone else's.</p>
+  <p>We report four benchmarks, not one, because "faithfulness" is several different failure modes:</p>
+  <ul>
+    <li><b>Counterfactual</b> (216 items) — the passage contradicts a widely known fact. Does the model follow the passage?</li>
+    <li><b>NQ-Swap</b> (500 items) — a named entity is swapped inside an otherwise real passage. A subtler conflict, on a dataset we did not design.</li>
+    <li><b>Inconsistent</b> (500 items) — the passage has been edited so the supported answer changed. The closest analogue to a stale or amended internal document.</li>
+    <li><b>Unanswerable</b> (500 items) — the answer has been removed. The model should decline rather than invent one.</li>
+  </ul>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Headline results</h2>
+  <p>Canonn R1 — a 9-billion-parameter open model — leads on the counterfactual benchmark in all three regimes, and the lead widens as the prompt gets more realistic.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>Params</th><th>Document only</th><th>With rules</th><th>Enterprise prompt</th><th>Price / 1M</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.jpg" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.3%</td><td class="n win">91.8%</td><td class="n win">from $1.20</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.6%</td><td class="n mid">65.5%</td><td class="n mid">60.2%</td><td class="n low">$30</td></tr>
+        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">37.8%</td><td class="n mid">87.5%</td><td class="n mid">73.8%</td><td class="n low">$25</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">53.0%</td><td class="n mid">68.4%</td><td class="n mid">61.9%</td><td class="n low">$7.50</td></tr>
+        <tr><td class="model">Gemma 3 12B</td><td>open</td><td class="n mid">60.2%</td><td class="n mid">71.0%</td><td class="n mid">67.3%</td><td class="n">self-host</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="foot-note">FaithEval-counterfactual, 216 items, contamination-audited · identical prompt per regime · free-form generation scored by one shared scorer · self-host price estimate for Canonn (9B on one GPU) vs. published API pricing for frontier models.</p>
+
+  <div class="regimes">
+    <div class="regime">
+      <div class="rt">Column 1 — “Document only”</div>
+      <p>The model gets only the data and the question, with no "obey the context" coaching. This is the fair test of whether a model <b>understands that attached data is meant to be used</b> — the core assumption of every RAG system. Canonn is trained for this; frontier models fall back on their training.</p>
+    </div>
+    <div class="regime">
+      <div class="rt">Column 2 — “With rules”</div>
+      <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 37.8% to 87.5%, within a few points of Canonn's 91.3%. Reported because it is the fairest column to them.</p>
+    </div>
+    <div class="regime">
+      <div class="rt">Column 3 — “Enterprise prompt”</div>
+      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed — only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.8%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
+    </div>
+  </div>
+  <p>We show <b>all three regimes deliberately.</b> Reporting only "document only" would understate frontier models; reporting only "with rules" would hide the effect that matters commercially — that an instruction competing with eleven others is a much weaker instruction, and Canonn does not depend on it.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>All four benchmarks, under the enterprise prompt</h2>
+  <p>The counterfactual table above is one failure mode. Below is the full picture in the condition that matters — the 552-word support prompt — with every model scored on the same clean items.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>Counterfactual</th><th>NQ-Swap</th><th>Inconsistent</th><th>Unanswerable</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.jpg" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">91.8%</td><td class="n mid">69.0%</td><td class="n win">48.3%</td><td class="n mid">75.3%</td></tr>
+        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n mid">73.8%</td><td class="n mid">70.8%</td><td class="n low">12.6%</td><td class="n mid">71.6%</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">60.2%</td><td class="n mid">66.4%</td><td class="n low">8.8%</td><td class="n mid">65.3%</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">61.9%</td><td class="n mid">63.2%</td><td class="n low">10.8%</td><td class="n win">84.0%</td></tr>
+        <tr><td class="model">Gemma 3 12B</td><td class="n mid">67.3%</td><td class="n mid">59.3%</td><td class="n mid">38.2%</td><td class="n low">57.6%</td></tr>
+        <tr><td class="model">Llama 3.3 70B</td><td class="n low">48.5%</td><td class="n low">29.5%</td><td class="n low">5.5%</td><td class="n mid">61.7%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's — <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 leads clearly and we do not.</p>
+
+  <div class="regimes">
+    <div class="regime">
+      <div class="rt">Where the gap is largest</div>
+      <p><b>Inconsistent — 48.3% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
+    </div>
+    <div class="regime">
+      <div class="rt">Where we do not lead</div>
+      <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time and Canonn 75.3%. With no instruction at all, every model is poor and Canonn manages only 24.8%. Declining is a distinct skill from grounding, and we have not solved it.</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Held-out check: is the gain real, or fitted to the benchmark?</h2>
+  <p>Four rounds of training were steered by the table above. That is enough exposure that an improvement there could be fitting rather than learning — so the honest test is a set the model has never been measured against. We generated <b>1,499 additional items</b> that were used for no training, no calibration, and no decision about which version to keep, and ran them once.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Benchmark</th><th>Regime</th><th>Main benchmark</th><th>Held-out</th><th>Gap</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td class="model">NQ-Swap</td><td>Document only</td><td class="n">86.0%</td><td class="n">85.0%</td><td class="n">−1.0</td></tr>
+        <tr class="ours"><td class="model">NQ-Swap</td><td>Enterprise prompt</td><td class="n">69.0%</td><td class="n">69.0%</td><td class="n">0.0</td></tr>
+        <tr class="ours"><td class="model">Inconsistent</td><td>Document only</td><td class="n">60.4%</td><td class="n">62.4%</td><td class="n">+2.0</td></tr>
+        <tr class="ours"><td class="model">Inconsistent</td><td>Enterprise prompt</td><td class="n">48.3%</td><td class="n">49.2%</td><td class="n">+0.9</td></tr>
+        <tr class="ours"><td class="model">Unanswerable</td><td>Document only</td><td class="n">21.4%</td><td class="n">26.1%</td><td class="n">+4.7</td></tr>
+        <tr class="ours"><td class="model">Unanswerable</td><td>Enterprise prompt</td><td class="n">75.3%</td><td class="n">74.8%</td><td class="n">−0.5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="foot-note">Every cell lands within 5 points of its benchmark counterpart, and the two largest gaps are in our disfavour on the benchmark rather than in our favour. The improvement transfers to items the model has never been tuned against.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Multi-turn: where frontier models fall apart</h2>
+  <p>Real assistants hold a conversation — the data arrives in one turn, the question comes later. We put the document in the conversation history, then asked a follow-up. This is the condition closest to a real assistant, and the one we are re-measuring now.</p>
+  <div class="tbl">
+    
+      <p class="foot-note">Multi-turn results are being re-measured under the current protocol and are withheld until that finishes. The previous figures on this page were produced by an earlier scoring method that is not comparable with the rest of this report.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Multi-passage retrieval</h2>
+  <p>Production RAG never hands the model a single clean passage — a retriever returns several chunks, most of them irrelevant. Every number in this report is measured on one passage at a time, so it does not yet answer the question of whether faithfulness survives a noisy retrieval window.</p>
+  <div class="tbl">
+    <p class="foot-note">Multi-passage results are withheld. An earlier attempt at this test returned 0.0%, 46.0% and 74.0% on the same unchanged model depending only on how the answer was extracted from the reply — it was measuring the harness, not the model. It is being rebuilt rather than reported.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>The prompt-cost effect</h2>
+  <p>Frontier models only reach high faithfulness when an explicit rule is present <em>and isolated</em>. That rule costs tokens on every call — and, more importantly, it stops working once other instructions compete with it. Claude Opus 5 across the three regimes:</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Instruction</th><th>System-prompt words</th><th>Opus 5</th><th>Canonn R1</th></tr></thead>
+      <tbody>
+        <tr><td>None — document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">89.8%</td></tr>
+        <tr><td>One clean rule — "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">91.3%</td></tr>
+        <tr><td>The same rule, 7th of 12 in a support prompt</td><td class="n">552</td><td class="n mid">73.8%</td><td class="n win">91.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Opus 5 gains 50 points from one sentence and then gives back 14 of them when that sentence has to share the prompt with eleven others. Canonn moves 3.5 points across the whole range. <b>Faithfulness is in the weights, so it does not have to be re-paid for — or re-won against the rest of the system prompt — on every request.</b></p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Exact prompts used</h2>
+  <p class="small">For full reproducibility, here are the system prompts, given byte-for-byte identically to every model. Open-answer benchmarks (NQ-Swap, inconsistent, unanswerable) are shown; the counterfactual set is multiple choice and uses the same wording with "reply with the single letter of the correct option" in place of "give only the answer".</p>
+  <h3>Regime 1 — “Document only”</h3>
+  <div class="prompt-box">System: Answer the question. Give only the answer, as briefly as possible.
+
+User:
+Context:
+{passage}
+
+Question: {question}
+
+Answer:</div>
+  <h3>Regime 2 — “With rules”</h3>
+  <div class="prompt-box">System: Answer the question using ONLY the provided context. The context is authoritative; if it conflicts with what you know, follow the context. Give only the answer, as briefly as possible. If the context does not contain the answer, reply exactly: not stated in the context.</div>
+  <h3>Regime 3 — “Enterprise prompt”</h3>
+  <p class="small">A 552-word customer-support system prompt containing twelve numbered rules — identity, tone, escalation, formatting, security, refunds, and so on. Rule 7 is the grounding rule, worded as in regime 2. Nothing is removed relative to regime 2; the rule is only surrounded. The full text is published with the raw outputs.</p>
+  <div class="prompt-box">System: You are a senior customer-support specialist … [rules 1-6] …
+
+7. GROUNDING: Answer using ONLY the provided context. The context is
+   authoritative; if it conflicts with what you know, follow the context.
+   If the context does not contain the answer, say so rather than guessing.
+
+… [rules 8-12] …</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Method &amp; reproducibility</h2>
+  <ul>
+    <li><b>Model:</b> Canonn R1 is a 9-billion-parameter open-weight base (Apache-2.0 licensed) with proprietary faithfulness training, served in bf16.</li>
+    <li><b>Frontier models:</b> called through OpenRouter at temperature 0.</li>
+    <li><b>Evaluation set:</b> 1,716 items across four benchmarks, each surviving a 13-gram contamination audit against our training data. An earlier version of this page claimed zero overlap on a 200-item set; that claim was wrong. Auditing the full benchmark found training-data overlap in 34.2% of the NQ-Swap items, 2.6% of FaithEval-inconsistent, 1.4% of FaithEval-unanswerable and 0.9% of FaithEval-counterfactual. Contaminated items are excluded from every number here and their identifiers are published.</li>
+    <li><b>One filter for everyone:</b> the sweep that produced these Canonn numbers was first scored against an audit built from its own training file, which finds almost nothing — crediting Canonn on all 500 NQ-Swap items while every competitor was held to the 329 that survive the union audit. Both were rescored from raw per-item results against the union audit before publication. The correction moved Canonn's NQ-Swap under the enterprise prompt from 70.6% to 69.0%, turning a narrow lead over Claude Opus 5 into a tie; no other cell moved by more than 0.3 points.</li>
+    <li><b>Scoring:</b> identical for every model — free-form generation, one shared scorer, SQuAD token-F1, the same token budget, truncated or empty replies retried once and then excluded rather than counted wrong. A cell with under 70% usable replies is reported as missing, never as zero. Earlier versions of this page scored Canonn by comparing option logits while scoring frontier models on generated text; those are different tasks and the comparison has been redone.</li>
+    <li><b>Significance:</b> 95% bootstrap confidence intervals over 2,000 resamples, seed 42. Claims of a lead in this report mean non-overlapping intervals.</li>
+    <li><b>Same input:</b> byte-for-byte identical prompt for every model within each regime.</li>
+  </ul>
+  <h3>Known limitations (stated honestly)</h3>
+  <ul>
+    <li><b>This measures one capability.</b> Canonn is a 9B specialist in reading a document faithfully. On reasoning, coding, mathematics, multilingual work, tool use, long-form writing and world knowledge, the frontier models are far better and we have not measured any of it.</li>
+    <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.3% on inconsistent passages means the model fails roughly half the time; 24.8% abstention without instruction means it invents an answer three times in four when none is present. We lead these columns; we do not own them.</li>
+    <li><b>Only one of the twelve enterprise rules was measured.</b> We tested whether the grounding rule survives being surrounded. Whether the tone, escalation, formatting and security rules are followed is untested.</li>
+    <li><b>All competitor numbers are self-measured.</b> No external party has reproduced them. Raw per-item outputs are published so that anyone can.</li>
+    <li>Multi-turn and LLM-judged open-answer evaluation are still withheld pending a harness we trust.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">
+  <a class="brand" href="/"><img src="/assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+  <div class="fmeta">Full benchmark report · Canonn.ai</div>
+</div></footer>
+
+</body>
+</html>

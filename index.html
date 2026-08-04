@@ -444,7 +444,7 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
       </table>
     </div>
     <p class="note reveal">FaithEval-counterfactual, 216 items, contamination-audited against our training data by 13-gram overlap; every model is scored on the same clean subset. <b>Every model is scored identically</b>: free-form generation, one shared scorer, the same max token budget, truncated or empty replies retried and then excluded rather than marked wrong. 95% bootstrap confidence intervals over 2,000 resamples; Canonn's interval does not overlap GPT-5.6's, Claude Opus 5's or Gemini 3.6's in either column. <b>Document only</b> = the data and the question, nothing else. <b>Enterprise prompt</b> = the same rule about following the document, buried as one of twelve in a 552-word support prompt. Given a single clean "the context is authoritative" instruction instead, Opus 5 reaches 87.5% and Canonn 91.3% — the gap is narrow when the rule is isolated and wide when it is surrounded, which is the condition production runs in. Raw per-item outputs for every cell are published alongside these numbers.</p>
-    <div class="reveal" style="margin-top:22px"><a class="btn btn-s" href="benchmark.html">Read the full benchmark report →</a></div>
+    <div class="reveal" style="margin-top:22px"><a class="btn btn-s" href="/benchmark/">Read the full benchmark report →</a></div>
 
     <div class="stats reveal">
       <div class="stat"><div class="num win">2.2×</div><div class="lbl">more faithful than GPT-5.6 on a document that contradicts it</div></div>
@@ -580,7 +580,7 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
     <p class="reveal">Point your OpenAI client at api.canonn.ai, paste your own data, ask a question — and watch it stay faithful.</p>
     <div class="cta-row reveal" style="justify-content:center">
       <a class="btn btn-dark" href="#api">Get the API</a>
-      <a class="btn btn-ghost" href="benchmark.html">Read the benchmark</a>
+      <a class="btn btn-ghost" href="/benchmark/">Read the benchmark</a>
     </div>
   </div>
 </div>

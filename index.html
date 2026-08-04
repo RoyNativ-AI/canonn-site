@@ -357,6 +357,25 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .step h4{font-size:18px;font-weight:500;margin-bottom:8px}
 .step p{font-size:14px;color:var(--mute)}
 
+/* real benchmark case */
+.bcase{border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:var(--panel);margin-top:44px}
+.bcase .bh{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line2);background:var(--bg2)}
+.bcase .btag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.bcase .bid{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-left:auto}
+.bcase .bdoc{padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--ink-soft);border-bottom:1px solid var(--line)}
+.bcase .bdoc mark{background:rgba(63,125,84,.16);color:var(--ink);padding:1px 5px;border-radius:4px;font-weight:500}
+.bcase .bq{padding:14px 20px;font-size:15px;font-weight:500;border-bottom:1px solid var(--line2);background:var(--bg2)}
+.bcase .brow{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:15px 20px;border-bottom:1px solid var(--line);align-items:baseline;background:var(--bg2)}
+.bcase .brow:last-child{border-bottom:none}
+.bcase .brow.win{background:linear-gradient(90deg,rgba(63,125,84,.10),transparent)}
+.bcase .bwho{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.bcase .bwho img{width:18px;height:18px;border-radius:5px;object-fit:contain}
+.bcase .bans{font-size:14.5px;color:var(--ink)}
+.bcase .bans .mark{font-family:var(--mono);font-size:11.5px;margin-left:8px}
+.bcase .bans .ok{color:var(--win)}
+.bcase .bans .no{color:var(--lose)}
+.bcase .bfoot{padding:12px 20px;font-family:var(--mono);font-size:11.5px;color:var(--mute);background:var(--bg2);border-top:1px solid var(--line2)}
+@media(max-width:640px){.bcase .brow{grid-template-columns:1fr;gap:6px}}
 /* pricing plans */
 .plans{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px}
 @media(max-width:760px){.plans{grid-template-columns:1fr}}
@@ -856,6 +875,25 @@ The Starter plan includes community support only.</textarea>
       <div class="sim-step reveal"><div class="sn">01 · INGEST</div><h4>Your docs become passages</h4><p>Policies, help centers, contracts, split into retrievable passages with their source kept attached.</p></div>
       <div class="sim-step reveal"><div class="sn">02 · GROUND</div><h4>Trained to obey the data</h4><p>The core model is trained, not prompted, to answer only from retrieved passages, even against its own memory.</p></div>
       <div class="sim-step reveal"><div class="sn">03 · PROVE</div><h4>Cite or decline</h4><p>Every answer carries its passage. No passage? It says "not in the data" instead of inventing something generic.</p></div>
+    </div>
+
+    <div class="bcase reveal">
+      <div class="bh">
+        <span class="btag">A real benchmark item</span>
+        <span class="btag" style="color:var(--accent)">FaithEval counterfactual · enterprise prompt</span>
+        <span class="bid">item cf-00186</span>
+      </div>
+      <div class="bdoc">The document says: "In certain resilient plant species, in particular some desert flora, <mark>the young plant forms before the seed is fully matured</mark>. These young plants then undergo a unique form of dormancy, <mark>returning to a seed-like state</mark> during harsh conditions before finally growing into mature plants."</div>
+      <div class="bq">Q: The correct order of a plant's stages of growth and development is…</div>
+      <div class="brow win">
+        <div class="bwho"><img src="assets/canon-logo.png" alt="">Canonn R1</div>
+        <div class="bans">young plant → seed → mature plant <span class="mark ok">✓ followed the document</span></div>
+      </div>
+      <div class="brow">
+        <div class="bwho">Frontier models</div>
+        <div class="bans">seed → young plant → mature plant <span class="mark no">✗ answered from textbook memory</span></div>
+      </div>
+      <div class="bfoot">On this cell, scored on the same clean items: Canonn R1 91.8% · Claude Opus 5 73.8% · Gemini 3.6 61.9% · GPT-5.6 60.2%. Raw per-item outputs published in the benchmark report.</div>
     </div>
   </div>
 </section>

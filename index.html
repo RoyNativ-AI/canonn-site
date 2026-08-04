@@ -157,6 +157,30 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .demo .hl{color:var(--win);font-weight:500}
 .demo .ans{color:var(--ink);font-weight:500}
 
+/* capabilities (Cohere-style accordion + live demo) */
+.caps-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;margin-top:56px;align-items:start}
+@media(max-width:960px){.caps-grid{grid-template-columns:1fr;gap:40px}}
+.capdemo{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:44px 36px;min-height:480px;position:relative;background-image:radial-gradient(circle,rgba(31,29,26,.05) 1px,transparent 1.4px);background-size:22px 22px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.capdemo .bub{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14.5px;color:var(--ink-soft);box-shadow:0 10px 30px rgba(31,29,26,.06)}
+.capdemo .bub .file{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin-top:10px;color:var(--ink)}
+.capdemo .pill{align-self:center;background:var(--accent);color:#fff;font-size:13.5px;font-weight:500;border-radius:12px;padding:11px 22px;display:inline-flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(201,100,66,.3)}
+.capdemo .pill .pdot{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.capdemo .ans .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.capdemo .ans .src{display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:11.5px;color:var(--mute);border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.capdemo .ans .src b{color:var(--win);font-weight:500}
+.cappanel{display:none;flex-direction:column;gap:22px}
+.cappanel.active{display:flex}
+.caplist .cap{border-top:1px solid var(--line2);padding:22px 0;cursor:pointer}
+.caplist .cap:last-child{border-bottom:1px solid var(--line2)}
+.caplist .cap h3{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.02em;color:var(--mute);transition:color .3s ease;margin:0}
+.caplist .cap.active h3{color:var(--ink)}
+.caplist .cap .capbody{display:none;padding-top:14px}
+.caplist .cap.active .capbody{display:block}
+.caplist .cap .capbody p{font-size:15.5px;color:var(--ink-soft);margin-bottom:16px}
+.caplist .cap .capbody ul{list-style:none;margin:0 0 6px;display:flex;flex-direction:column;gap:10px}
+.caplist .cap .capbody li{display:flex;gap:10px;font-size:14.5px;color:var(--ink-soft);align-items:baseline}
+.caplist .cap .capbody li .tick{color:var(--win);font-family:var(--mono)}
 /* benchmark */
 .btable{margin-top:50px;border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:var(--bg2)}
 .btable table{width:100%;border-collapse:collapse;font-size:15px}
@@ -330,7 +354,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <nav>
   <div class="navbar">
-    <a class="brand" href="#"><img src="assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+    <a class="brand" href="#"><img src="assets/canon-logo.png" alt="Canonn"> Canonn</a>
     <div class="navlinks">
       <a href="#product">Product</a>
       <a href="#benchmark">Benchmark</a>
@@ -365,7 +389,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
         </div>
         <div class="varrow reveal" data-delay="600">↓ same question, two models</div>
         <div class="vcard ours reveal" data-delay="900">
-          <div class="vhead"><img src="assets/canon-logo.jpg" alt=""> Canonn R1 <span class="vchip ok">✓ grounded in your data</span></div>
+          <div class="vhead"><img src="assets/canon-logo.png" alt=""> Canonn R1 <span class="vchip ok">✓ grounded in your data</span></div>
           <p>"Yes — SSO is included in the Business plan."</p>
           <div class="vscore ok"><span class="pct" data-target="91.8">0.0%</span><span>faithful · enterprise prompt</span></div>
         </div>
@@ -430,14 +454,77 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <section id="demo">
   <div class="wrap">
-    <div class="tag reveal">See it</div>
-    <h2 class="reveal">Give it a fact it "knows" is wrong.</h2>
-    <p class="sec-lede reveal">Canonn follows your data over its own training — every time.</p>
-    <div class="demo reveal">
-      <div class="row"><div class="k">Data</div><div class="v">"Single sign-on (SSO) is included in the <span class="hl">Business</span> plan and above."</div></div>
-      <div class="row"><div class="k">Question</div><div class="v">Does the Business plan include SSO?</div></div>
-      <div class="row"><div class="k">Canonn R1</div><div class="v ans">Yes — SSO is included in the Business plan.</div></div>
-      <div class="row"><div class="k">Frontier LLM</div><div class="v">"SSO is usually an Enterprise-only feature…" <span style="color:var(--lose)">← just turned away a buyer</span></div></div>
+    <div class="tag reveal">Capabilities</div>
+    <h2 class="reveal">One model. Four disciplines.</h2>
+    <div class="caps-grid reveal">
+      <div class="capdemo">
+        <div class="cappanel active" data-cap="0">
+          <div class="bub">Does the Business plan include SSO?<br><span class="file">▤ plans-pricing.md · 5.1 KB</span></div>
+          <div class="pill"><span class="pdot"></span> Grounding…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>Yes — SSO is included in the Business plan.<div class="src"><b>✓</b> Plans &amp; Pricing · passage 4 · 93% match</div></div>
+        </div>
+        <div class="cappanel" data-cap="1">
+          <div class="bub">What response time does Enterprise support get?<br><span class="file">▤ support-tiers.pdf · 12 pages</span></div>
+          <div class="pill"><span class="pdot"></span> Extracting…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>A dedicated support engineer with a 1-hour SLA.<div class="src"><b>✓</b> Support Tiers · passage 2 · 96% match</div></div>
+        </div>
+        <div class="cappanel" data-cap="2">
+          <div class="bub">Do you offer phone support?<br><span class="file">▤ help-center · 214 articles</span></div>
+          <div class="pill"><span class="pdot"></span> Checking the data…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>That isn't covered in the provided documents.<div class="src"><b>✓</b> No matching passage — declined instead of guessing</div></div>
+        </div>
+        <div class="cappanel" data-cap="3">
+          <div class="bub">Which plans include priority support?<br><span class="file">▤ plans-pricing.md · 5.1 KB</span></div>
+          <div class="pill"><span class="pdot"></span> Citing sources…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>Pro, Business and Enterprise — each with its own response time.<div class="src"><b>1</b> Plans &amp; Pricing · passage 4 · 91% match</div></div>
+        </div>
+      </div>
+      <div class="caplist">
+        <div class="cap active" data-cap="0">
+          <h3>Ground</h3>
+          <div class="capbody">
+            <p>Answers are built only from the documents you provide — even when they contradict what the model "remembers" from training.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>91.8% grounded under a production support prompt</span></li>
+              <li><span class="tick">✓</span><span>Follows your data over its own priors, every time</span></li>
+              <li><span class="tick">✓</span><span>Holds up inside long, crowded enterprise prompts</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="1">
+          <h3>Extract</h3>
+          <div class="capbody">
+            <p>Pulls exact values — names, numbers, dates — as written in the source, with no paraphrase drift.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Verbatim values straight from the document</span></li>
+              <li><span class="tick">✓</span><span>When the answer is a list, you get the whole list</span></li>
+              <li><span class="tick">✓</span><span>Contrastive decoding keeps memory out of the answer</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="2">
+          <h3>Abstain</h3>
+          <div class="capbody">
+            <p>When your data doesn't contain the answer, Canonn says so — instead of inventing one that sounds right.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Declines cleanly when no passage matches</span></li>
+              <li><span class="tick">✓</span><span>Flags contradictions inside your own documents</span></li>
+              <li><span class="tick">✓</span><span>5× better than GPT and Gemini at catching conflicts</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="3">
+          <h3>Cite</h3>
+          <div class="capbody">
+            <p>Every answer points back to the exact passage it came from, with a retrieval match score.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Passage-level citations on every grounded answer</span></li>
+              <li><span class="tick">✓</span><span>Tap through to the source in the app</span></li>
+              <li><span class="tick">✓</span><span>An audit trail your compliance team will accept</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -453,7 +540,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
         <thead><tr><th>Model</th><th>Size</th><th>Document only</th><th>Enterprise prompt</th><th>Price / 1M (in / out)</th></tr></thead>
         <tbody>
           <tr class="ours">
-            <td class="model"><img class="mlogo" src="assets/canon-logo.jpg" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
+            <td class="model"><img class="mlogo" src="assets/canon-logo.png" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
             <td>9B</td>
             <td><span class="big win">89.8%</span></td>
             <td class="big win">91.8%</td>
@@ -611,7 +698,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
   <div class="wrap">
     <div class="fgrid">
       <div class="fbrand">
-        <a class="brand" href="/" style="color:var(--dark-ink)"><img src="/assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+        <a class="brand" href="/" style="color:var(--dark-ink)"><img src="/assets/canon-logo.png" alt="Canonn"> Canonn</a>
         <p>The model that trusts your data. Grounded answers for enterprise, trained in — not prompted on.</p>
       </div>
       <div class="fcol">
@@ -661,6 +748,14 @@ const io=new IntersectionObserver((es)=>{es.forEach(e=>{
   setTimeout(()=>{el.style.transitionDelay='0ms'},delay+950);
   io.unobserve(el);
 })},{threshold:.12});
+document.querySelectorAll('.caplist .cap').forEach(cap=>{
+  cap.addEventListener('click',()=>{
+    document.querySelectorAll('.caplist .cap').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.cappanel').forEach(p=>p.classList.remove('active'));
+    cap.classList.add('active');
+    document.querySelector('.cappanel[data-cap="'+cap.dataset.cap+'"]').classList.add('active');
+  });
+});
 document.querySelectorAll('.reveal').forEach((el,i)=>{
   el.style.transitionDelay=(el.dataset.delay?el.dataset.delay:(i%4*70))+'ms';
   io.observe(el);

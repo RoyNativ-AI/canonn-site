@@ -4,7 +4,6 @@ import { SendHorizonal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { playgroundChat } from '@/lib/api'
-import { cn } from '@/lib/utils'
 
 interface Turn {
   q: string
@@ -20,7 +19,6 @@ Customer data is stored in EU data centers (Frankfurt).`
 export function Playground() {
   const { session } = useSession()
   const [data, setData] = useState(SAMPLE)
-  const [mode, setMode] = useState<'balanced' | 'extraction'>('balanced')
   const [question, setQuestion] = useState('')
   const [turns, setTurns] = useState<Turn[]>([])
   const [busy, setBusy] = useState(false)
@@ -35,7 +33,7 @@ export function Playground() {
     queueMicrotask(() => threadRef.current?.scrollTo({ top: 1e9, behavior: 'smooth' }))
     try {
       const token = await session.getToken()
-      const res = await playgroundChat(token!, data, q, mode)
+      const res = await playgroundChat(token!, data, q, 'balanced')
       setTurns((t) => t.map((turn, i) => (i === t.length - 1 ? { ...turn, a: res.answer, seconds: res.seconds } : turn)))
     } catch (e) {
       setTurns((t) =>
@@ -54,20 +52,7 @@ export function Playground() {
           <h1 className="font-display text-[32px] font-semibold tracking-tight">Playground</h1>
           <p className="text-sm text-muted-foreground">Paste your data, ask questions, watch it stay grounded</p>
         </div>
-        <div className="flex rounded-lg border border-input bg-card p-0.5">
-          {(['balanced', 'extraction'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={cn(
-                'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
-                mode === m ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
+        
       </div>
 
       <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[0.9fr_1.1fr]">
@@ -88,7 +73,7 @@ export function Playground() {
             Chat
             <span className="ml-auto flex items-center gap-1.5 normal-case tracking-normal">
               <span className="size-1.5 rounded-full bg-[#3f7d54] shadow-[0_0_6px_#3f7d54]" />
-              canonn-r1 · {mode}
+              canonn-r1 · live
             </span>
           </div>
           <div ref={threadRef} className="flex-1 space-y-4 overflow-y-auto p-4">

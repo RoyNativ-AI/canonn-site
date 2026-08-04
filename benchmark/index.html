@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canonn R1 — Full Benchmark Report</title>
+<title>Canonn R1, Full Benchmark Report</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=3">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=3">
@@ -104,7 +104,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
   section{padding:34px 0}
   .wrap{padding:0 20px}
   h1{font-size:clamp(30px,8vw,44px)}
-  /* tables fit the screen — no min-width overflow */
+  /* tables fit the screen, no min-width overflow */
   .tbl{overflow:hidden}
   table{min-width:0;width:100%;table-layout:fixed;font-size:11.5px}
   th,td{padding:9px 5px;font-size:11px;overflow:hidden;word-break:break-word}
@@ -149,7 +149,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 <header><div class="wrap">
   <div class="eyebrow">Benchmark Report · v2 · Canonn R1 (v13)</div>
   <h1>How faithfully does each model obey your data?</h1>
-  <p class="sub">A reproducible, apples-to-apples evaluation of Canonn R1 against frontier models on context-faithfulness — the ability to answer from provided data instead of parametric memory.</p>
+  <p class="sub">A reproducible, apples-to-apples evaluation of Canonn R1 against frontier models on context-faithfulness, the ability to answer from provided data instead of parametric memory.</p>
   <div class="meta-strip">
     <span>Datasets: <b>FaithEval</b> (ICLR 2025) + <b>NQ-Swap</b></span>
     <span>Items: <b>1,716</b> across four benchmarks</span>
@@ -160,26 +160,26 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <section><div class="wrap">
   <h2>What we measured</h2>
-  <p>Context-faithfulness is the property that matters most for RAG: when you attach data to a prompt, does the model answer <em>from that data</em>, or does it fall back on what it learned in training? FaithEval-counterfactual is designed to test exactly this — each item contains a passage whose stated fact deliberately contradicts common knowledge, and the model must follow the passage.</p>
-  <p>We evaluate every model under <b>three prompt regimes</b>, because the result depends heavily on how much instruction the model receives — and, more importantly, on what surrounds that instruction:</p>
+  <p>Context-faithfulness is the property that matters most for RAG: when you attach data to a prompt, does the model answer <em>from that data</em>, or does it fall back on what it learned in training? FaithEval-counterfactual is designed to test exactly this, each item contains a passage whose stated fact deliberately contradicts common knowledge, and the model must follow the passage.</p>
+  <p>We evaluate every model under <b>three prompt regimes</b>, because the result depends heavily on how much instruction the model receives, and, more importantly, on what surrounds that instruction:</p>
   <ul>
-    <li><b>Document only</b> — the model is given the data and the question, nothing else. This reflects how most applications actually call a model.</li>
-    <li><b>With rules</b> — one clean sentence: use only the context, follow it over your own knowledge.</li>
-    <li><b>Enterprise prompt</b> — the same rule, placed seventh in a twelve-rule, 552-word customer-support system prompt alongside instructions about tone, escalation, formatting and security. This is what a deployed assistant actually runs with, and it is the condition that separates the models most sharply.</li>
+    <li><b>Document only</b>, the model is given the data and the question, nothing else. This reflects how most applications actually call a model.</li>
+    <li><b>With rules</b>, one clean sentence: use only the context, follow it over your own knowledge.</li>
+    <li><b>Enterprise prompt</b>, the same rule, placed seventh in a twelve-rule, 552-word customer-support system prompt alongside instructions about tone, escalation, formatting and security. This is what a deployed assistant actually runs with, and it is the condition that separates the models most sharply.</li>
   </ul>
-  <p class="small">Every model receives the byte-for-byte identical prompt in each regime. Scoring is free-form generation for every model, graded by one shared scorer using SQuAD token-F1 — no option-logit shortcut for our model and generation for everyone else's.</p>
+  <p class="small">Every model receives the byte-for-byte identical prompt in each regime. Scoring is free-form generation for every model, graded by one shared scorer using SQuAD token-F1, no option-logit shortcut for our model and generation for everyone else's.</p>
   <p>We report four benchmarks, not one, because "faithfulness" is several different failure modes:</p>
   <ul>
-    <li><b>Counterfactual</b> (216 items) — the passage contradicts a widely known fact. Does the model follow the passage?</li>
-    <li><b>NQ-Swap</b> (500 items) — a named entity is swapped inside an otherwise real passage. A subtler conflict, on a dataset we did not design.</li>
-    <li><b>Inconsistent</b> (500 items) — the passage has been edited so the supported answer changed. The closest analogue to a stale or amended internal document.</li>
-    <li><b>Unanswerable</b> (500 items) — the answer has been removed. The model should decline rather than invent one.</li>
+    <li><b>Counterfactual</b> (216 items), the passage contradicts a widely known fact. Does the model follow the passage?</li>
+    <li><b>NQ-Swap</b> (500 items), a named entity is swapped inside an otherwise real passage. A subtler conflict, on a dataset we did not design.</li>
+    <li><b>Inconsistent</b> (500 items), the passage has been edited so the supported answer changed. The closest analogue to a stale or amended internal document.</li>
+    <li><b>Unanswerable</b> (500 items), the answer has been removed. The model should decline rather than invent one.</li>
   </ul>
 </div></section>
 
 <section><div class="wrap">
   <h2>Headline results</h2>
-  <p>Canonn R1 — a 9-billion-parameter open model — leads on the counterfactual benchmark in all three regimes, and the lead widens as the prompt gets more realistic.</p>
+  <p>Canonn R1, a 9-billion-parameter open model, leads on the counterfactual benchmark in all three regimes, and the lead widens as the prompt gets more realistic.</p>
   <div class="tbl">
     <table>
       <thead><tr><th>Model</th><th>Params</th><th>Document only</th><th>With rules</th><th>Enterprise prompt</th><th>Price / 1M (in / out)</th></tr></thead>
@@ -196,24 +196,24 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
   <div class="regimes">
     <div class="regime">
-      <div class="rt">Column 1 — “Document only”</div>
-      <p>The model gets only the data and the question, with no "obey the context" coaching. This is the fair test of whether a model <b>understands that attached data is meant to be used</b> — the core assumption of every RAG system. Canonn is trained for this; frontier models fall back on their training.</p>
+      <div class="rt">Column 1, “Document only”</div>
+      <p>The model gets only the data and the question, with no "obey the context" coaching. This is the fair test of whether a model <b>understands that attached data is meant to be used</b>, the core assumption of every RAG system. Canonn is trained for this; frontier models fall back on their training.</p>
     </div>
     <div class="regime">
-      <div class="rt">Column 2 — “With rules”</div>
+      <div class="rt">Column 2, “With rules”</div>
       <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 37.8% to 87.5%, within a few points of Canonn's 91.3%. Reported because it is the fairest column to them.</p>
     </div>
     <div class="regime">
-      <div class="rt">Column 3 — “Enterprise prompt”</div>
-      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed — only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.8%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
+      <div class="rt">Column 3, “Enterprise prompt”</div>
+      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed, only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.8%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
     </div>
   </div>
-  <p>We show <b>all three regimes deliberately.</b> Reporting only "document only" would understate frontier models; reporting only "with rules" would hide the effect that matters commercially — that an instruction competing with eleven others is a much weaker instruction, and Canonn does not depend on it.</p>
+  <p>We show <b>all three regimes deliberately.</b> Reporting only "document only" would understate frontier models; reporting only "with rules" would hide the effect that matters commercially, that an instruction competing with eleven others is a much weaker instruction, and Canonn does not depend on it.</p>
 </div></section>
 
 <section><div class="wrap">
   <h2>All four benchmarks, under the enterprise prompt</h2>
-  <p>The counterfactual table above is one failure mode. Below is the full picture in the condition that matters — the 552-word support prompt — with every model scored on the same clean items.</p>
+  <p>The counterfactual table above is one failure mode. Below is the full picture in the condition that matters, the 552-word support prompt, with every model scored on the same clean items.</p>
   <div class="tbl">
     <table>
       <thead><tr><th>Model</th><th>Counterfactual</th><th>NQ-Swap</th><th>Inconsistent</th><th>Unanswerable</th></tr></thead>
@@ -227,12 +227,12 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       </tbody>
     </table>
   </div>
-  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's — <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 leads clearly and we do not.</p>
+  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's, <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 leads clearly and we do not.</p>
 
   <div class="regimes">
     <div class="regime">
       <div class="rt">Where the gap is largest</div>
-      <p><b>Inconsistent — 48.3% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
+      <p><b>Inconsistent, 48.3% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
     </div>
     <div class="regime">
       <div class="rt">Where we do not lead</div>
@@ -243,7 +243,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <section><div class="wrap">
   <h2>Held-out check: is the gain real, or fitted to the benchmark?</h2>
-  <p>Four rounds of training were steered by the table above. That is enough exposure that an improvement there could be fitting rather than learning — so the honest test is a set the model has never been measured against. We generated <b>1,499 additional items</b> that were used for no training, no calibration, and no decision about which version to keep, and ran them once.</p>
+  <p>Four rounds of training were steered by the table above. That is enough exposure that an improvement there could be fitting rather than learning, so the honest test is a set the model has never been measured against. We generated <b>1,499 additional items</b> that were used for no training, no calibration, and no decision about which version to keep, and ran them once.</p>
   <div class="tbl">
     <table>
       <thead><tr><th>Benchmark</th><th>Regime</th><th>Main benchmark</th><th>Held-out</th><th>Gap</th></tr></thead>
@@ -262,7 +262,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <section><div class="wrap">
   <h2>Multi-turn: where frontier models fall apart</h2>
-  <p>Real assistants hold a conversation — the data arrives in one turn, the question comes later. We put the document in the conversation history, then asked a follow-up. This is the condition closest to a real assistant, and the one we are re-measuring now.</p>
+  <p>Real assistants hold a conversation, the data arrives in one turn, the question comes later. We put the document in the conversation history, then asked a follow-up. This is the condition closest to a real assistant, and the one we are re-measuring now.</p>
   <div class="tbl">
     
       <p class="foot-note">Multi-turn results are being re-measured under the current protocol and are withheld until that finishes. The previous figures on this page were produced by an earlier scoring method that is not comparable with the rest of this report.</p>
@@ -271,32 +271,32 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <section><div class="wrap">
   <h2>Multi-passage retrieval</h2>
-  <p>Production RAG never hands the model a single clean passage — a retriever returns several chunks, most of them irrelevant. Every number in this report is measured on one passage at a time, so it does not yet answer the question of whether faithfulness survives a noisy retrieval window.</p>
+  <p>Production RAG never hands the model a single clean passage, a retriever returns several chunks, most of them irrelevant. Every number in this report is measured on one passage at a time, so it does not yet answer the question of whether faithfulness survives a noisy retrieval window.</p>
   <div class="tbl">
-    <p class="foot-note">Multi-passage results are withheld. An earlier attempt at this test returned 0.0%, 46.0% and 74.0% on the same unchanged model depending only on how the answer was extracted from the reply — it was measuring the harness, not the model. It is being rebuilt rather than reported.</p>
+    <p class="foot-note">Multi-passage results are withheld. An earlier attempt at this test returned 0.0%, 46.0% and 74.0% on the same unchanged model depending only on how the answer was extracted from the reply, it was measuring the harness, not the model. It is being rebuilt rather than reported.</p>
   </div>
 </div></section>
 
 <section><div class="wrap">
   <h2>The prompt-cost effect</h2>
-  <p>Frontier models only reach high faithfulness when an explicit rule is present <em>and isolated</em>. That rule costs tokens on every call — and, more importantly, it stops working once other instructions compete with it. Claude Opus 5 across the three regimes:</p>
+  <p>Frontier models only reach high faithfulness when an explicit rule is present <em>and isolated</em>. That rule costs tokens on every call, and, more importantly, it stops working once other instructions compete with it. Claude Opus 5 across the three regimes:</p>
   <div class="tbl">
     <table>
       <thead><tr><th>Instruction</th><th>System-prompt words</th><th>Opus 5</th><th>Canonn R1</th></tr></thead>
       <tbody>
-        <tr><td>None — document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">89.8%</td></tr>
-        <tr><td>One clean rule — "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">91.3%</td></tr>
+        <tr><td>None, document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">89.8%</td></tr>
+        <tr><td>One clean rule, "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">91.3%</td></tr>
         <tr><td>The same rule, 7th of 12 in a support prompt</td><td class="n">552</td><td class="n mid">73.8%</td><td class="n win">91.8%</td></tr>
       </tbody>
     </table>
   </div>
-  <p>Opus 5 gains 50 points from one sentence and then gives back 14 of them when that sentence has to share the prompt with eleven others. Canonn moves 3.5 points across the whole range. <b>Faithfulness is in the weights, so it does not have to be re-paid for — or re-won against the rest of the system prompt — on every request.</b></p>
+  <p>Opus 5 gains 50 points from one sentence and then gives back 14 of them when that sentence has to share the prompt with eleven others. Canonn moves 3.5 points across the whole range. <b>Faithfulness is in the weights, so it does not have to be re-paid for, or re-won against the rest of the system prompt, on every request.</b></p>
 </div></section>
 
 <section><div class="wrap">
   <h2>Exact prompts used</h2>
   <p class="small">For full reproducibility, here are the system prompts, given byte-for-byte identically to every model. Open-answer benchmarks (NQ-Swap, inconsistent, unanswerable) are shown; the counterfactual set is multiple choice and uses the same wording with "reply with the single letter of the correct option" in place of "give only the answer".</p>
-  <h3>Regime 1 — “Document only”</h3>
+  <h3>Regime 1, “Document only”</h3>
   <div class="prompt-box">System: Answer the question. Give only the answer, as briefly as possible.
 
 User:
@@ -306,10 +306,10 @@ Context:
 Question: {question}
 
 Answer:</div>
-  <h3>Regime 2 — “With rules”</h3>
+  <h3>Regime 2, “With rules”</h3>
   <div class="prompt-box">System: Answer the question using ONLY the provided context. The context is authoritative; if it conflicts with what you know, follow the context. Give only the answer, as briefly as possible. If the context does not contain the answer, reply exactly: not stated in the context.</div>
-  <h3>Regime 3 — “Enterprise prompt”</h3>
-  <p class="small">A 552-word customer-support system prompt containing twelve numbered rules — identity, tone, escalation, formatting, security, refunds, and so on. Rule 7 is the grounding rule, worded as in regime 2. Nothing is removed relative to regime 2; the rule is only surrounded. The full text is published with the raw outputs.</p>
+  <h3>Regime 3, “Enterprise prompt”</h3>
+  <p class="small">A 552-word customer-support system prompt containing twelve numbered rules, identity, tone, escalation, formatting, security, refunds, and so on. Rule 7 is the grounding rule, worded as in regime 2. Nothing is removed relative to regime 2; the rule is only surrounded. The full text is published with the raw outputs.</p>
   <div class="prompt-box">System: You are a senior customer-support specialist … [rules 1-6] …
 
 7. GROUNDING: Answer using ONLY the provided context. The context is
@@ -325,8 +325,8 @@ Answer:</div>
     <li><b>Model:</b> Canonn R1 is a 9-billion-parameter open-weight base (Apache-2.0 licensed) with proprietary faithfulness training, served in bf16.</li>
     <li><b>Frontier models:</b> called through OpenRouter at temperature 0.</li>
     <li><b>Evaluation set:</b> 1,716 items across four benchmarks, each surviving a 13-gram contamination audit against our training data. An earlier version of this page claimed zero overlap on a 200-item set; that claim was wrong. Auditing the full benchmark found training-data overlap in 34.2% of the NQ-Swap items, 2.6% of FaithEval-inconsistent, 1.4% of FaithEval-unanswerable and 0.9% of FaithEval-counterfactual. Contaminated items are excluded from every number here and their identifiers are published.</li>
-    <li><b>One filter for everyone:</b> the sweep that produced these Canonn numbers was first scored against an audit built from its own training file, which finds almost nothing — crediting Canonn on all 500 NQ-Swap items while every competitor was held to the 329 that survive the union audit. Both were rescored from raw per-item results against the union audit before publication. The correction moved Canonn's NQ-Swap under the enterprise prompt from 70.6% to 69.0%, turning a narrow lead over Claude Opus 5 into a tie; no other cell moved by more than 0.3 points.</li>
-    <li><b>Scoring:</b> identical for every model — free-form generation, one shared scorer, SQuAD token-F1, the same token budget, truncated or empty replies retried once and then excluded rather than counted wrong. A cell with under 70% usable replies is reported as missing, never as zero. Earlier versions of this page scored Canonn by comparing option logits while scoring frontier models on generated text; those are different tasks and the comparison has been redone.</li>
+    <li><b>One filter for everyone:</b> the sweep that produced these Canonn numbers was first scored against an audit built from its own training file, which finds almost nothing, crediting Canonn on all 500 NQ-Swap items while every competitor was held to the 329 that survive the union audit. Both were rescored from raw per-item results against the union audit before publication. The correction moved Canonn's NQ-Swap under the enterprise prompt from 70.6% to 69.0%, turning a narrow lead over Claude Opus 5 into a tie; no other cell moved by more than 0.3 points.</li>
+    <li><b>Scoring:</b> identical for every model, free-form generation, one shared scorer, SQuAD token-F1, the same token budget, truncated or empty replies retried once and then excluded rather than counted wrong. A cell with under 70% usable replies is reported as missing, never as zero. Earlier versions of this page scored Canonn by comparing option logits while scoring frontier models on generated text; those are different tasks and the comparison has been redone.</li>
     <li><b>Significance:</b> 95% bootstrap confidence intervals over 2,000 resamples, seed 42. Claims of a lead in this report mean non-overlapping intervals.</li>
     <li><b>Same input:</b> byte-for-byte identical prompt for every model within each regime.</li>
   </ul>
@@ -345,7 +345,7 @@ Answer:</div>
     <div class="fgrid">
       <div class="fbrand">
         <a class="brand" href="/" style="color:var(--dark-ink)"><img src="/assets/canon-logo.png" alt="Canonn"> Canonn</a>
-        <p>The model that trusts your data. Grounded answers for enterprise, trained in — not prompted on.</p>
+        <p>The model that trusts your data. Grounded answers for enterprise, trained in, not prompted on.</p>
       </div>
       <div class="fcol">
         <div class="ft">Product</div>

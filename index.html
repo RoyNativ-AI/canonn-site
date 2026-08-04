@@ -73,6 +73,26 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
   .hero-phone{width:min(290px,80%);transform:rotate(0) translateY(12%)}
   .hero-pad{padding-bottom:64px}
 }
+.hero-center{max-width:820px;margin:0 auto;text-align:center}
+.hero-center .lede{margin-left:auto;margin-right:auto}
+.play{max-width:780px;margin:8px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line2);border-radius:18px;box-shadow:0 30px 70px rgba(31,29,26,.10);overflow:hidden}
+.play .plabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:14px 20px 0}
+.play textarea{width:100%;border:0;outline:0;resize:vertical;background:transparent;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--ink);padding:10px 20px 14px;min-height:84px}
+.play .qrow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:8px 10px 8px 20px}
+.play .qrow input{flex:1;border:0;outline:0;background:transparent;font-size:15px;color:var(--ink);font-family:var(--sans)}
+.play .go{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:0;background:var(--ink);color:var(--bg);font-size:17px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.play .go:hover{transform:translateY(-1px)}
+.play .go:disabled{opacity:.4;cursor:default;transform:none}
+.play .aarea{display:none;border-top:1px solid var(--line);background:var(--bg2);padding:16px 20px}
+.play .aarea.show{display:block}
+.play .awho{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--win);margin-bottom:7px;display:flex;gap:10px;align-items:center}
+.play .awho .sec{color:var(--mute);text-transform:none;letter-spacing:0}
+.play .atext{font-size:15px;color:var(--ink);line-height:1.6}
+.play .atext.err{color:var(--lose)}
+.play .thinking .atext::after{content:"";display:inline-block;width:8px;height:15px;background:var(--win);vertical-align:text-bottom;margin-left:2px;animation:blink 1s steps(1) infinite}
+.sugg{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.sugg button{font-size:12.5px;font-family:var(--sans);color:var(--mute);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px;cursor:pointer;transition:.2s}
+.sugg button:hover{color:var(--ink);border-color:var(--ink)}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:30px}
 .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 10px var(--win)}
 h1{font-family:var(--display);font-weight:600;font-size:clamp(42px,6.2vw,78px);line-height:1.04;letter-spacing:-.035em;margin-bottom:26px}
@@ -367,37 +387,33 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <header class="hero">
   <div class="wrap">
-    <div class="hero-grid">
-      <div class="hero-pad">
-        <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
-        <h1 class="reveal">The model that<br><em>trusts your data.</em></h1>
-        <p class="lede reveal">Frontier models argue with your documents and answer from memory. Canonn R1 answers from the data you give it — grounded, verbatim, and 100× cheaper. Faithfulness isn't a prompt. It's trained in.</p>
-        <div class="cta-row reveal">
-          <a class="btn btn-p" href="#api">Start with the API</a>
-          <a class="btn btn-s" href="#benchmark">See the benchmark</a>
+    <div class="hero-center">
+      <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
+      <h1 class="reveal">The model that <em>trusts your data.</em></h1>
+      <p class="lede reveal">Paste your data. Ask a question. Watch it answer only from what you gave it — live, from the same model behind our API.</p>
+      <div class="play reveal">
+        <div class="plabel">Your data</div>
+        <textarea id="pdata">Single sign-on (SSO) is included in the Business plan and above.
+Priority support: Pro (24h email), Business (4h chat + email), Enterprise (1h SLA, dedicated engineer).
+The Starter plan includes community support only.</textarea>
+        <div class="qrow">
+          <input id="pq" type="text" value="Which plans include priority support?" placeholder="Ask about the data above…" maxlength="300">
+          <button class="go" id="pgo" aria-label="Ask Canonn">↑</button>
         </div>
-        <div class="hero-meta reveal">
-          <span><b>91.8%</b> grounded in your data</span>
-          <span><b>2.2×</b> more faithful than GPT-5.6</span>
-          <span><b>OpenAI-compatible</b> · api.canonn.ai</span>
+        <div class="aarea" id="parea">
+          <div class="awho">Canonn R1 · grounded <span class="sec" id="psec"></span></div>
+          <div class="atext" id="pans"></div>
         </div>
       </div>
-      <div class="hero-visual">
-        <div class="vcard doc reveal" data-delay="150">
-          <div class="vlabel">Your data</div>
-          "Single sign-on (SSO) is included in the <mark>Business</mark> plan and above."
-        </div>
-        <div class="varrow reveal" data-delay="600">↓ same question, two models</div>
-        <div class="vcard ours reveal" data-delay="900">
-          <div class="vhead"><img src="assets/canon-logo.png" alt=""> Canonn R1 <span class="vchip ok">✓ grounded in your data</span></div>
-          <p>"Yes — SSO is included in the Business plan."</p>
-          <div class="vscore ok"><span class="pct" data-target="91.8">0.0%</span><span>faithful · enterprise prompt</span></div>
-        </div>
-        <div class="vcard theirs reveal" data-delay="1500">
-          <div class="vhead">Frontier LLM <span class="vchip bad">✗ answers from memory</span></div>
-          <p>"SSO is typically available only on Enterprise plans…"</p>
-          <div class="vscore bad"><span class="pct" data-target="37.8">0.0%</span><span>faithful · same document</span></div>
-        </div>
+      <div class="sugg reveal">
+        <button data-q="Does the Business plan include SSO?">Does Business include SSO?</button>
+        <button data-q="What does Enterprise support include?">Enterprise support?</button>
+        <button data-q="Do you offer phone support?">Phone support? (not in the data)</button>
+      </div>
+      <div class="hero-meta reveal" style="justify-content:center">
+        <span><b>91.8%</b> grounded in your data</span>
+        <span><b>OpenAI-compatible</b> · api.canonn.ai</span>
+        <span><b>from $1.20</b> / 1M tokens</span>
       </div>
     </div>
   </div>
@@ -748,6 +764,31 @@ const io=new IntersectionObserver((es)=>{es.forEach(e=>{
   setTimeout(()=>{el.style.transitionDelay='0ms'},delay+950);
   io.unobserve(el);
 })},{threshold:.12});
+const pgo=document.getElementById('pgo'),pq=document.getElementById('pq'),
+      pdata=document.getElementById('pdata'),parea=document.getElementById('parea'),
+      pans=document.getElementById('pans'),psec=document.getElementById('psec');
+async function askCanonn(){
+  const data=pdata.value.trim(),q=pq.value.trim();
+  if(!data||!q)return;
+  pgo.disabled=true;parea.classList.add('show','thinking');
+  pans.classList.remove('err');pans.textContent='';psec.textContent='';
+  try{
+    const r=await fetch('https://api.canonn.ai/v1/demo',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:data,question:q})});
+    const j=await r.json();
+    parea.classList.remove('thinking');
+    if(!r.ok){pans.classList.add('err');pans.textContent=j.error||'Something went wrong — try again.';}
+    else{pans.textContent=j.answer;psec.textContent='· '+j.seconds+'s';}
+  }catch(e){
+    parea.classList.remove('thinking');
+    pans.classList.add('err');pans.textContent='Could not reach the model — try again in a moment.';
+  }
+  pgo.disabled=false;
+}
+pgo.addEventListener('click',askCanonn);
+pq.addEventListener('keydown',e=>{if(e.key==='Enter')askCanonn()});
+document.querySelectorAll('.sugg button').forEach(b=>b.addEventListener('click',()=>{pq.value=b.dataset.q;askCanonn()}));
 document.querySelectorAll('.caplist .cap').forEach(cap=>{
   cap.addEventListener('click',()=>{
     document.querySelectorAll('.caplist .cap').forEach(c=>c.classList.remove('active'));

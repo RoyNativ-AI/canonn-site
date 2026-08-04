@@ -48,7 +48,7 @@ export function QuickStart() {
   }
 
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-[0.8fr_1.4fr]">
+    <div className="grid items-stretch gap-4 lg:grid-cols-2">
       <div className="space-y-4">
         <div>
           <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
@@ -57,7 +57,7 @@ export function QuickStart() {
           <textarea
             value={data}
             onChange={(e) => setData(e.target.value)}
-            rows={4}
+            rows={8}
             className="w-full resize-none rounded-xl border border-input bg-card p-3 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
             placeholder="The knowledge to answer from…"
           />

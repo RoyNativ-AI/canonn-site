@@ -441,6 +441,10 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .storebadges a{transition:.2s;display:block}
 .storebadges a:hover{transform:translateY(-1px);opacity:.92}
 
+.apps-grid{display:grid;grid-template-columns:1fr .8fr;gap:56px;align-items:center}
+.apps-shot{display:flex;justify-content:center}
+.apps-shot img{width:min(280px,80%);border-radius:38px;border:1px solid var(--line2);box-shadow:0 8px 24px rgba(31,29,26,.10),0 40px 80px rgba(31,29,26,.16)}
+@media(max-width:860px){.apps-grid{grid-template-columns:1fr;gap:36px}.apps-shot img{width:min(240px,70%)}}
 /* footer */
 footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px 0 40px}
 .fgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
@@ -926,6 +930,26 @@ Shipping fees are non-refundable.</textarea>
   </div>
 </section>
 
+<section id="apps" style="border-bottom:none">
+  <div class="wrap">
+    <div class="apps-grid">
+      <div>
+        <div class="tag reveal">The apps</div>
+        <h2 class="reveal">Canonn in your pocket.</h2>
+        <p class="sec-lede reveal">The same grounded model, with your own knowledge base on your phone. Ask about your documents anywhere, and every answer still shows the passage it came from.</p>
+        <div class="storebadges reveal" style="margin-top:26px">
+          <a href="#" onclick="alert('Coming to the App Store soon');return false"><img src="/assets/badge-appstore.svg" alt="Download on the App Store" height="42" style="display:block"></a>
+          <a href="#" onclick="alert('Coming to Google Play soon');return false"><img src="/assets/badge-googleplay.svg" alt="Get it on Google Play" height="42" style="display:block"></a>
+        </div>
+        <p class="reveal" style="font-family:var(--mono);font-size:11.5px;color:var(--mute);margin-top:14px">iOS and Android, coming soon</p>
+      </div>
+      <div class="apps-shot reveal">
+        <img src="assets/chat_light.png" alt="Canonn on iPhone, a grounded answer with its cited source">
+      </div>
+    </div>
+  </div>
+</section>
+
 <div class="final">
   <div class="wrap">
     <h2 class="reveal">Meet <em>Canonn R1.</em></h2>
@@ -933,10 +957,6 @@ Shipping fees are non-refundable.</textarea>
     <div class="cta-row reveal" style="justify-content:center">
       <a class="btn btn-dark" href="/dashboard/">Get the API</a>
       <a class="btn btn-ghost" href="/benchmark/">Read the benchmark</a>
-    </div>
-    <div class="storebadges reveal" style="justify-content:center;margin-top:28px">
-      <a href="#" onclick="alert('Coming to the App Store soon');return false"><img src="/assets/badge-appstore.svg" alt="Download on the App Store" height="38" style="display:block"></a>
-      <a href="#" onclick="alert('Coming to Google Play soon');return false"><img src="/assets/badge-googleplay.svg" alt="Get it on Google Play" height="38" style="display:block"></a>
     </div>
   </div>
 </div>
@@ -954,8 +974,7 @@ Shipping fees are non-refundable.</textarea>
         <a href="/benchmark/">Benchmark report</a>
         <a href="/#plans">Pricing</a>
         <a href="/#how">How it works</a>
-        <a href="#" onclick="alert('Coming to the App Store soon');return false">iOS app</a>
-        <a href="#" onclick="alert('Coming to Google Play soon');return false">Android app</a>
+        <a href="/#apps">Mobile apps</a>
       </div>
       <div class="fcol">
         <div class="ft">Developers</div>

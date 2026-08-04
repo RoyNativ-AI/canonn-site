@@ -61,8 +61,9 @@ export function Logs({
         </div>
       </div>
       <Card className="overflow-hidden py-0">
+        <div className="max-h-[620px] overflow-y-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card shadow-[0_1px_0_var(--border)]">
             <TableRow>
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
@@ -116,6 +117,12 @@ export function Logs({
             ))}
           </TableBody>
         </Table>
+        </div>
+        {rows.length > 0 && (
+          <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
+            Showing the {rows.length} most recent requests in this window
+          </div>
+        )}
       </Card>
 
       <Sheet open={detail !== null} onOpenChange={(o) => !o && setDetail(null)}>

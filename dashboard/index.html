@@ -82,14 +82,7 @@ footer{margin:60px 0 30px;text-align:center;font-family:var(--mono);font-size:11
 <div class="login" id="login">
   <h1>Dashboard</h1>
   <p id="loginlede">Sign in to manage your API keys and see your usage.</p>
-  <button class="btn" id="clerkbtn" onclick="clerkSignIn()" style="width:100%;margin-bottom:18px">Sign in</button>
-  <div id="adminlogin" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--mute);font-family:var(--mono);font-size:10px">
-      <span style="flex:1;height:1px;background:var(--line2)"></span>ADMIN API KEY<span style="flex:1;height:1px;background:var(--line2)"></span>
-    </div>
-    <input id="keyin" type="password" placeholder="canonn-sk-…" autocomplete="off">
-    <button class="btn ghost" onclick="login()" style="width:100%">Open with key</button>
-  </div>
+  <button class="btn" id="clerkbtn" onclick="clerkSignIn()" style="width:100%">Sign in</button>
   <div class="err" id="loginerr"></div>
 </div>
 
@@ -156,13 +149,13 @@ async function clerkSession(){
   const r=await fetch(API+'/me',{headers:{'Authorization':'Bearer '+t}});
   if(!r.ok){document.getElementById('loginerr').textContent='Session not accepted by the API.';return}
   const u=await r.json();
-  CLERK_MODE=true;
+  
   render({key_name:window.Clerk.user.primaryEmailAddress?.emailAddress||'account',
           spend_usd:u.spend_usd,requests:u.requests,input_tokens:u.input_tokens,
           output_tokens:u.output_tokens,by_day:u.by_day,recent:u.recent});
   renderMyKeys(u.keys);
 }
-let CLERK_MODE=false;
+
 async function renderMyKeys(keys){
   document.getElementById('keysWrap').style.display='block';
   document.querySelector('#ktable tbody').innerHTML=keys.map(k=>
@@ -172,23 +165,11 @@ async function renderMyKeys(keys){
     ||'<tr><td colspan="4" style="color:var(--mute)">No keys yet, create your first above.</td></tr>';
 }
 const API='https://api.canonn.ai/v1';
-let KEY=localStorage.getItem('canonn.dash.key')||'';
 const $=id=>document.getElementById(id);
 const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);
 
-async function login(){
-  const k=$('keyin').value.trim()||KEY;
-  if(!k){$('loginerr').textContent='Paste a key first.';return}
-  $('loginerr').textContent='Checking…';
-  try{
-    const r=await fetch(API+'/usage',{headers:{'Authorization':'Bearer '+k}});
-    if(!r.ok){$('loginerr').textContent='That key was not accepted.';return}
-    KEY=k;localStorage.setItem('canonn.dash.key',k);
-    render(await r.json());
-  }catch(e){$('loginerr').textContent='Could not reach api.canonn.ai.'}
-}
 
-async function logout(){localStorage.removeItem('canonn.dash.key');if(clerkReady&&window.Clerk.user){await window.Clerk.signOut()}location.reload()}
+async function logout(){if(clerkReady&&window.Clerk.user){await window.Clerk.signOut()}location.reload()}
 
 function render(u){
   $('login').style.display='none';$('app').style.display='block';
@@ -213,40 +194,27 @@ function render(u){
   if(u.key_name==='default')loadKeys();
 }
 
-async function loadKeys(){
-  const r=await fetch(API+'/keys',{headers:{'Authorization':'Bearer '+KEY}});
-  if(!r.ok)return;
-  $('keysWrap').style.display='block';
-  const j=await r.json();
-  document.querySelector('#ktable tbody').innerHTML=j.keys.map(k=>
-    '<tr><td>'+k.name+'</td><td class="mono">'+k.prefix+'</td><td class="mono">'+
-    (k.created?new Date(k.created*1000).toLocaleDateString():'')+'</td><td>'+
-    (k.name==='default'?'':'<button class="revoke" onclick="revoke(\''+k.name+'\')">revoke</button>')+'</td></tr>').join('');
-}
 
 async function createKey(){
   const name=$('knew').value.trim();
   if(!name)return;
-  const auth=CLERK_MODE?('Bearer '+await window.Clerk.session.getToken()):('Bearer '+KEY);
-  const ep=CLERK_MODE?'/me/keys':'/keys';
-  const r=await fetch(API+ep,{method:'POST',headers:{'Authorization':auth,'Content-Type':'application/json'},body:JSON.stringify({name})});
+  const auth='Bearer '+await window.Clerk.session.getToken();
+  const r=await fetch(API+'/me/keys',{method:'POST',headers:{'Authorization':auth,'Content-Type':'application/json'},body:JSON.stringify({name})});
   const j=await r.json();
   const box=$('newkey');box.classList.add('show');
   if(!r.ok){box.innerHTML='<span style="color:var(--lose)">'+ (j.error||'failed') +'</span>';return}
   box.innerHTML='<div class="k">'+j.key+'</div><div class="n">Copy it now, this is the only time it is shown. <button class="revoke" style="color:var(--win)" onclick="navigator.clipboard.writeText(\''+j.key+'\')">copy</button></div>';
-  $('knew').value='';CLERK_MODE?clerkSession():loadKeys();
+  $('knew').value='';clerkSession();
 }
 
 async function revoke(name){
   if(!confirm('Revoke key "'+name+'"? Apps using it will stop working.'))return;
-  const auth=CLERK_MODE?('Bearer '+await window.Clerk.session.getToken()):('Bearer '+KEY);
-  const ep=CLERK_MODE?'/me/keys/revoke':'/keys/revoke';
-  await fetch(API+ep,{method:'POST',headers:{'Authorization':auth,'Content-Type':'application/json'},body:JSON.stringify({name})});
-  CLERK_MODE?clerkSession():loadKeys();
+  const auth='Bearer '+await window.Clerk.session.getToken();
+  await fetch(API+'/me/keys/revoke',{method:'POST',headers:{'Authorization':auth,'Content-Type':'application/json'},body:JSON.stringify({name})});
+  clerkSession();
 }
 
-if(location.hash==='#admin'||KEY){document.getElementById('adminlogin').style.display='block'}
-if(KEY){$('keyin').value=KEY;login()}
+
 </script>
 </body>
 </html>

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{
+:root{--dark:#171412;--dark-line:rgba(247,244,238,.09);--dark-ink:#f3efe8;--dark-mute:#9a938a;
   --bg:#f7f4ee;--bg2:#efe9df;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
   --line:rgba(31,29,26,.10);--line2:rgba(31,29,26,.18);--win:#3f7d54;--lose:#c96442;--mid:#5c574e;
   --sans:'Inter',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;--mono:'JetBrains Mono',monospace;
@@ -116,6 +116,19 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
   .prompt-box{font-size:11px;padding:14px}
   .meta-strip{gap:14px;font-size:11px}
 }
+
+/* footer */
+footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px 0 40px}
+.fgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr;gap:32px}}
+.fbrand p{font-size:13.5px;color:var(--dark-mute);margin-top:14px;max-width:240px}
+.fcol .ft{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dark-mute);margin-bottom:16px}
+.fcol a{display:block;font-size:14px;color:var(--dark-ink);opacity:.8;margin-bottom:11px;text-decoration:none;transition:opacity .25s ease}
+.fcol a:hover{opacity:1}
+.fcol .fmono{font-family:var(--mono);font-size:12.5px}
+.fbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:26px;border-top:1px solid var(--dark-line)}
+.fbar .fmeta{font-family:var(--mono);font-size:12px;color:var(--dark-mute)}
+
 </style>
 </head>
 <body>
@@ -327,10 +340,38 @@ Answer:</div>
   </ul>
 </div></section>
 
-<footer><div class="wrap">
-  <a class="brand" href="/"><img src="/assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
-  <div class="fmeta">Full benchmark report · Canonn.ai</div>
-</div></footer>
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div class="fbrand">
+        <a class="brand" href="/" style="color:var(--dark-ink)"><img src="/assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+        <p>The model that trusts your data. Grounded answers for enterprise, trained in — not prompted on.</p>
+      </div>
+      <div class="fcol">
+        <div class="ft">Product</div>
+        <a href="/#product">Overview</a>
+        <a href="/benchmark/">Benchmark report</a>
+        <a href="/#plans">Pricing</a>
+        <a href="/#how">How it works</a>
+      </div>
+      <div class="fcol">
+        <div class="ft">Developers</div>
+        <a href="/#api">API</a>
+        <a href="https://api.canonn.ai" class="fmono">api.canonn.ai/v1</a>
+        <a href="mailto:info@officely.ai?subject=Canonn%20API%20access">Get an API key</a>
+      </div>
+      <div class="fcol">
+        <div class="ft">Company</div>
+        <a href="mailto:info@officely.ai">Contact</a>
+        <a href="mailto:info@officely.ai?subject=Canonn%20weights%20license">Weights license</a>
+      </div>
+    </div>
+    <div class="fbar">
+      <div class="fmeta">© 2026 Canonn · canonn.ai</div>
+      <div class="fmeta">The source of truth for enterprise AI</div>
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>

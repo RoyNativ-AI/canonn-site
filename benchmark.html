@@ -155,7 +155,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
     <table>
       <thead><tr><th>Model</th><th>Params</th><th>Document only</th><th>With rules</th><th>Enterprise prompt</th><th>Price / 1M</th></tr></thead>
       <tbody>
-        <tr class="ours"><td class="model"><img src="assets/canon-logo.jpg" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">88.3%</td><td class="n win">90.8%</td><td class="n win">91.8%</td><td class="n win">$0.03</td></tr>
+        <tr class="ours"><td class="model"><img src="assets/canon-logo.jpg" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.3%</td><td class="n win">91.8%</td><td class="n win">$0.03</td></tr>
         <tr><td class="model"><img src="assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.6%</td><td class="n mid">65.5%</td><td class="n mid">60.2%</td><td class="n low">$30</td></tr>
         <tr><td class="model"><img src="assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">37.8%</td><td class="n mid">87.5%</td><td class="n mid">73.8%</td><td class="n low">$25</td></tr>
         <tr><td class="model"><img src="assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">53.0%</td><td class="n mid">68.4%</td><td class="n mid">61.9%</td><td class="n low">$7.50</td></tr>
@@ -172,7 +172,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
     </div>
     <div class="regime">
       <div class="rt">Column 2 — “With rules”</div>
-      <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 37.8% to 87.5%, within a few points of Canonn's 90.8%. Reported because it is the fairest column to them.</p>
+      <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 37.8% to 87.5%, within a few points of Canonn's 91.3%. Reported because it is the fairest column to them.</p>
     </div>
     <div class="regime">
       <div class="rt">Column 3 — “Enterprise prompt”</div>
@@ -207,7 +207,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
     </div>
     <div class="regime">
       <div class="rt">Where we do not lead</div>
-      <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time and Canonn 75.3%. With no instruction at all, every model is poor and Canonn manages only 21.4%. Declining is a distinct skill from grounding, and we have not solved it.</p>
+      <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time and Canonn 75.3%. With no instruction at all, every model is poor and Canonn manages only 24.8%. Declining is a distinct skill from grounding, and we have not solved it.</p>
     </div>
   </div>
 </div></section>
@@ -255,8 +255,8 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
     <table>
       <thead><tr><th>Instruction</th><th>System-prompt words</th><th>Opus 5</th><th>Canonn R1</th></tr></thead>
       <tbody>
-        <tr><td>None — document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">88.3%</td></tr>
-        <tr><td>One clean rule — "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">90.8%</td></tr>
+        <tr><td>None — document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">89.8%</td></tr>
+        <tr><td>One clean rule — "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">91.3%</td></tr>
         <tr><td>The same rule, 7th of 12 in a support prompt</td><td class="n">552</td><td class="n mid">73.8%</td><td class="n win">91.8%</td></tr>
       </tbody>
     </table>
@@ -304,7 +304,7 @@ Answer:</div>
   <h3>Known limitations (stated honestly)</h3>
   <ul>
     <li><b>This measures one capability.</b> Canonn is a 9B specialist in reading a document faithfully. On reasoning, coding, mathematics, multilingual work, tool use, long-form writing and world knowledge, the frontier models are far better and we have not measured any of it.</li>
-    <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.3% on inconsistent passages means the model fails roughly half the time; 21.4% abstention without instruction means it invents an answer four times in five when none is present. We lead these columns; we do not own them.</li>
+    <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.3% on inconsistent passages means the model fails roughly half the time; 24.8% abstention without instruction means it invents an answer three times in four when none is present. We lead these columns; we do not own them.</li>
     <li><b>Only one of the twelve enterprise rules was measured.</b> We tested whether the grounding rule survives being surrounded. Whether the tone, escalation, formatting and security rules are followed is untested.</li>
     <li><b>All competitor numbers are self-measured.</b> No external party has reproduced them. Raw per-item outputs are published so that anyone can.</li>
     <li>Multi-turn and LLM-judged open-answer evaluation are still withheld pending a harness we trust.</li>

@@ -30,7 +30,7 @@ export function Logs({
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[32px] font-semibold tracking-tight">Logs</h1>
-          <p className="text-sm text-muted-foreground">Your most recent requests</p>
+          <p className="text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
@@ -67,15 +67,19 @@ export function Logs({
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
               <TableHead>Mode</TableHead>
-              <TableHead className="text-right">Input</TableHead>
-              <TableHead className="text-right">Output</TableHead>
+              <TableHead>Expert</TableHead>
+              <TableHead className="text-right">Tokens</TableHead>
               <TableHead className="text-right">Latency</TableHead>
+              <TableHead className="text-right">Speed</TableHead>
+              <TableHead className="text-right">Cost</TableHead>
+              <TableHead>Finish</TableHead>
+              <TableHead className="text-right">Request ID</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={10} className="py-10 text-center text-muted-foreground">
                   No requests yet. Create a key and make your first call.
                 </TableCell>
               </TableRow>
@@ -85,13 +89,29 @@ export function Logs({
                 <TableCell className="font-mono text-xs">
                   {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </TableCell>
-                <TableCell>{r.key}</TableCell>
+                <TableCell className="max-w-[130px] truncate">{r.key}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="font-mono text-[10px]">{r.mode}</Badge>
                 </TableCell>
-                <TableCell className="text-right font-mono text-xs">{fmt(r.pt)}</TableCell>
-                <TableCell className="text-right font-mono text-xs">{fmt(r.ct)}</TableCell>
-                <TableCell className="text-right font-mono text-xs">{r.ms ? `${r.ms}ms` : '·'}</TableCell>
+                <TableCell className="font-mono text-xs text-muted-foreground">{r.adapter ?? '·'}</TableCell>
+                <TableCell className="text-right font-mono text-xs whitespace-nowrap">
+                  {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-xs">{r.ms ? `${(r.ms / 1000).toFixed(1)}s` : '·'}</TableCell>
+                <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                  {r.tok_s ? `${r.tok_s} t/s` : '·'}
+                </TableCell>
+                <TableCell className="text-right font-mono text-xs">
+                  {r.cost !== undefined ? `$${r.cost.toFixed(5)}` : '·'}
+                </TableCell>
+                <TableCell>
+                  <span className={`font-mono text-[10.5px] ${r.finish === 'length' ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    {r.finish ?? 'stop'}{r.stream ? ' · stream' : ''}
+                  </span>
+                </TableCell>
+                <TableCell className="max-w-[150px] truncate text-right font-mono text-[10.5px] text-muted-foreground">
+                  {r.req_id ?? '·'}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

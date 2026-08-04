@@ -28,21 +28,32 @@ export function QuickStart() {
   }
 
   return (
-    <div className="space-y-2.5">
-      <div className="grid gap-2.5 sm:grid-cols-2">
-        <Input
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          placeholder="Example data"
-          className="bg-card font-mono text-xs"
-        />
-        <Input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleRun()}
-          placeholder="Example question"
-          className="bg-card font-mono text-xs"
-        />
+    <div className="grid items-start gap-4 lg:grid-cols-[0.8fr_1.4fr]">
+      <div className="space-y-4">
+        <div>
+          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+            Data example
+          </label>
+          <textarea
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            rows={4}
+            className="w-full resize-none rounded-xl border border-input bg-card p-3 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
+            placeholder="The knowledge to answer from…"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+            Question
+          </label>
+          <Input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleRun()}
+            placeholder="Ask about the data…"
+            className="bg-card font-mono text-xs"
+          />
+        </div>
       </div>
       <Card className="overflow-hidden border-[#3a342e] bg-[#211d1a] py-0 text-[#d8d2c8]">
         <div className="flex items-center gap-1.5 border-b border-white/10 bg-[#26221e] px-3.5 py-2">

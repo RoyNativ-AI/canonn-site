@@ -162,7 +162,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
         </Table>
       </Card>
 
-      <div className="mt-8 max-w-lg">
+      <div className="mt-8 max-w-4xl">
         <h2 className="mb-3 font-display text-lg font-semibold">Quick start</h2>
         <QuickStart />
       </div>

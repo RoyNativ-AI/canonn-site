@@ -6,6 +6,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -17,6 +18,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   const { session } = useSession()
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
   const [freshKey, setFreshKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -27,6 +29,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
     try {
       const token = await session.getToken()
       const res = await createKey(token!, trimmed)
+      setCreateOpen(false)
       setFreshKey(res.key)
       setCopied(false)
       setName('')
@@ -64,18 +67,31 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
       <h1 className="font-display text-[32px] font-semibold tracking-tight">API keys</h1>
       <p className="mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
 
-      <div className="mb-5 flex gap-2.5">
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-          placeholder="Key name, e.g. production"
-          className="max-w-md bg-card font-mono text-sm"
-        />
-        <Button onClick={handleCreate} disabled={creating || !name.trim()}>
-          {creating ? 'Creating…' : 'Create key'}
+      <div className="mb-5">
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className="size-4" /> Create key
         </Button>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Create an API key</DialogTitle>
+            <DialogDescription>Give it a name you will recognize in your logs.</DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            placeholder="e.g. production"
+            className="font-mono text-sm"
+          />
+          <Button onClick={handleCreate} disabled={creating || !name.trim()} className="w-full">
+            {creating ? 'Creating…' : 'Create key'}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <Card className="overflow-hidden py-0">
         <Table>

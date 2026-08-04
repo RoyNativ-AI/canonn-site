@@ -28,7 +28,19 @@ async function request<T>(path: string, token: string, init?: RequestInit): Prom
   return body as T
 }
 
-export const fetchMe = (token: string) => request<Me>('/me', token)
+export const fetchMe = (token: string, days = 30, key = '') =>
+  request<Me>(`/me?days=${days}${key ? `&key=${encodeURIComponent(key)}` : ''}`, token)
+
+export const runDemo = (data: string, question: string) =>
+  fetch('https://api.canonn.ai/v1/demo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data, question }),
+  }).then(async (r) => {
+    const b = await r.json()
+    if (!r.ok) throw new Error(b.error ?? 'demo failed')
+    return b as { answer: string; seconds: number }
+  })
 export const createKey = (token: string, name: string) =>
   request<{ key: string; name: string }>('/me/keys', token, {
     method: 'POST',

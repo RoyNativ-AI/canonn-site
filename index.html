@@ -243,7 +243,8 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 
 /* capabilities (Cohere-style accordion + live demo) */
 .caps-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;margin-top:56px;align-items:start}
-@media(max-width:960px){.caps-grid{grid-template-columns:1fr;gap:40px}}
+.capdemo{order:0}.caplist{order:1}
+@media(max-width:960px){.caps-grid{grid-template-columns:1fr;gap:32px}.capdemo{order:2}.caplist{order:1}}
 @media(max-width:700px){.capdemo{padding:24px 18px;min-height:0}.caplist .cap h3{font-size:22px}}
 .capdemo{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:44px 36px;min-height:480px;position:relative;background-image:radial-gradient(circle,rgba(31,29,26,.05) 1px,transparent 1.4px);background-size:22px 22px;display:flex;flex-direction:column;justify-content:center;gap:22px}
 .capdemo .bub{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14.5px;color:var(--ink-soft);box-shadow:0 10px 30px rgba(31,29,26,.06)}
@@ -312,7 +313,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .macwin .bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--dark-line);background:#26221e}
 .macwin .dot{width:12px;height:12px;border-radius:50%}
 .macwin .dot.r{background:#ff5f57}.macwin .dot.y{background:#febc2e}.macwin .dot.g{background:#28c840}
-.macwin .title{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dark-mute)}
+.macwin .title{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dark-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .macwin pre{padding:24px 24px 28px;font-family:var(--mono);font-size:13px;line-height:1.75;overflow-x:auto;color:#d8d2c8}
 .macwin .c{color:#8a837a}
 .macwin .kw{color:#e8b39e}
@@ -501,6 +502,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
   .mlogo{width:15px;height:15px;flex-basis:15px}
   .stat .num{font-size:44px}
   .macwin pre{font-size:11px;padding:16px}
+  .macwin .title{font-size:10.5px}
   .api{padding:72px 0}
   .pull,.final{padding:80px 0}
   .showcase{padding-top:72px}
@@ -537,11 +539,12 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       <p class="lede reveal">Paste your data. Ask a question. Watch it answer only from what you gave it.</p>
       <div class="play reveal">
         <div class="plabel"><span>Your data</span><span class="live"><span class="dot"></span>Live · the real model</span></div>
-        <textarea id="pdata">Single sign-on (SSO) is included in the Business plan and above.
-Priority support: Pro (24h email), Business (4h chat + email), Enterprise (1h SLA, dedicated engineer).
-The Starter plan includes community support only.</textarea>
+        <textarea id="pdata">Refund window: 45 days from purchase.
+In-app purchases: refunded within 5 days.
+Refunds return to the original payment method in 3-5 business days.
+Shipping fees are non-refundable.</textarea>
         <div class="qrow">
-          <input id="pq" type="text" value="Which plans include priority support?" placeholder="Ask about the data above…" maxlength="300">
+          <input id="pq" type="text" value="How long do I have to request a refund?" placeholder="Ask about the data above…" maxlength="300">
           <button class="go" id="pgo" aria-label="Ask Canonn">↑</button>
         </div>
         <div class="aarea" id="parea">
@@ -551,9 +554,9 @@ The Starter plan includes community support only.</textarea>
       </div>
       <div class="reveal" style="font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:10px">Tip: clear, structured lines get the sharpest answers, exactly like in production.</div>
       <div class="sugg reveal">
-        <button data-q="Does the Business plan include SSO?">Does Business include SSO?</button>
-        <button data-q="What does Enterprise support include?">Enterprise support?</button>
-        <button data-q="Do you offer phone support?">Phone support? (not in the data)</button>
+        <button data-q="How long do I have to request a refund?">Refund window?</button>
+        <button data-q="Are shipping fees refunded?">Shipping fees?</button>
+        <button data-q="Do you refund store credit?">Store credit? (not in the data)</button>
       </div>
       <div class="hero-meta reveal" style="justify-content:center">
         <span><b>91.8%</b> grounded in your data</span>
@@ -640,8 +643,8 @@ The Starter plan includes community support only.</textarea>
         <h3>It answers from memory</h3><p>Ask about your product, it recites what it read on the internet in training, not your catalog, your plans, or your policies.</p></div>
       <div class="pcard reveal"><div class="n">02</div>
         <div class="pviz">
-          <div class="pv-bub doc">your doc: "SSO is included in the Business plan."</div>
-          <div class="pv-bub bot">"Actually, SSO is usually <span class="bad">Enterprise-only</span>."</div>
+          <div class="pv-bub doc">your doc: "Refund window: 45 days."</div>
+          <div class="pv-bub bot">"Refunds are typically <span class="bad">within 30 days</span>."</div>
         </div>
         <h3>It argues with the data</h3><p>When your document contradicts its priors, the model "corrects" you. We measured frontier models refusing fed data as if it were an attack.</p></div>
       <div class="pcard reveal"><div class="n">03</div>
@@ -670,9 +673,9 @@ The Starter plan includes community support only.</textarea>
     <div class="caps-grid reveal">
       <div class="capdemo">
         <div class="cappanel active" data-cap="0">
-          <div class="bub">Does the Business plan include SSO?<br><span class="file">▤ plans-pricing.md · 5.1 KB</span></div>
+          <div class="bub">How long do I have to request a refund?<br><span class="file">▤ refund-policy.pdf · 12 pages</span></div>
           <div class="pill"><span class="pdot"></span> Grounding…</div>
-          <div class="bub ans"><div class="who">Canonn R1</div>Yes, SSO is included in the Business plan.<div class="src"><b>✓</b> Plans &amp; Pricing · passage 4 · 93% match</div></div>
+          <div class="bub ans"><div class="who">Canonn R1</div>45 days from purchase, or 5 days for in-app purchases.<div class="src"><b>✓</b> Refund policy · passage 1 · 94% match</div></div>
         </div>
         <div class="cappanel" data-cap="1">
           <div class="bub">What response time does Enterprise support get?<br><span class="file">▤ support-tiers.pdf · 12 pages</span></div>
@@ -825,16 +828,16 @@ The Starter plan includes community support only.</textarea>
   -d <span class="str">'{
     "model": "canonn-r1",
     "messages": [
-      {"role":"system","content":"SSO: included in the
-        Business plan and above."},
-      {"role":"user","content":"Does Business include SSO?"}
+      {"role":"system","content":"Refund window: 45 days.
+        In-app purchases: 5 days."},
+      {"role":"user","content":"How long do I have?"}
     ]
   }'</span>
 
 <span class="c"># response, grounded, no invented policy</span>
 <span class="out">{"choices":[{"message":{
-  "content": "Yes, SSO is included in
-              the Business plan."}}]}</span> <span class="cursor"></span></pre>
+  "content": "45 days from purchase, or 5
+              days for in-app purchases."}}]}</span> <span class="cursor"></span></pre>
       </div>
     </div>
   </div>

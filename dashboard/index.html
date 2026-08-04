@@ -83,11 +83,13 @@ footer{margin:60px 0 30px;text-align:center;font-family:var(--mono);font-size:11
   <h1>Dashboard</h1>
   <p id="loginlede">Sign in to manage your API keys and see your usage.</p>
   <button class="btn" id="clerkbtn" onclick="clerkSignIn()" style="width:100%;margin-bottom:18px">Sign in</button>
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--mute);font-family:var(--mono);font-size:10px">
-    <span style="flex:1;height:1px;background:var(--line2)"></span>OR USE AN API KEY<span style="flex:1;height:1px;background:var(--line2)"></span>
+  <div id="adminlogin" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;color:var(--mute);font-family:var(--mono);font-size:10px">
+      <span style="flex:1;height:1px;background:var(--line2)"></span>ADMIN API KEY<span style="flex:1;height:1px;background:var(--line2)"></span>
+    </div>
+    <input id="keyin" type="password" placeholder="canonn-sk-…" autocomplete="off">
+    <button class="btn ghost" onclick="login()" style="width:100%">Open with key</button>
   </div>
-  <input id="keyin" type="password" placeholder="canonn-sk-…" autocomplete="off">
-  <button class="btn ghost" onclick="login()" style="width:100%">Open with key</button>
   <div class="err" id="loginerr"></div>
 </div>
 
@@ -243,6 +245,7 @@ async function revoke(name){
   CLERK_MODE?clerkSession():loadKeys();
 }
 
+if(location.hash==='#admin'||KEY){document.getElementById('adminlogin').style.display='block'}
 if(KEY){$('keyin').value=KEY;login()}
 </script>
 </body>

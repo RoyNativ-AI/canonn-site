@@ -22,7 +22,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:3
 .wrap{max-width:860px;margin:0 auto;padding:0 28px}
 a{color:inherit}
 nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(247,244,238,.8);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;max-width:860px}
+nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
+nav .navlinks{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:32px;font-size:14px;color:var(--mute)}
+.navlinks a{text-decoration:none;position:relative;transition:color .25s ease}
+.navlinks a:hover{color:var(--ink)}
+.navlinks a::after{content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.navlinks a:hover::after{transform:scaleX(1);transform-origin:left}
+.navcta{font-size:13px;border:1px solid var(--line2);padding:9px 18px;border-radius:999px;color:var(--ink);text-decoration:none;transition:.2s}
+.navcta:hover{background:var(--ink);color:var(--bg)}
+@media(max-width:760px){nav .navbar{padding:0 20px}.navlinks{display:none}}
 .brand{display:flex;align-items:center;gap:11px;font-weight:500;font-size:17px}
 .brand img{width:28px;height:28px;border-radius:7px;object-fit:cover}
 .back{font-size:13px;color:var(--mute);font-family:var(--mono)}
@@ -112,10 +120,18 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
 </head>
 <body>
 
-<nav><div class="wrap">
-  <a class="brand" href="index.html"><img src="assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
-  <a class="back" href="index.html">← Back to overview</a>
-</div></nav>
+<nav>
+  <div class="navbar">
+    <a class="brand" href="index.html"><img src="assets/canon-logo.jpg" alt="Canonn"> Canonn</a>
+    <div class="navlinks">
+      <a href="index.html#product">Product</a>
+      <a href="index.html#benchmark">Benchmark</a>
+      <a href="index.html#api">API</a>
+      <a href="index.html#plans">Pricing</a>
+    </div>
+    <a class="navcta" href="index.html#api">Get the API &rarr;</a>
+  </div>
+</nav>
 
 <header><div class="wrap">
   <div class="eyebrow">Benchmark Report · v2 · Canonn R1 (v13)</div>

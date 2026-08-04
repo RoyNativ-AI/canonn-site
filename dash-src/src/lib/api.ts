@@ -5,6 +5,7 @@ export interface LogRow { ts: number; key: string; mode: string; pt: number; ct:
 export interface KeyRow { name: string; prefix: string; created: number | null }
 export interface Me {
   user: string
+  role: string
   keys: KeyRow[]
   requests: number
   input_tokens: number

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { createKey, revokeKey, type Me } from '@/lib/api'
+import { QuickStart } from '@/features/QuickStart'
 
 export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }) {
   const { session } = useSession()
@@ -61,17 +62,25 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   }
 
   const keys = me?.keys ?? []
+  const isAdmin = (me?.role ?? 'admin') === 'admin' || me?.role === 'owner'
 
   return (
     <div>
       <h1 className="font-display text-[32px] font-semibold tracking-tight">API keys</h1>
       <p className="mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
 
-      <div className="mb-5">
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="size-4" /> Create key
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="mb-5">
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" /> Create key
+          </Button>
+        </div>
+      )}
+      {!isAdmin && (
+        <p className="mb-5 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+          Only organization admins can create or revoke keys. Ask your admin for access.
+        </p>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
@@ -120,7 +129,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                   {k.created ? new Date(k.created * 1000).toLocaleDateString() : '·'}
                 </TableCell>
                 <TableCell className="text-right">
-                  <AlertDialog>
+                  {isAdmin && <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" size="sm" className="font-mono text-xs text-destructive hover:text-destructive">
                         revoke
@@ -140,13 +149,18 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
-                  </AlertDialog>
+                  </AlertDialog>}
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </Card>
+
+      <div className="mt-8 max-w-2xl">
+        <h2 className="mb-3 font-display text-lg font-semibold">Quick start</h2>
+        <QuickStart />
+      </div>
 
       <Dialog open={freshKey !== null} onOpenChange={(open) => !open && setFreshKey(null)}>
         <DialogContent>

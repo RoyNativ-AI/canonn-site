@@ -1,8 +1,5 @@
-import { useState } from 'react'
-import { Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { fmt, runDemo, type Me } from '@/lib/api'
+import { fmt, type Me } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const RANGES = [
@@ -11,9 +8,6 @@ const RANGES = [
   { days: 30, label: '30d' },
 ]
 
-const DEMO_DATA =
-  'Single sign-on (SSO) is included in the Business plan and above.\nPriority support: Pro (24h email), Business (4h chat + email), Enterprise (1h SLA).'
-const DEMO_Q = 'Which plans include priority support?'
 
 function Stat({ label, value, money }: { label: string; value: string; money?: boolean }) {
   return (
@@ -43,21 +37,6 @@ export function Activity({
 }) {
   const buckets = me ? Object.keys(me.by_day).sort().slice(-24) : []
   const max = Math.max(1, ...buckets.map((d) => me!.by_day[d].requests))
-  const [running, setRunning] = useState(false)
-  const [demoOut, setDemoOut] = useState<string | null>(null)
-
-  async function handleRun() {
-    setRunning(true)
-    setDemoOut(null)
-    try {
-      const res = await runDemo(DEMO_DATA, DEMO_Q)
-      setDemoOut(`→ "${res.answer}"  (${res.seconds}s)`)
-    } catch (e) {
-      setDemoOut(`✗ ${e instanceof Error ? e.message : 'failed'}`)
-    } finally {
-      setRunning(false)
-    }
-  }
 
   return (
     <div>
@@ -101,7 +80,7 @@ export function Activity({
         <Stat label="Output tokens" value={fmt(me?.output_tokens ?? 0)} />
       </div>
 
-      <div className="mt-7 grid gap-5 xl:grid-cols-[1.55fr_1fr]">
+      <div className="mt-7">
         <Card className="py-5">
           <CardHeader className="px-5">
             <CardTitle className="font-display text-lg">
@@ -142,36 +121,7 @@ export function Activity({
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-[#3a342e] bg-[#211d1a] py-0 text-[#d8d2c8]">
-          <div className="flex items-center gap-1.5 border-b border-white/10 bg-[#26221e] px-4 py-2.5">
-            <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="size-2.5 rounded-full bg-[#febc2e]" />
-            <span className="size-2.5 rounded-full bg-[#28c840]" />
-            <span className="ml-2 font-mono text-[11px] text-white/40">quick start</span>
-            <Button
-              size="sm"
-              onClick={handleRun}
-              disabled={running}
-              className="ml-auto h-7 gap-1.5 bg-[#c96442] px-3 font-mono text-[11px] text-white hover:bg-[#b4533a]"
-            >
-              <Play className="size-3" />
-              {running ? 'Running…' : 'Run it now'}
-            </Button>
-          </div>
-          <pre className="overflow-x-auto p-5 font-mono text-[12.5px] leading-relaxed">
-{`curl https://api.canonn.ai/v1/chat/completions \\
-  -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">YOUR_KEY</b>{`" \\
-  -d '{"model":"canonn-r1","messages":[
-    {"role":"system","content":"YOUR DATA"},
-    {"role":"user","content":"your question"}]}'`}
-{demoOut && (
-  <>
-    {'\n\n'}
-    <span className={demoOut.startsWith('✗') ? 'text-[#e08b6d]' : 'text-[#a9d8bb]'}>{demoOut}</span>
-  </>
-)}
-          </pre>
-        </Card>
+        
       </div>
     </div>
   )

@@ -610,6 +610,7 @@ const io=new IntersectionObserver((es)=>{es.forEach(e=>{
   el.classList.add('in');
   const delay=parseInt(el.style.transitionDelay)||0;
   el.querySelectorAll('.pct[data-target]').forEach(p=>setTimeout(()=>countUp(p),delay+350));
+  setTimeout(()=>{el.style.transitionDelay='0ms'},delay+950);
   io.unobserve(el);
 })},{threshold:.12});
 document.querySelectorAll('.reveal').forEach((el,i)=>{

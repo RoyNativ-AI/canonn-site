@@ -41,8 +41,20 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 @media(max-width:760px){.navlinks{display:none}}
 
 /* hero */
-.hero{padding:168px 0 92px;position:relative;overflow:hidden}
+.hero{padding:150px 0 0;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;top:-18%;left:50%;transform:translateX(-50%);width:min(980px,100%);height:620px;background:radial-gradient(ellipse at center,rgba(201,100,66,.09),transparent 65%);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.hero-grid>*{min-width:0}
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:flex-end;height:100%;min-height:560px}
+.hero-phone{width:min(330px,88%);border-radius:44px;border:1px solid var(--line2);box-shadow:0 8px 24px rgba(31,29,26,.10),0 45px 90px rgba(31,29,26,.22);overflow:hidden;background:#fff;transform:rotate(2deg) translateY(9%)}
+.hero-phone img{display:block;width:100%}
+.hero-pad{padding-bottom:92px}
+@media(max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-visual{min-height:0;margin-top:8px}
+  .hero-phone{width:min(290px,80%);transform:rotate(0) translateY(12%)}
+  .hero-pad{padding-bottom:64px}
+}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);padding:7px 15px;border-radius:999px;margin-bottom:32px}
 .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 10px var(--win)}
 h1{font-family:var(--serif);font-weight:400;font-size:clamp(46px,7vw,92px);line-height:1.01;letter-spacing:-.02em;margin-bottom:26px}
@@ -277,17 +289,24 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
 
 <header class="hero">
   <div class="wrap">
-    <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
-    <h1 class="reveal">The model that<br><em>trusts your data.</em></h1>
-    <p class="lede reveal">Frontier models argue with your documents and answer from memory. Canonn R1 answers from the data you give it — grounded, verbatim, and 100× cheaper. Faithfulness isn't a prompt. It's trained in.</p>
-    <div class="cta-row reveal">
-      <a class="btn btn-p" href="#api">Start with the API</a>
-      <a class="btn btn-s" href="#benchmark">See the benchmark</a>
-    </div>
-    <div class="hero-meta reveal">
-      <span><b>91.8%</b> faithful · enterprise prompt</span>
-      <span><b>2.2×</b> more faithful than GPT-5.6</span>
-      <span><b>OpenAI-compatible</b> · api.canonn.ai</span>
+    <div class="hero-grid">
+      <div class="hero-pad">
+        <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
+        <h1 class="reveal">The model that<br><em>trusts your data.</em></h1>
+        <p class="lede reveal">Frontier models argue with your documents and answer from memory. Canonn R1 answers from the data you give it — grounded, verbatim, and 100× cheaper. Faithfulness isn't a prompt. It's trained in.</p>
+        <div class="cta-row reveal">
+          <a class="btn btn-p" href="#api">Start with the API</a>
+          <a class="btn btn-s" href="#benchmark">See the benchmark</a>
+        </div>
+        <div class="hero-meta reveal">
+          <span><b>91.8%</b> faithful · enterprise prompt</span>
+          <span><b>2.2×</b> more faithful than GPT-5.6</span>
+          <span><b>OpenAI-compatible</b> · api.canonn.ai</span>
+        </div>
+      </div>
+      <div class="hero-visual reveal">
+        <div class="hero-phone"><img src="assets/chat_light.png" alt="Canonn on iPhone — a complete, grounded answer with its cited source"></div>
+      </div>
     </div>
   </div>
 </header>

@@ -40,36 +40,37 @@ a{color:inherit;text-decoration:none}
 @media(max-width:900px){#auth{grid-template-columns:1fr}.auth-visual{display:none}}
 
 /* shell */
-#shell{display:none;grid-template-columns:230px 1fr;min-height:100vh}
-aside{border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-aside .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:16px;padding:0 10px;margin-bottom:28px}
-aside .brand img{width:26px;height:26px;border-radius:7px}
+#shell{display:none;grid-template-columns:250px 1fr;min-height:100vh}
+aside{border-right:1px solid var(--line);background:var(--bg2);padding:26px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+aside .brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:600;font-size:18px;padding:0 12px;margin-bottom:32px}
+aside .brand img{width:32px;height:32px;border-radius:8px}
 aside nav{display:flex;flex-direction:column;gap:4px}
-aside nav button{display:flex;align-items:center;gap:11px;background:none;border:0;color:var(--mute);font-family:var(--sans);font-size:14px;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left;transition:.18s}
+aside nav button{display:flex;align-items:center;gap:12px;background:none;border:0;color:var(--mute);font-family:var(--sans);font-size:14.5px;font-weight:500;padding:12px 14px;border-radius:12px;cursor:pointer;text-align:left;transition:.18s;width:100%}
 aside nav button:hover{color:var(--ink);background:rgba(31,29,26,.05)}
 aside nav button.on{color:var(--accent);background:rgba(201,100,66,.10);font-weight:600}
-aside nav button .ic{font-family:var(--mono);font-size:13px;width:18px;text-align:center;opacity:.8}
+aside nav button .ic{display:flex;align-items:center;opacity:.85}
 aside .foot{margin-top:auto;border-top:1px solid var(--line);padding-top:14px}
-aside .userchip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:13px;color:var(--mute);overflow:hidden}
+aside .userchip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;font-size:13px;color:var(--ink);overflow:hidden;background:var(--bg)}
+aside .userchip .av{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:0 0 auto}
 aside .userchip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 aside .signout{background:none;border:0;color:var(--mute);font-family:var(--mono);font-size:11px;cursor:pointer;padding:6px 10px}
 aside .signout:hover{color:var(--lose)}
-main{padding:34px 40px;max-width:1060px;min-width:0}
-h1{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.02em;margin-bottom:4px}
-.sub{color:var(--mute);font-size:13.5px;margin-bottom:26px}
-h2{font-family:var(--display);font-weight:600;font-size:17px;margin:30px 0 12px}
+main{padding:40px 48px;max-width:940px;min-width:0}
+h1{font-family:var(--display);font-weight:600;font-size:32px;letter-spacing:-.025em;margin-bottom:4px}
+.sub{color:var(--mute);font-size:14.5px;margin-bottom:32px}
+h2{font-family:var(--display);font-weight:600;font-size:19px;margin:36px 0 14px}
 .screen{display:none}
 .screen.on{display:block}
 
 /* stats + chart + tables */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 8px 24px rgba(31,29,26,.05)}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:0 10px 30px rgba(31,29,26,.06)}
 .stat .l{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:7px}
-.stat .v{font-family:var(--display);font-weight:600;font-size:27px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat .v{font-family:var(--display);font-weight:600;font-size:34px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .stat .v.money{color:var(--win)}
-.chart{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(31,29,26,.05)}
-.chart .bars{display:flex;align-items:flex-end;gap:6px;height:120px}
+.chart{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(31,29,26,.06)}
+.chart .bars{display:flex;align-items:flex-end;gap:7px;height:150px;border-bottom:1px solid var(--line2);padding-bottom:2px}
 .chart .b{flex:1;background:rgba(201,100,66,.55);border-radius:4px 4px 0 0;min-height:2px;position:relative}
 .chart .b:hover{background:var(--accent)}
 .chart .b .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:5px 9px;font-family:var(--mono);font-size:11px;white-space:nowrap;z-index:5}
@@ -91,8 +92,11 @@ td .mode{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);
 .newkey.show{display:block}
 .newkey .k{color:var(--win);word-break:break-all;font-weight:500}
 .newkey .n{color:var(--mute);font-size:11px;margin-top:6px}
-.quick{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-family:var(--mono);font-size:12px;color:var(--mute);overflow-x:auto;white-space:pre;line-height:1.7}
-.quick b{color:var(--ink);font-weight:500}
+.quick{background:#211d1a;border:1px solid rgba(247,244,238,.14);border-radius:14px;overflow:hidden;box-shadow:0 18px 44px rgba(31,29,26,.18)}
+.quick .qbar{display:flex;align-items:center;gap:7px;padding:12px 15px;border-bottom:1px solid rgba(247,244,238,.08);background:#26221e}
+.quick .qd{width:11px;height:11px;border-radius:50%}
+.quick pre{padding:18px 20px;font-family:var(--mono);font-size:12.5px;color:#d8d2c8;overflow-x:auto;white-space:pre;line-height:1.75}
+.quick b{color:#a9c9a4;font-weight:500}
 .profile-card{background:var(--bg2);box-shadow:0 8px 24px rgba(31,29,26,.05);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:520px}
 .profile-card p{color:var(--mute);font-size:14px;margin-bottom:16px}
 
@@ -133,10 +137,10 @@ td .mode{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);
   <aside>
     <a class="brand" href="/"><img src="/assets/canon-logo.png" alt=""> Canonn</a>
     <nav>
-      <button class="on" data-s="activity"><span class="ic">▦</span> Activity</button>
-      <button data-s="logs"><span class="ic">≡</span> Logs</button>
-      <button data-s="keys"><span class="ic">⚿</span> API keys</button>
-      <button data-s="profile"><span class="ic">◉</span> Profile</button>
+      <button class="on" data-s="activity"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span> Activity</button>
+      <button data-s="logs"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></span> Logs</button>
+      <button data-s="keys"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4.5"/><path d="M11.5 11.5 20 3M16 7l3 3"/></svg></span> API keys</button>
+      <button data-s="profile"><span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4.5"/><path d="M4 21c1.5-3.6 4.5-5.5 8-5.5s6.5 1.9 8 5.5"/></svg></span> Profile</button>
     </nav>
     <div class="foot">
       <div class="userchip"><span id="uemail"></span></div>
@@ -157,11 +161,14 @@ td .mode{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);
       <h2>Requests by day</h2>
       <div class="chart"><div class="bars" id="bars"></div><div class="days" id="days"></div></div>
       <h2>Quick start</h2>
-      <div class="quick"><b>curl</b> https://api.canonn.ai/v1/chat/completions \
+      <div class="quick">
+        <div class="qbar"><span class="qd" style="background:#ff5f57"></span><span class="qd" style="background:#febc2e"></span><span class="qd" style="background:#28c840"></span></div>
+<pre><b>curl</b> https://api.canonn.ai/v1/chat/completions \
   -H "Authorization: Bearer <b>YOUR_KEY</b>" \
   -d '{"model":"canonn-r1","messages":[
     {"role":"system","content":"YOUR DATA HERE"},
-    {"role":"user","content":"your question"}]}'</div>
+    {"role":"user","content":"your question"}]}'</pre>
+      </div>
     </section>
 
     <section class="screen" id="s-logs">
@@ -252,7 +259,9 @@ async function token(){return 'Bearer '+await window.Clerk.session.getToken()}
 
 async function enter(){
   $('auth').style.display='none';$('shell').style.display='grid';
-  $('uemail').textContent=window.Clerk.user.primaryEmailAddress?.emailAddress||'';
+  const em=window.Clerk.user.primaryEmailAddress?.emailAddress||'';
+  $('uemail').textContent=em;
+  document.querySelector('.userchip').insertAdjacentHTML('afterbegin','<span class="av">'+(em[0]||'?').toUpperCase()+'</span>');
   refresh();
 }
 
@@ -269,7 +278,7 @@ async function refresh(){
   $('bars').innerHTML=days.map(d=>{
     const b=u.by_day[d];
     return '<div class="b" style="height:'+(b.requests/max*100)+'%"><span class="tip">'+d+' · '+b.requests+' req · '+fmt(b.pt+b.ct)+' tok</span></div>';
-  }).join('')||'<div style="color:var(--mute);font-family:var(--mono);font-size:12px">No traffic yet. Create a key and make your first call.</div>';
+  }).join('')||Array.from({length:14},(_,i)=>'<div class="b" style="height:'+(8+((i*37)%23))+'%;background:rgba(31,29,26,.07)"><span class="tip">no traffic yet</span></div>').join('');
   $('days').innerHTML=days.map(d=>'<span>'+d.slice(3)+'</span>').join('');
   $('logs').innerHTML=(u.recent||[]).map(r=>{
     const t=new Date(r.ts*1000);

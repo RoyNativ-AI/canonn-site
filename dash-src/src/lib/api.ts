@@ -53,5 +53,11 @@ export const revokeKey = (token: string, name: string) =>
     body: JSON.stringify({ name }),
   })
 
+export const playgroundChat = (token: string, data: string, question: string, mode: 'balanced' | 'extraction') =>
+  request<{ answer: string; mode: string; seconds: number }>('/me/chat', token, {
+    method: 'POST',
+    body: JSON.stringify({ data, question, mode }),
+  })
+
 export const fmt = (n: number) =>
   n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n)

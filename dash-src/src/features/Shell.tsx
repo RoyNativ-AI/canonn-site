@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useClerk, useSession, useUser } from '@clerk/clerk-react'
-import { BarChart3, CreditCard, KeyRound, ScrollText } from 'lucide-react'
+import { BarChart3, CreditCard, KeyRound, MessageSquare, ScrollText } from 'lucide-react'
 import { fetchMe, type Me } from '@/lib/api'
 import { Activity } from '@/features/Activity'
 import { Logs } from '@/features/Logs'
 import { Keys } from '@/features/Keys'
 import { Billing } from '@/features/Billing'
+import { Playground } from '@/features/Playground'
 import { cn } from '@/lib/utils'
 
 const SCREENS = [
+  { id: 'playground', label: 'Playground', icon: MessageSquare },
   { id: 'activity', label: 'Activity', icon: BarChart3 },
   { id: 'logs', label: 'Logs', icon: ScrollText },
   { id: 'keys', label: 'API keys', icon: KeyRound },
@@ -21,7 +23,7 @@ export function Shell() {
   const { user } = useUser()
   const { session } = useSession()
   const { signOut, openUserProfile } = useClerk()
-  const [screen, setScreen] = useState<ScreenId>('activity')
+  const [screen, setScreen] = useState<ScreenId>('playground')
   const [days, setDays] = useState(30)
   const [keyFilter, setKeyFilter] = useState('')
   const [me, setMe] = useState<Me | null>(null)
@@ -92,6 +94,7 @@ export function Shell() {
             {error}
           </div>
         )}
+        {screen === 'playground' && <Playground />}
         {screen === 'activity' && (
           <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} />
         )}

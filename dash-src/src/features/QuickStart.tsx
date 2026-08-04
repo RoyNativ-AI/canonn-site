@@ -27,7 +27,7 @@ export function QuickStart() {
 
   return (
     <Card className="overflow-hidden border-[#3a342e] bg-[#211d1a] py-0 text-[#d8d2c8]">
-      <div className="flex items-center gap-1.5 border-b border-white/10 bg-[#26221e] px-4 py-2.5">
+      <div className="flex items-center gap-1.5 border-b border-white/10 bg-[#26221e] px-3.5 py-2">
         <span className="size-2.5 rounded-full bg-[#ff5f57]" />
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
@@ -36,13 +36,13 @@ export function QuickStart() {
           size="sm"
           onClick={handleRun}
           disabled={running}
-          className="ml-auto h-7 gap-1.5 bg-[#c96442] px-3 font-mono text-[11px] text-white hover:bg-[#b4533a]"
+          className="ml-auto h-6.5 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] text-white hover:bg-[#b4533a]"
         >
           <Play className="size-3" />
           {running ? 'Running…' : 'Run it now'}
         </Button>
       </div>
-      <pre className="overflow-x-auto p-5 font-mono text-[12.5px] leading-relaxed">
+      <pre className="overflow-x-auto px-4 py-3.5 font-mono text-[11.5px] leading-[1.65]">
 {`curl https://api.canonn.ai/v1/chat/completions \\
   -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">YOUR_KEY</b>{`" \\
   -d '{"model":"canonn-r1","messages":[

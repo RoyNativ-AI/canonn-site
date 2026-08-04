@@ -118,7 +118,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .sec-lede{font-size:18px;color:var(--ink-soft);max-width:660px;margin-bottom:12px}
 
 /* ===== full-bleed dark product showcase ===== */
-.showcase{background:var(--dark);color:var(--dark-ink);padding:110px 0 0;position:relative;overflow:hidden}
+.showcase{background:var(--dark);color:var(--dark-ink);padding:110px 0 36px;position:relative;overflow:hidden}
 
 .showcase .tag{color:var(--dark-mute)}
 .showcase h2{color:var(--dark-ink)}
@@ -164,7 +164,8 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .phone-solo{width:min(300px,70%);margin:0 auto;border-radius:40px;border:1px solid var(--dark-line2);box-shadow:0 40px 90px rgba(0,0,0,.55);overflow:hidden;background:#000;transform:translateY(14%)}
 .phone-solo img{display:block;width:100%}
 /* desktop split section (North-style, window bleeding off the right) */
-.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:130px 0}
+.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:120px 0;min-height:820px;display:flex;align-items:center}
+.desk>.wrap{width:100%}
 .desk .tag{color:var(--dark-mute)}
 .desk h2{color:var(--dark-ink)}
 .desk p{color:var(--dark-mute);font-size:16.5px;max-width:420px;margin-bottom:26px}
@@ -174,7 +175,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .desk ul.feat .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
 .desk ul.feat span{color:var(--dark-mute)}
 .desk ul.feat b{color:var(--dark-ink);font-weight:500}
-.desk-shot{position:absolute;top:50%;transform:translateY(-50%);right:-16%;width:60%;z-index:1}
+.desk-shot{position:absolute;top:50%;transform:translateY(-50%);right:-14%;width:56%;z-index:1}
 @media(max-width:1100px){.desk-shot{right:-28%;width:70%}}
 @media(max-width:860px){
   .desk{padding:80px 0 0}
@@ -276,6 +277,29 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .macwin .cursor{display:inline-block;width:8px;height:15px;background:#5aa877;vertical-align:text-bottom;animation:blink 1.1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 
+/* animated "grounded highlights" moment */
+.anim{background:linear-gradient(135deg,#1d1410 0%,#171412 60%,#12100e 100%);position:relative;overflow:hidden;padding:110px 0}
+.anim::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(201,100,66,.22),transparent 70%);top:-160px;left:-120px;filter:blur(10px)}
+.anim::after{content:"";position:absolute;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(63,125,84,.16),transparent 70%);bottom:-140px;right:-100px;filter:blur(10px)}
+.anim .tag{color:var(--dark-mute)}
+.anim h2{color:var(--dark-ink)}
+.anim h2 em{color:var(--accent-soft);font-style:normal}
+.anim .sec-lede{color:var(--dark-mute)}
+.apanel{position:relative;max-width:760px;margin:52px auto 0;background:#211d1a;border:1px solid var(--dark-line2);border-radius:18px;padding:34px 38px;min-height:240px;box-shadow:0 40px 90px rgba(0,0,0,.5);z-index:2}
+.apanel .aq{font-family:var(--mono);font-size:12px;color:var(--dark-mute);margin-bottom:16px}
+.apanel .atype{font-size:16.5px;line-height:1.75;color:var(--dark-ink);transition:filter .7s ease,opacity .7s ease;min-height:120px}
+.apanel .atype b{color:#a9d8bb;font-weight:500}
+.apanel.blurred .atype{filter:blur(5px);opacity:.45}
+.apanel .caret{display:inline-block;width:8px;height:17px;background:#7fc79a;vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+.achip{position:absolute;background:#fdfdfc;color:#1f1d1a;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:500;box-shadow:0 18px 50px rgba(0,0,0,.45);display:flex;align-items:center;gap:9px;opacity:0;transform:translateY(14px) scale(.96);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1);z-index:3;white-space:nowrap}
+.achip .ct{color:var(--win);font-family:var(--mono)}
+.achip .cp{font-family:var(--mono);font-size:10.5px;color:var(--mute);font-weight:400}
+.achip.show{opacity:1;transform:none}
+.achip.c1{top:24%;left:6%}
+.achip.c2{top:48%;right:7%}
+.achip.c3{top:72%;left:22%}
+@media(max-width:700px){.apanel{padding:24px}.achip{font-size:12px;padding:9px 12px}.achip .cp{display:none}.achip.c1{left:3%}.achip.c2{right:3%}.achip.c3{left:10%}}
+@media (prefers-reduced-motion: reduce){.apanel .caret{display:none}}
 /* how */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
 @media(max-width:720px){.steps{grid-template-columns:1fr}}
@@ -464,10 +488,7 @@ The Starter plan includes community support only.</textarea>
       <div class="grow"><div class="gname">GPT-5.6</div><div class="gtrack"><div class="gfill" style="--w:60.2%"></div></div><div class="gval">60.2%</div></div>
     </div>
   </div>
-  <div class="stage reveal">
-    <div class="phone-solo"><img src="assets/chat_dark.png" alt="Canonn on iPhone — a grounded answer with its cited source"></div>
-  </div>
-  <div class="showcase-tail"></div>
+
 </div>
 
 <div class="desk" id="desktop">
@@ -582,6 +603,21 @@ The Starter plan includes community support only.</textarea>
     </div>
   </div>
 </section>
+
+<div class="anim">
+  <div class="wrap">
+    <div class="tag reveal">In practice</div>
+    <h2 class="reveal">Every phrase, <em>accountable.</em></h2>
+    <p class="sec-lede reveal">Watch an answer form — and every fact in it trace back to a passage in your data.</p>
+    <div class="apanel reveal" id="apanel">
+      <div class="aq">Q: What did priority support cost us to promise?</div>
+      <div class="atype" id="atype"></div>
+      <div class="achip c1" id="ac1"><span class="ct">✓</span> 4-hour response <span class="cp">passage 2</span></div>
+      <div class="achip c2" id="ac2"><span class="ct">✓</span> dedicated engineer <span class="cp">passage 2</span></div>
+      <div class="achip c3" id="ac3"><span class="ct">✓</span> complete list — 3 of 3 plans <span class="cp">✓ verified</span></div>
+    </div>
+  </div>
+</div>
 
 <section id="benchmark">
   <div class="wrap">
@@ -802,6 +838,36 @@ const io=new IntersectionObserver((es)=>{es.forEach(e=>{
   setTimeout(()=>{el.style.transitionDelay='0ms'},delay+950);
   io.unobserve(el);
 })},{threshold:.12});
+(function(){
+  const panel=document.getElementById('apanel'),out=document.getElementById('atype');
+  if(!panel)return;
+  const chips=[1,2,3].map(i=>document.getElementById('ac'+i));
+  const TEXT='Three plans include priority support: Pro with 24-hour email, Business with a <b>4-hour response</b>, and Enterprise with a <b>dedicated engineer</b> on a 1-hour SLA.';
+  const reducedA=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function typeLoop(){
+    if(reducedA){out.innerHTML=TEXT;panel.classList.add('blurred');chips.forEach(c=>c.classList.add('show'));return}
+    panel.classList.remove('blurred');chips.forEach(c=>c.classList.remove('show'));
+    out.innerHTML='';let i=0;
+    const plain=TEXT;let buf='';
+    const t=setInterval(()=>{
+      buf=plain.slice(0,i);
+      // never cut inside a tag
+      const open=buf.lastIndexOf('<'),close=buf.lastIndexOf('>');
+      out.innerHTML=(open>close?plain.slice(0,open):buf)+'<span class="caret"></span>';
+      i+=2;
+      if(i>plain.length+1){
+        clearInterval(t);
+        out.innerHTML=plain;
+        setTimeout(()=>{panel.classList.add('blurred');
+          chips.forEach((c,j)=>setTimeout(()=>c.classList.add('show'),350+j*420));
+          setTimeout(typeLoop,5200);
+        },900);
+      }
+    },28);
+  }
+  const aio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){typeLoop();aio.disconnect()}})},{threshold:.4});
+  aio.observe(panel);
+})();
 const pgo=document.getElementById('pgo'),pq=document.getElementById('pq'),
       pdata=document.getElementById('pdata'),parea=document.getElementById('parea'),
       pans=document.getElementById('pans'),psec=document.getElementById('psec');

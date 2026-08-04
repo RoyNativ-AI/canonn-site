@@ -164,22 +164,24 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .phone-solo{width:min(300px,70%);margin:0 auto;border-radius:40px;border:1px solid var(--dark-line2);box-shadow:0 40px 90px rgba(0,0,0,.55);overflow:hidden;background:#000;transform:translateY(14%)}
 .phone-solo img{display:block;width:100%}
 /* desktop split section (North-style, window bleeding off the right) */
-.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:120px 0;min-height:820px;display:flex;align-items:center}
-.desk>.wrap{width:100%}
+.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:110px 0}
+.desk-grid{display:grid;grid-template-columns:minmax(320px,470px) 1fr;gap:64px;align-items:center;padding-left:max(32px,calc((100vw - 1120px)/2))}
 .desk .tag{color:var(--dark-mute)}
 .desk h2{color:var(--dark-ink)}
 .desk p{color:var(--dark-mute);font-size:16.5px;max-width:420px;margin-bottom:26px}
-.desk-copy{max-width:440px;position:relative;z-index:2}
+.desk-copy{position:relative;z-index:2}
 .desk ul.feat{list-style:none;display:flex;flex-direction:column;gap:13px;margin:0 0 32px}
 .desk ul.feat li{display:flex;gap:11px;font-size:14.5px;align-items:baseline}
 .desk ul.feat .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
 .desk ul.feat span{color:var(--dark-mute)}
 .desk ul.feat b{color:var(--dark-ink);font-weight:500}
-.desk-shot{position:absolute;top:50%;transform:translateY(-50%);right:-14%;width:56%;z-index:1}
-@media(max-width:1100px){.desk-shot{right:-28%;width:70%}}
+.desk-shot{width:112%;min-width:0}
+.desk-shot .macapp{border-radius:16px 0 0 16px}
+.desk-shot .macapp .bar{border-radius:16px 0 0 0}
 @media(max-width:860px){
-  .desk{padding:80px 0 0;min-height:0;display:block}
-  .desk-shot{position:static;transform:none;width:112%;margin:44px 0 0 8%}
+  .desk{padding:80px 0}
+  .desk-grid{grid-template-columns:1fr;gap:40px;padding:0 20px}
+  .desk-shot{width:116%}
 }
 /* problem */
 .prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:50px}
@@ -334,6 +336,32 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .plan.featured .tick{filter:brightness(1.6)}
 .plan .btn{margin-top:auto;text-align:center}
 
+/* head-to-head simulator */
+.sim-kb{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 22px;font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin:44px 0 22px;line-height:1.8}
+.sim-kb .kbt{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;font-family:var(--mono)}
+.sim-kb b{color:var(--ink);font-weight:500}
+.simq{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.simq button{font-size:14px;font-family:var(--sans);border:1px solid var(--line2);background:var(--panel);border-radius:12px;padding:12px 18px;cursor:pointer;color:var(--ink-soft);transition:.25s;text-align:left}
+.simq button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.simq button .ql{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;opacity:.65}
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.sim-grid{grid-template-columns:1fr}}
+.sim-card{border-radius:16px;padding:24px;border:1px solid var(--line2);background:var(--panel);min-height:190px;display:flex;flex-direction:column}
+.sim-card.ours{border-color:rgba(63,125,84,.45);box-shadow:0 20px 50px rgba(63,125,84,.10)}
+.sim-card .sh{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px;margin-bottom:14px}
+.sim-card .sh img{width:20px;height:20px;border-radius:5px}
+.sim-card .sa{font-size:15px;color:var(--ink);line-height:1.65;flex:1;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
+.sim-card .sa.show{opacity:1;transform:none}
+.sim-card .sv{margin-top:16px;font-family:var(--mono);font-size:12px;display:flex;gap:8px;align-items:baseline;opacity:0;transition:opacity .5s ease .35s}
+.sim-card .sv.show{opacity:1}
+.sim-card .sv.good{color:var(--win)}
+.sim-card .sv.bad{color:var(--lose)}
+.sim-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:760px){.sim-steps{grid-template-columns:1fr}}
+.sim-step{border-top:2px solid var(--line2);padding-top:14px}
+.sim-step .sn{font-family:var(--mono);font-size:11px;color:var(--win);letter-spacing:.1em;margin-bottom:6px}
+.sim-step h4{font-size:15.5px;font-weight:600;margin-bottom:5px}
+.sim-step p{font-size:13.5px;color:var(--mute);margin:0}
 /* pull quote */
 .pull{padding:120px 0;text-align:center;border-top:1px solid var(--line)}
 .pull blockquote{font-family:var(--serif);font-size:clamp(28px,4vw,44px);line-height:1.2;letter-spacing:-.01em;max-width:820px;margin:0 auto;color:var(--ink)}
@@ -498,7 +526,7 @@ The Starter plan includes community support only.</textarea>
 </div>
 
 <div class="desk" id="desktop">
-  <div class="wrap">
+  <div class="desk-grid">
     <div class="desk-copy">
       <div class="tag reveal">The workspace</div>
       <h2 class="reveal">Desktop-class,<br>on every screen.</h2>
@@ -510,11 +538,11 @@ The Starter plan includes community support only.</textarea>
       </ul>
       <div class="cta-row reveal"><a class="btn btn-dark" href="#api">Build with the API</a></div>
     </div>
-  </div>
-  <div class="desk-shot reveal">
+    <div class="desk-shot reveal">
     <div class="macapp">
       <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><div class="title">Canonn — Priority support plans</div></div>
       <img src="assets/desktop_dark.png" alt="Canonn on desktop — sidebar with Chat, Knowledge and Settings; a grounded answer with its cited source">
+    </div>
     </div>
   </div>
 </div>
@@ -710,15 +738,41 @@ The Starter plan includes community support only.</textarea>
   </div>
 </div>
 
-<section id="how" style="border-top:none">
+<section id="how">
   <div class="wrap">
     <div class="tag reveal">How it works</div>
-    <h2 class="reveal">Faithfulness, trained in — not prompted on.</h2>
-    <p class="sec-lede reveal">Canonn is a three-stage system that reads retrieved data, keeps only what answers the question, and responds from it — in one turn or across a conversation.</p>
-    <div class="steps">
-      <div class="step reveal"><div class="s">STAGE 01 · ROUTE</div><h4>Know when data matters</h4><p>A lightweight router decides whether a question needs the retrieved data or is ordinary conversation — so the faithful core only runs when it should.</p></div>
-      <div class="step reveal"><div class="s">STAGE 02 · GROUND</div><h4>Answer from the data</h4><p>The trained core obeys the retrieved passages over its own priors, filters out irrelevant chunks, and never invents beyond what's provided.</p></div>
-      <div class="step reveal"><div class="s">STAGE 03 · CONVERSE</div><h4>Hold the thread</h4><p>It answers the actual question in context — first message or deep in a conversation — carrying history without losing faithfulness to the source.</p></div>
+    <h2 class="reveal">Two models. One knowledge base.<br>Ask both.</h2>
+    <p class="sec-lede reveal">Both models see the exact same three passages. Pick a question — including one the data can't answer — and watch the difference.</p>
+
+    <div class="sim-kb reveal">
+      <div class="kbt">The knowledge base — all either model gets</div>
+      1 · SSO is included in the <b>Business</b> plan and above.<br>
+      2 · Priority support: Pro — 24h email · Business — 4h chat · Enterprise — <b>1h SLA</b>.<br>
+      3 · Customer data is stored in <b>EU data centers (Frankfurt)</b>.
+    </div>
+
+    <div class="simq reveal">
+      <button class="on" data-s="0"><span class="ql">In the data</span>Where is my data stored?</button>
+      <button data-s="1"><span class="ql">Not in the data</span>Do you offer phone support?</button>
+    </div>
+
+    <div class="sim-grid reveal">
+      <div class="sim-card ours">
+        <div class="sh"><img src="assets/canon-logo.png" alt=""> Canonn R1</div>
+        <div class="sa" id="simA"></div>
+        <div class="sv good" id="simAv"></div>
+      </div>
+      <div class="sim-card">
+        <div class="sh">Typical LLM</div>
+        <div class="sa" id="simB"></div>
+        <div class="sv bad" id="simBv"></div>
+      </div>
+    </div>
+
+    <div class="sim-steps">
+      <div class="sim-step reveal"><div class="sn">01 · INGEST</div><h4>Your docs become passages</h4><p>Policies, help centers, contracts — split into retrievable passages with their source kept attached.</p></div>
+      <div class="sim-step reveal"><div class="sn">02 · GROUND</div><h4>Trained to obey the data</h4><p>The core model is trained — not prompted — to answer only from retrieved passages, even against its own memory.</p></div>
+      <div class="sim-step reveal"><div class="sn">03 · PROVE</div><h4>Cite or decline</h4><p>Every answer carries its passage. No passage? It says "not in the data" instead of inventing something generic.</p></div>
     </div>
   </div>
 </section>
@@ -899,6 +953,32 @@ async function askCanonn(){
 pgo.addEventListener('click',askCanonn);
 pq.addEventListener('keydown',e=>{if(e.key==='Enter')askCanonn()});
 document.querySelectorAll('.sugg button').forEach(b=>b.addEventListener('click',()=>{pq.value=b.dataset.q;askCanonn()}));
+(function(){
+  const SIMS=[
+    {a:'Your data is stored in EU data centers, in Frankfurt.',av:'✓ grounded — passage 3',
+     b:'"Your data is stored securely in the cloud across multiple global regions, with industry-standard encryption…"',bv:'✗ generic answer from memory — your docs say Frankfurt'},
+    {a:'That isn\u2019t in the provided knowledge. The plans include email and chat support only.',av:'✓ honest — no matching passage, so it declines',
+     b:'"Yes! Our 24/7 phone support team is happy to help — call us at 1-800-555-0123."',bv:'✗ invented a phone line that doesn\u2019t exist'}
+  ];
+  const A=document.getElementById('simA'),B=document.getElementById('simB'),
+        Av=document.getElementById('simAv'),Bv=document.getElementById('simBv');
+  if(!A)return;
+  function show(i){
+    [A,B,Av,Bv].forEach(e=>e.classList.remove('show'));
+    setTimeout(()=>{
+      A.textContent=SIMS[i].a;Av.textContent=SIMS[i].av;
+      B.textContent=SIMS[i].b;Bv.textContent=SIMS[i].bv;
+      A.classList.add('show');Av.classList.add('show');
+      setTimeout(()=>{B.classList.add('show');Bv.classList.add('show')},450);
+    },220);
+  }
+  document.querySelectorAll('.simq button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.simq button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');show(parseInt(b.dataset.s));
+  }));
+  const sio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){show(0);sio.disconnect()}})},{threshold:.3});
+  sio.observe(A);
+})();
 document.querySelectorAll('.caplist .cap').forEach(cap=>{
   cap.addEventListener('click',()=>{
     document.querySelectorAll('.caplist .cap').forEach(c=>c.classList.remove('active'));

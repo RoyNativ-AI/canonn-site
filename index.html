@@ -160,6 +160,26 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 /* light strip below stage to receive the phone overlap */
 .showcase-tail{background:var(--bg);height:120px;margin-top:0}
 
+/* phone solo in showcase */
+.phone-solo{width:min(300px,70%);margin:0 auto;border-radius:40px;border:1px solid var(--dark-line2);box-shadow:0 40px 90px rgba(0,0,0,.55);overflow:hidden;background:#000;transform:translateY(14%)}
+.phone-solo img{display:block;width:100%}
+/* desktop split section (North-style, window bleeding off the right) */
+.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:130px 0}
+.desk .tag{color:var(--dark-mute)}
+.desk h2{color:var(--dark-ink)}
+.desk p{color:var(--dark-mute);font-size:16.5px;max-width:420px;margin-bottom:26px}
+.desk-copy{max-width:440px;position:relative;z-index:2}
+.desk ul.feat{list-style:none;display:flex;flex-direction:column;gap:13px;margin:0 0 32px}
+.desk ul.feat li{display:flex;gap:11px;font-size:14.5px;align-items:baseline}
+.desk ul.feat .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
+.desk ul.feat span{color:var(--dark-mute)}
+.desk ul.feat b{color:var(--dark-ink);font-weight:500}
+.desk-shot{position:absolute;top:50%;transform:translateY(-50%);right:-16%;width:60%;z-index:1}
+@media(max-width:1100px){.desk-shot{right:-28%;width:70%}}
+@media(max-width:860px){
+  .desk{padding:80px 0 0}
+  .desk-shot{position:static;transform:none;width:112%;margin:44px 0 0 8%}
+}
 /* problem */
 .prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:50px}
 @media(max-width:720px){.prob-grid{grid-template-columns:1fr}}
@@ -445,13 +465,31 @@ The Starter plan includes community support only.</textarea>
     </div>
   </div>
   <div class="stage reveal">
+    <div class="phone-solo"><img src="assets/chat_dark.png" alt="Canonn on iPhone — a grounded answer with its cited source"></div>
+  </div>
+  <div class="showcase-tail"></div>
+</div>
+
+<div class="desk" id="desktop">
+  <div class="wrap">
+    <div class="desk-copy">
+      <div class="tag reveal">The workspace</div>
+      <h2 class="reveal">Desktop-class,<br>on every screen.</h2>
+      <p class="reveal">Chat, Knowledge and Settings side by side — manage your sources, watch passage counts update, and trace every answer back to the exact line it came from.</p>
+      <ul class="feat reveal">
+        <li><span class="tick">✓</span><span><b>Sources at a glance</b> — passages, size and status per document</span></li>
+        <li><span class="tick">✓</span><span><b>Scoped conversations</b> — point a chat at exactly the sources it should use</span></li>
+        <li><span class="tick">✓</span><span><b>Same engine as the API</b> — what you test here is what you ship</span></li>
+      </ul>
+      <div class="cta-row reveal"><a class="btn btn-dark" href="#api">Build with the API</a></div>
+    </div>
+  </div>
+  <div class="desk-shot reveal">
     <div class="macapp">
       <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><div class="title">Canonn — Priority support plans</div></div>
       <img src="assets/desktop_dark.png" alt="Canonn on desktop — sidebar with Chat, Knowledge and Settings; a grounded answer with its cited source">
     </div>
-    <div class="phone"><img src="assets/chat_dark.png" alt="Canonn on iPhone — the same grounded answer with cited source"></div>
   </div>
-  <div class="showcase-tail"></div>
 </div>
 
 <section id="problem" style="border-top:none;padding-top:40px">

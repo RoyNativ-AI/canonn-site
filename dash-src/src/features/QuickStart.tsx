@@ -8,6 +8,7 @@ import { runDemo } from '@/lib/api'
 const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 
 export function QuickStart() {
+  const [apiKey, setApiKey] = useState('')
   const [data, setData] = useState('SSO is included in the Business plan and above.')
   const [question, setQuestion] = useState('Does Business include SSO?')
   const [running, setRunning] = useState(false)
@@ -18,8 +19,27 @@ export function QuickStart() {
     setRunning(true)
     setOut(null)
     try {
-      const res = await runDemo(data, question)
-      setOut(`→ "${res.answer}"  (${res.seconds}s)`)
+      let res: { answer: string; seconds: number }
+      if (apiKey.trim()) {
+        const t0 = performance.now()
+        const r = await fetch('https://api.canonn.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey.trim()}` },
+          body: JSON.stringify({
+            model: 'canonn-r1',
+            messages: [
+              { role: 'system', content: data },
+              { role: 'user', content: question },
+            ],
+          }),
+        })
+        const b = await r.json()
+        if (!r.ok) throw new Error(b.error ?? `request failed (${r.status})`)
+        res = { answer: b.choices[0].message.content, seconds: Math.round((performance.now() - t0) / 100) / 10 }
+      } else {
+        res = await runDemo(data, question)
+      }
+      setOut(`→ "${res.answer}"  (${res.seconds}s${apiKey.trim() ? ' · your key' : ' · demo'})`)
     } catch (e) {
       setOut(`✗ ${e instanceof Error ? e.message : 'failed'}`)
     } finally {
@@ -40,6 +60,17 @@ export function QuickStart() {
             rows={4}
             className="w-full resize-none rounded-xl border border-input bg-card p-3 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
             placeholder="The knowledge to answer from…"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+            API key <span className="normal-case tracking-normal">(optional, paste to run with your key)</span>
+          </label>
+          <Input
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="canonn-sk-…"
+            className="bg-card font-mono text-xs"
           />
         </div>
         <div>
@@ -73,7 +104,7 @@ export function QuickStart() {
         </div>
         <pre className="overflow-x-auto px-4 py-3.5 font-mono text-[11.5px] leading-[1.65]">
 {`curl https://api.canonn.ai/v1/chat/completions \\
-  -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">YOUR_KEY</b>{`" \\
+  -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">{apiKey.trim() || 'YOUR_KEY'}</b>{`" \\
   -d '{"model":"canonn-r1","messages":[
     {"role":"system","content":"`}<span className="text-[#e8b39e]">{esc(data) || 'YOUR DATA'}</span>{`"},
     {"role":"user","content":"`}<span className="text-[#e8b39e]">{esc(question) || 'your question'}</span>{`"}]}'`}

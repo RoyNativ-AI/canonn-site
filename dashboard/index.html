@@ -20,11 +20,24 @@ a{color:inherit;text-decoration:none}
 .btn:hover{transform:translateY(-1px)}
 .err{color:var(--lose);font-family:var(--mono);font-size:12px;margin-top:10px;min-height:16px}
 
-/* login */
-.login{max-width:420px;margin:16vh auto;background:var(--bg2);box-shadow:0 24px 60px rgba(31,29,26,.10);border:1px solid var(--line);border-radius:16px;padding:34px;text-align:center}
-.login img{width:52px;height:52px;border-radius:13px;margin-bottom:16px}
-.login h1{font-family:var(--display);font-weight:600;font-size:24px;margin-bottom:6px}
-.login p{color:var(--mute);font-size:14px;margin-bottom:22px}
+/* split auth screen */
+#auth{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.auth-form{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;position:relative}
+.auth-form .brand{position:absolute;top:26px;left:32px;display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:17px}
+.auth-form .brand img{width:28px;height:28px;border-radius:7px}
+#clerk-signin{width:100%;max-width:400px;display:flex;justify-content:center}
+.auth-visual{position:relative;background:linear-gradient(135deg,#26190f 0%,#171412 60%);overflow:hidden;display:flex;align-items:center;justify-content:center}
+#authstars{position:absolute;inset:0;width:100%;height:100%}
+.av-inner{position:relative;z-index:2;max-width:420px;padding:40px}
+.av-quote{font-family:var(--display);font-weight:600;font-size:clamp(30px,3vw,40px);line-height:1.1;letter-spacing:-.03em;color:#f3efe8;margin-bottom:34px}
+.av-quote em{font-style:normal;color:var(--accent-soft)}
+.av-card{background:#fdfdfc;border-radius:16px;padding:22px 24px;box-shadow:0 40px 90px rgba(0,0,0,.5)}
+.avc-head{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;margin-bottom:8px}
+.avc-chip{font-family:var(--mono);font-size:10px;background:rgba(63,125,84,.13);color:var(--win);border-radius:999px;padding:3px 9px;font-weight:500}
+.av-card p{color:#403c36;font-size:14.5px;margin-bottom:14px}
+.avc-score{font-family:var(--mono);font-size:30px;font-weight:500;color:var(--win);display:flex;align-items:baseline;gap:10px}
+.avc-score span{font-size:11px;color:#7c766c}
+@media(max-width:900px){#auth{grid-template-columns:1fr}.auth-visual{display:none}}
 
 /* shell */
 #shell{display:none;grid-template-columns:230px 1fr;min-height:100vh}
@@ -97,12 +110,23 @@ td .mode{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line2);
 </head>
 <body>
 
-<div class="login" id="login">
-  <img src="/assets/canon-logo.png" alt="">
-  <h1>Canonn Dashboard</h1>
-  <p>Sign in to manage your API keys and see your usage.</p>
-  <button class="btn" id="clerkbtn" onclick="clerkSignIn()" style="width:100%">Sign in / Sign up</button>
-  <div class="err" id="loginerr"></div>
+<div id="auth">
+  <div class="auth-form">
+    <a class="brand" href="/"><img src="/assets/canon-logo.png" alt=""> Canonn</a>
+    <div id="clerk-signin"></div>
+    <div class="err" id="loginerr"></div>
+  </div>
+  <div class="auth-visual" aria-hidden="true">
+    <canvas id="authstars"></canvas>
+    <div class="av-inner">
+      <div class="av-quote">The model that<br><em>trusts your data.</em></div>
+      <div class="av-card">
+        <div class="avc-head">Canonn R1 <span class="avc-chip">✓ grounded in your data</span></div>
+        <p>"Yes, SSO is included in the Business plan."</p>
+        <div class="avc-score">91.8%<span>grounded · production prompt</span></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="shell">
@@ -187,17 +211,36 @@ let clerkReady=false;
   s.setAttribute('data-clerk-publishable-key',CLERK_PK);
   s.async=true;
   s.onload=async()=>{try{await window.Clerk.load();clerkReady=true;
-    if(window.Clerk.user){enter()}}catch(e){$('loginerr').textContent='Could not load sign-in. Refresh to retry.'}};
+    if(window.Clerk.user){enter()}
+    else{window.Clerk.mountSignIn($('clerk-signin'),{
+      afterSignInUrl:'/dashboard/',afterSignUpUrl:'/dashboard/',
+      appearance:{variables:{colorPrimary:'#c96442',colorText:'#1f1d1a',
+        colorBackground:'#ffffff',borderRadius:'12px',
+        fontFamily:"'Schibsted Grotesk',sans-serif"}}});}
+  }catch(e){$('loginerr').textContent='Could not load sign-in. Refresh to retry.'}};
   s.onerror=()=>{$('loginerr').textContent='Sign-in service unreachable. Refresh to retry.'};
   document.head.appendChild(s);
 })();
 
-function clerkSignIn(){
-  if(!clerkReady)return;
-  if(window.Clerk.user)return enter();
-  window.Clerk.openSignIn({afterSignInUrl:'/dashboard/',afterSignUpUrl:'/dashboard/'});
-}
 async function logout(){if(clerkReady&&window.Clerk.user){await window.Clerk.signOut()}location.reload()}
+(function(){
+  const cv=$('authstars');
+  if(!cv||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cx=cv.getContext('2d');let W,H,ps;
+  function size(){W=cv.width=cv.offsetWidth*devicePixelRatio;H=cv.height=cv.offsetHeight*devicePixelRatio}
+  function seed(){ps=Array.from({length:60},()=>({x:Math.random()*W,y:Math.random()*H,
+    r:(Math.random()*1.2+0.5)*devicePixelRatio,v:(Math.random()*0.2+0.05)*devicePixelRatio,
+    a:Math.random()*0.25+0.08,warm:Math.random()<0.5}))}
+  size();seed();addEventListener('resize',()=>{size();seed()});
+  (function tick(){
+    if(!cv.offsetParent){requestAnimationFrame(tick);return}
+    cx.clearRect(0,0,W,H);
+    for(const p of ps){p.y+=p.v;if(p.y>H+4){p.y=-4;p.x=Math.random()*W}
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);
+      cx.fillStyle=p.warm?'rgba(232,179,158,'+p.a+')':'rgba(247,244,238,'+p.a*0.5+')';cx.fill()}
+    requestAnimationFrame(tick);
+  })();
+})();
 
 document.querySelectorAll('aside nav button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('aside nav button').forEach(x=>x.classList.remove('on'));
@@ -208,7 +251,7 @@ document.querySelectorAll('aside nav button').forEach(b=>b.addEventListener('cli
 async function token(){return 'Bearer '+await window.Clerk.session.getToken()}
 
 async function enter(){
-  $('login').style.display='none';$('shell').style.display='grid';
+  $('auth').style.display='none';$('shell').style.display='grid';
   $('uemail').textContent=window.Clerk.user.primaryEmailAddress?.emailAddress||'';
   refresh();
 }

@@ -126,7 +126,12 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                 <TableCell className="font-medium">{k.name}</TableCell>
                 <TableCell className="font-mono text-xs text-muted-foreground">{k.prefix}</TableCell>
                 <TableCell className="font-mono text-xs">
-                  {k.created ? new Date(k.created * 1000).toLocaleDateString() : '·'}
+                  {k.created
+                    ? new Date(k.created * 1000).toLocaleString(undefined, {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+                      })
+                    : '·'}
                 </TableCell>
                 <TableCell className="text-right">
                   {isAdmin && <AlertDialog>

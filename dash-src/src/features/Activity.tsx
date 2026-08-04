@@ -32,13 +32,15 @@ function Stat({ label, value, money }: { label: string; value: string; money?: b
 }
 
 export function Activity({
-  me, days, setDays, keyFilter, setKeyFilter,
+  me, days, setDays, keyFilter, setKeyFilter, range, setRange,
 }: {
   me: Me | null
   days: number
   setDays: (d: number) => void
   keyFilter: string
   setKeyFilter: (k: string) => void
+  range: { from: string; to: string }
+  setRange: (r: { from: string; to: string }) => void
 }) {
   const buckets = me ? Object.keys(me.by_day).sort().slice(-24) : []
   const max = Math.max(1, ...buckets.map((d) => me!.by_day[d].requests))
@@ -67,7 +69,7 @@ export function Activity({
             {RANGES.map((r) => (
               <button
                 key={r.days}
-                onClick={() => setDays(r.days)}
+                onClick={() => { setRange({ from: '', to: '' }); setDays(r.days) }}
                 className={cn(
                   'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
                   days === r.days ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
@@ -81,43 +83,55 @@ export function Activity({
                 <button
                   className={cn(
                     'flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
-                    !RANGES.some((r) => r.days === days)
+                    range.from || range.to || !RANGES.some((r) => r.days === days)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   <CalendarRange className="size-3.5" />
-                  {!RANGES.some((r) => r.days === days) ? `${days}d` : 'Custom'}
+                  {range.from || range.to
+                    ? `${range.from || '…'} → ${range.to || 'now'}`
+                    : !RANGES.some((r) => r.days === days)
+                      ? `${days}d`
+                      : 'Custom'}
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-64">
+              <PopoverContent align="end" className="w-72">
                 <div className="space-y-3">
-                  <div>
-                    <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
-                      Last N days
-                    </label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={90}
-                      defaultValue={days}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const v = parseInt((e.target as HTMLInputElement).value)
-                          if (v >= 1 && v <= 90) setDays(v)
-                        }
-                      }}
-                      className="font-mono text-xs"
-                    />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">From</label>
+                      <Input
+                        type="date"
+                        value={range.from}
+                        max={range.to || undefined}
+                        onChange={(e) => setRange({ ...range, from: e.target.value })}
+                        className="font-mono text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">To</label>
+                      <Input
+                        type="date"
+                        value={range.to}
+                        min={range.from || undefined}
+                        onChange={(e) => setRange({ ...range, to: e.target.value })}
+                        className="font-mono text-xs"
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {[14, 60, 90].map((d) => (
-                      <Button key={d} size="sm" variant="outline" onClick={() => setDays(d)} className="h-7 font-mono text-[11px]">
-                        {d}d
+                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-7 font-mono text-[11px]">
+                        Last {d}d
                       </Button>
                     ))}
+                    {(range.from || range.to) && (
+                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-7 font-mono text-[11px] text-destructive">
+                        Clear
+                      </Button>
+                    )}
                   </div>
-                  <p className="font-mono text-[10px] text-muted-foreground">Press Enter to apply · max 90 days</p>
                 </div>
               </PopoverContent>
             </Popover>

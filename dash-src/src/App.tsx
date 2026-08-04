@@ -12,6 +12,8 @@ export default function App() {
               Canonn
             </a>
             <SignIn
+              forceRedirectUrl="/dashboard/"
+              signUpForceRedirectUrl="/dashboard/"
               appearance={{
                 variables: {
                   colorPrimary: '#c96442',

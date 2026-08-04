@@ -159,3 +159,24 @@
 body { font-family: var(--font-sans); }
 .font-display { font-family: var(--font-display); }
 .font-mono { font-family: var(--font-mono); }
+
+.dark {
+  --background: #171412;
+  --foreground: #f3efe8;
+  --card: #211d1a;
+  --card-foreground: #f3efe8;
+  --popover: #26221e;
+  --popover-foreground: #f3efe8;
+  --primary: #f3efe8;
+  --primary-foreground: #171412;
+  --secondary: #2b2621;
+  --secondary-foreground: #f3efe8;
+  --muted: #2b2621;
+  --muted-foreground: #9a938a;
+  --accent: #3a2620;
+  --accent-foreground: #e8b39e;
+  --destructive: #e08b6d;
+  --border: rgba(247,244,238,.12);
+  --input: rgba(247,244,238,.18);
+  --ring: #c96442;
+}

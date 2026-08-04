@@ -32,8 +32,14 @@ async function request<T>(path: string, token: string, init?: RequestInit): Prom
   return body as T
 }
 
-export const fetchMe = (token: string, days = 30, key = '') =>
-  request<Me>(`/me?days=${days}${key ? `&key=${encodeURIComponent(key)}` : ''}`, token)
+export const fetchMe = (token: string, days = 30, key = '', from = '', to = '') =>
+  request<Me>(
+    `/me?days=${days}` +
+      (key ? `&key=${encodeURIComponent(key)}` : '') +
+      (from ? `&from=${from}` : '') +
+      (to ? `&to=${to}` : ''),
+    token,
+  )
 
 export const runDemo = (data: string, question: string) =>
   fetch('https://api.canonn.ai/v1/demo', {

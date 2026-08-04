@@ -1,14 +1,61 @@
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { fmt, type Me } from '@/lib/api'
 
-export function Logs({ me }: { me: Me | null }) {
+const RANGES = [
+  { days: 1, label: '24h' },
+  { days: 7, label: '7d' },
+  { days: 30, label: '30d' },
+]
+
+export function Logs({
+  me, days, setDays, keyFilter, setKeyFilter,
+}: {
+  me: Me | null
+  days: number
+  setDays: (d: number) => void
+  keyFilter: string
+  setKeyFilter: (k: string) => void
+}) {
   const rows = me?.recent ?? []
   return (
     <div>
-      <h1 className="font-display text-[32px] font-semibold tracking-tight">Logs</h1>
-      <p className="mb-8 text-sm text-muted-foreground">Your most recent requests</p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-[32px] font-semibold tracking-tight">Logs</h1>
+          <p className="text-sm text-muted-foreground">Your most recent requests</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="h-9 w-[170px] bg-card font-mono text-xs">
+              <SelectValue placeholder="All keys" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="font-mono text-xs">All keys</SelectItem>
+              {(me?.keys ?? []).map((k) => (
+                <SelectItem key={k.name} value={k.name} className="font-mono text-xs">{k.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex rounded-lg border border-input bg-card p-0.5">
+            {RANGES.map((r) => (
+              <button
+                key={r.days}
+                onClick={() => setDays(r.days)}
+                className={cn(
+                  'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
+                  days === r.days ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       <Card className="overflow-hidden py-0">
         <Table>
           <TableHeader>

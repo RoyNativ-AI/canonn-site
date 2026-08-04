@@ -247,9 +247,30 @@ footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-
 footer .brand{font-size:16px;color:var(--dark-ink)}
 .fmeta{font-family:var(--mono);font-size:12px;color:var(--dark-mute)}
 
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
-.reveal.in{opacity:1;transform:none}
-@media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}.macwin .cursor{animation:none}}
+/* ===== motion system ===== */
+.reveal{opacity:0;transform:translateY(26px) scale(.988);filter:blur(5px);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),filter .9s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:none;filter:none}
+/* gentle idle float for the hero cards and phones */
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.reveal.in .vcard.doc{animation:drift 7.5s ease-in-out infinite}
+.hero-visual.in .vcard.ours{animation:drift 5.8s ease-in-out .4s infinite}
+.hero-visual.in .vcard.theirs{animation:drift 6.8s ease-in-out 1.1s infinite}
+.stage.in .phone{animation:drift 7s ease-in-out .6s infinite}
+/* soft hover lift on interactive surfaces */
+.pcard,.plan,.step,.vcard,.macwin,.stat{transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s cubic-bezier(.22,1,.36,1)}
+.pcard:hover,.plan:hover,.step:hover{transform:translateY(-4px)}
+.pcard:hover{box-shadow:0 18px 44px rgba(31,29,26,.08)}
+.plan:hover{box-shadow:0 24px 60px rgba(31,29,26,.12)}
+/* nav link underline glide */
+.navlinks a{position:relative;transition:color .25s ease}
+.navlinks a::after{content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.navlinks a:hover::after{transform:scaleX(1);transform-origin:left}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;filter:none;transition:none}
+  .macwin .cursor{animation:none}
+  .reveal.in .vcard.doc,.hero-visual.in .vcard.ours,.hero-visual.in .vcard.theirs,.stage.in .phone{animation:none}
+  .pcard,.plan,.step,.vcard,.macwin,.stat{transition:none}
+}
 
 /* mobile */
 @media(max-width:768px){
@@ -325,17 +346,17 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
       <div class="hero-visual reveal">
         <div class="vcard doc">
           <div class="vlabel">Your data</div>
-          "Our refund window is <mark>45 days</mark>. App purchases refund within <mark>5 days</mark>."
+          "Single sign-on (SSO) is included in the <mark>Business</mark> plan and above."
         </div>
         <div class="varrow">↓ same question, two models</div>
         <div class="vcard ours">
           <div class="vhead"><img src="assets/canon-logo.jpg" alt=""> Canonn R1 <span class="vchip ok">✓ grounded in your data</span></div>
-          <p>"Yes — within 45 days, or 5 days for purchases made in the app."</p>
+          <p>"Yes — SSO is included in the Business plan."</p>
           <div class="vscore ok"><span class="pct">91.8%</span><span>faithful · enterprise prompt</span></div>
         </div>
         <div class="vcard theirs">
           <div class="vhead">Frontier LLM <span class="vchip bad">✗ answers from memory</span></div>
-          <p>"Most standard refund policies are 30 days…"</p>
+          <p>"SSO is typically available only on Enterprise plans…"</p>
           <div class="vscore bad"><span class="pct">37.8%</span><span>faithful · same document</span></div>
         </div>
       </div>
@@ -377,7 +398,7 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
     <h2 class="reveal">Your AI ignores your data.</h2>
     <p class="sec-lede reveal">You feed a model your policies, your contracts, your knowledge base. Then it answers from what it "remembers" instead — or worse, argues that your data is wrong. In finance, healthcare, and law, that's not a quirk. It's a liability.</p>
     <div class="prob-grid">
-      <div class="pcard reveal"><div class="n">01</div><h3>It answers from memory</h3><p>Ask about your refund policy, it recites a generic one it learned in training — not yours.</p></div>
+      <div class="pcard reveal"><div class="n">01</div><h3>It answers from memory</h3><p>Ask about your product, it recites what it read on the internet in training — not your catalog, your plans, or your policies.</p></div>
       <div class="pcard reveal"><div class="n">02</div><h3>It argues with the data</h3><p>When your document contradicts its priors, the model "corrects" you. We measured frontier models refusing fed data as if it were an attack.</p></div>
       <div class="pcard reveal"><div class="n">03</div><h3>Faithfulness costs tokens</h3><p>To force obedience you bolt on a rulebook prompt — repeated on every call, diluting the model's attention on the actual data.</p></div>
       <div class="pcard reveal"><div class="n">04</div><h3>And it's expensive</h3><p>Frontier APIs bill $25–30 per million tokens. At scale, "just use GPT" is a six-figure line item.</p></div>
@@ -391,10 +412,10 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
     <h2 class="reveal">Give it a fact it "knows" is wrong.</h2>
     <p class="sec-lede reveal">Canonn follows your data over its own training — every time.</p>
     <div class="demo reveal">
-      <div class="row"><div class="k">Data</div><div class="v">"Our refund window is <span class="hl">45 days</span>. App purchases refund within <span class="hl">5 days</span>."</div></div>
-      <div class="row"><div class="k">Question</div><div class="v">Can I get a refund, and how long does it take?</div></div>
-      <div class="row"><div class="k">Canonn R1</div><div class="v ans">Yes. Refunds are available within 45 days — or within 5 days for purchases made in the app.</div></div>
-      <div class="row"><div class="k">Frontier LLM</div><div class="v">"Most standard refund policies are 30 days…" <span style="color:var(--lose)">← ignored your data</span></div></div>
+      <div class="row"><div class="k">Data</div><div class="v">"Single sign-on (SSO) is included in the <span class="hl">Business</span> plan and above."</div></div>
+      <div class="row"><div class="k">Question</div><div class="v">Does the Business plan include SSO?</div></div>
+      <div class="row"><div class="k">Canonn R1</div><div class="v ans">Yes — SSO is included in the Business plan.</div></div>
+      <div class="row"><div class="k">Frontier LLM</div><div class="v">"SSO is usually an Enterprise-only feature…" <span style="color:var(--lose)">← just turned away a buyer</span></div></div>
     </div>
   </div>
 </section>
@@ -469,16 +490,16 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
   -d <span class="str">'{
     "model": "canonn-r1",
     "messages": [
-      {"role":"system","content":"Refund window: 45 days.
-        In-app purchases: 5 days."},
-      {"role":"user","content":"How long do I have?"}
+      {"role":"system","content":"SSO: included in the
+        Business plan and above."},
+      {"role":"user","content":"Does Business include SSO?"}
     ]
   }'</span>
 
 <span class="c"># response — grounded, no invented policy</span>
 <span class="out">{"choices":[{"message":{
-  "content": "45 days — or 5 days for purchases
-              made in the app."}}]}</span> <span class="cursor"></span></pre>
+  "content": "Yes — SSO is included in
+              the Business plan."}}]}</span> <span class="cursor"></span></pre>
       </div>
     </div>
   </div>

@@ -1,4 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { CalendarRange } from 'lucide-react'
 import { fmt, type Me } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -46,16 +51,18 @@ export function Activity({
           <p className="text-sm text-muted-foreground">Your usage · api.canonn.ai</p>
         </div>
         <div className="flex items-center gap-2">
-          <select
-            value={keyFilter}
-            onChange={(e) => setKeyFilter(e.target.value)}
-            className="h-9 rounded-lg border border-input bg-card px-3 font-mono text-xs text-foreground outline-none focus:border-[#c96442]"
-          >
-            <option value="">All keys</option>
-            {(me?.keys ?? []).map((k) => (
-              <option key={k.name} value={k.name}>{k.name}</option>
-            ))}
-          </select>
+          <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
+            <SelectTrigger className="h-9 w-[170px] bg-card font-mono text-xs">
+              <SelectValue placeholder="All keys" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="font-mono text-xs">All keys</SelectItem>
+              {(me?.keys ?? []).map((k) => (
+                <SelectItem key={k.name} value={k.name} className="font-mono text-xs">{k.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <div className="flex rounded-lg border border-input bg-card p-0.5">
             {RANGES.map((r) => (
               <button
@@ -69,6 +76,51 @@ export function Activity({
                 {r.label}
               </button>
             ))}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
+                    !RANGES.some((r) => r.days === days)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <CalendarRange className="size-3.5" />
+                  {!RANGES.some((r) => r.days === days) ? `${days}d` : 'Custom'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64">
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+                      Last N days
+                    </label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={90}
+                      defaultValue={days}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const v = parseInt((e.target as HTMLInputElement).value)
+                          if (v >= 1 && v <= 90) setDays(v)
+                        }
+                      }}
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[14, 60, 90].map((d) => (
+                      <Button key={d} size="sm" variant="outline" onClick={() => setDays(d)} className="h-7 font-mono text-[11px]">
+                        {d}d
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="font-mono text-[10px] text-muted-foreground">Press Enter to apply · max 90 days</p>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>

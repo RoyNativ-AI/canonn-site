@@ -8,8 +8,8 @@ const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace
 
 export function QuickStart() {
   const [apiKey, setApiKey] = useState('')
-  const [data, setData] = useState('SSO is included in the Business plan and above.')
-  const [question, setQuestion] = useState('Does Business include SSO?')
+  const [data, setData] = useState('Refund window: 45 days from purchase. In-app purchases: refunded within 5 days.')
+  const [question, setQuestion] = useState('How long do I have to request a refund?')
   const [running, setRunning] = useState(false)
   const [out, setOut] = useState<string | null>(null)
 

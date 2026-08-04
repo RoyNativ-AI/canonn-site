@@ -1,7 +1,22 @@
 const API = 'https://api.canonn.ai/v1'
 
 export interface UsageDay { requests: number; pt: number; ct: number }
-export interface LogRow { ts: number; key: string; mode: string; pt: number; ct: number; ms: number }
+export interface LogRow {
+  ts: number
+  key: string
+  mode: string
+  pt: number
+  ct: number
+  ms: number
+  ip?: string
+  adapter?: string
+  finish?: string
+  stream?: boolean
+  req_id?: string
+  tok_s?: number
+  ua?: string
+  cost?: number
+}
 export interface KeyRow { name: string; prefix: string; created: number | null }
 export interface Me {
   user: string
@@ -12,7 +27,12 @@ export interface Me {
   output_tokens: number
   spend_usd: number
   avg_ms: number
+  p50_ms: number
   p95_ms: number
+  avg_tok_s: number
+  truncated: number
+  modes: Record<string, number>
+  adapters: Record<string, number>
   by_day: Record<string, UsageDay>
   by_key: Record<string, UsageDay>
   recent: LogRow[]

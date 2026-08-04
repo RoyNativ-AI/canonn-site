@@ -145,7 +145,17 @@ export function Activity({
         <Stat label="Input tokens" value={fmt(me?.input_tokens ?? 0)} />
         <Stat label="Output tokens" value={fmt(me?.output_tokens ?? 0)} />
         <Stat label="Avg latency" value={me?.avg_ms ? `${(me.avg_ms / 1000).toFixed(1)}s` : '·'} />
+        <Stat label="Throughput" value={me?.avg_tok_s ? `${me.avg_tok_s} t/s` : '·'} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <Stat label="P50 latency" value={me?.p50_ms ? `${(me.p50_ms / 1000).toFixed(1)}s` : '·'} />
         <Stat label="P95 latency" value={me?.p95_ms ? `${(me.p95_ms / 1000).toFixed(1)}s` : '·'} />
+        <Stat
+          label="Avg cost / request"
+          value={me?.requests ? `$${(me.spend_usd / me.requests).toFixed(4)}` : '·'}
+        />
+        <Stat label="Hit token limit" value={String(me?.truncated ?? 0)} />
       </div>
 
       <div className="mt-7 grid gap-5 xl:grid-cols-2">
@@ -218,6 +228,41 @@ export function Activity({
               <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#c96442]/50" /> input</span>
               <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="py-5">
+          <CardHeader className="px-5">
+            <CardTitle className="font-display text-lg">Modes and experts</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 px-5">
+            {['modes', 'adapters'].map((field) => {
+              const data = (field === 'modes' ? me?.modes : me?.adapters) ?? {}
+              const total = Object.values(data).reduce((a, b) => a + b, 0)
+              return (
+                <div key={field}>
+                  <div className="mb-2 font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">
+                    {field === 'modes' ? 'Request mode' : 'Routed expert'}
+                  </div>
+                  {total === 0 && <p className="font-mono text-xs text-muted-foreground">No data yet.</p>}
+                  <div className="space-y-2">
+                    {Object.entries(data).map(([name, n]) => (
+                      <div key={name}>
+                        <div className="mb-1 flex items-baseline justify-between text-sm">
+                          <span className="font-mono text-xs">{name}</span>
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {n} · {Math.round((n / total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded bg-secondary">
+                          <div className="h-full rounded bg-[#3f7d54]/70" style={{ width: `${(n / total) * 100}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </CardContent>
         </Card>
 

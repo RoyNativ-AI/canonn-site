@@ -103,7 +103,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .showcase .tag{color:var(--dark-mute)}
 .showcase h2{color:var(--dark-ink)}
 .showcase h2 em{font-style:normal;color:var(--accent-soft)}
-.showcase-head{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:end;margin-bottom:64px}
+.showcase-head{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:start;margin-bottom:0}
 .showcase-head p{color:var(--dark-mute);font-size:17px;max-width:480px}
 @media(max-width:860px){.showcase-head{grid-template-columns:1fr;gap:18px}}
 .feat-row{display:flex;gap:34px;flex-wrap:wrap;margin-top:26px}
@@ -111,9 +111,9 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .feat-row .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
 .feat-row span{color:var(--dark-mute)}
 .feat-row b{color:var(--dark-ink);font-weight:500}
-.ground-stat{display:flex;align-items:baseline;gap:18px;margin-top:34px}
-.ground-stat .gnum{font-family:var(--display);font-weight:600;font-size:clamp(56px,6vw,84px);letter-spacing:-.04em;line-height:1;color:#7fc79a;font-variant-numeric:tabular-nums}
-.ground-stat .glabel{font-size:15px;color:var(--dark-mute);line-height:1.5;max-width:230px}
+.ground-stat{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;border-top:1px solid var(--dark-line);margin-top:44px;padding-top:30px;margin-bottom:56px}
+.ground-stat .gnum{font-family:var(--display);font-weight:600;font-size:clamp(52px,5vw,72px);letter-spacing:-.04em;line-height:1;color:#7fc79a;font-variant-numeric:tabular-nums}
+.ground-stat .glabel{font-size:15px;color:var(--dark-mute);line-height:1.55;max-width:430px}
 .ground-stat .glabel b{color:var(--dark-ink);font-weight:500}
 /* stage: wide desktop window + overlapping phone, bleeding off the bottom */
 .stage{position:relative;max-width:1240px;margin:0 auto;padding:0 32px}
@@ -378,10 +378,6 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       <div>
         <div class="tag reveal">The product</div>
         <h2 class="reveal">Your knowledge,<br><em>answered faithfully.</em></h2>
-        <div class="ground-stat reveal">
-          <span class="gnum pct" data-target="91.8">0.0%</span>
-          <span class="glabel">grounded in <b>your data</b> — frontier models manage 37.8–73.8% on the same documents</span>
-        </div>
       </div>
       <div class="reveal">
         <p>Drop in your policies, help center, contracts — Canonn answers from them and shows exactly which passage every answer came from. On your phone, on the desktop, or inside your own product through the API.</p>
@@ -391,6 +387,10 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
           <div class="f"><span class="tick">✓</span><span>Says <b>"not in the data"</b></span></div>
         </div>
       </div>
+    </div>
+    <div class="ground-stat reveal">
+      <span class="gnum pct" data-target="91.8">0.0%</span>
+      <span class="glabel">grounded in <b>your data</b> — frontier models manage 37.8–73.8% on the same documents</span>
     </div>
   </div>
   <div class="stage reveal">

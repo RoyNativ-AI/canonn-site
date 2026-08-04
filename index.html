@@ -47,9 +47,25 @@ nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 .hero::before{content:"";position:absolute;top:-18%;left:50%;transform:translateX(-50%);width:min(980px,100%);height:620px;background:radial-gradient(ellipse at center,rgba(201,100,66,.09),transparent 65%);pointer-events:none}
 .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
 .hero-grid>*{min-width:0}
-.hero-visual{position:relative;display:flex;justify-content:center;align-items:flex-end;height:100%;min-height:560px}
-.hero-phone{width:min(330px,88%);border-radius:44px;border:1px solid var(--line2);box-shadow:0 8px 24px rgba(31,29,26,.10),0 45px 90px rgba(31,29,26,.22);overflow:hidden;background:#fff;transform:translateY(9%)}
-.hero-phone img{display:block;width:100%}
+.hero-visual{position:relative;display:flex;flex-direction:column;gap:14px;justify-content:center;min-height:520px;padding-bottom:70px}
+.vcard{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:20px 22px;box-shadow:0 20px 50px rgba(31,29,26,.10);font-size:14.5px}
+.vcard .vlabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.vcard.doc{background:var(--bg2);font-family:var(--mono);font-size:13.5px;color:var(--ink-soft);width:88%}
+.vcard.doc mark{background:rgba(63,125,84,.18);color:var(--ink);padding:1px 4px;border-radius:4px;font-weight:500}
+.vcard .vhead{display:flex;align-items:center;gap:9px;font-weight:500;font-size:14px;margin-bottom:7px}
+.vcard .vhead img{width:20px;height:20px;border-radius:5px}
+.vchip{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:999px;font-weight:500;letter-spacing:.04em}
+.vchip.ok{background:rgba(63,125,84,.14);color:var(--win)}
+.vchip.bad{background:rgba(201,100,66,.13);color:var(--lose)}
+.vcard p{color:var(--ink-soft);margin-bottom:12px}
+.vscore{display:flex;align-items:baseline;gap:10px;font-family:var(--mono)}
+.vscore .pct{font-size:34px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vscore.ok .pct{color:var(--win)}
+.vscore.bad .pct{color:var(--lose)}
+.vscore span{font-size:12px;color:var(--mute)}
+.vcard.ours{border-color:rgba(63,125,84,.4);box-shadow:0 24px 60px rgba(63,125,84,.16);width:100%;margin-left:6%}
+.vcard.theirs{opacity:.88;width:92%}
+.varrow{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;padding-left:10px}
 .hero-pad{padding-bottom:92px}
 @media(max-width:960px){
   .hero-grid{grid-template-columns:1fr}
@@ -307,7 +323,21 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
         </div>
       </div>
       <div class="hero-visual reveal">
-        <div class="hero-phone"><img src="assets/chat_light.png" alt="Canonn on iPhone — a complete, grounded answer with its cited source"></div>
+        <div class="vcard doc">
+          <div class="vlabel">Your data</div>
+          "Our refund window is <mark>45 days</mark>. App purchases refund within <mark>5 days</mark>."
+        </div>
+        <div class="varrow">↓ same question, two models</div>
+        <div class="vcard ours">
+          <div class="vhead"><img src="assets/canon-logo.jpg" alt=""> Canonn R1 <span class="vchip ok">✓ grounded in your data</span></div>
+          <p>"Yes — within 45 days, or 5 days for purchases made in the app."</p>
+          <div class="vscore ok"><span class="pct">91.8%</span><span>faithful · enterprise prompt</span></div>
+        </div>
+        <div class="vcard theirs">
+          <div class="vhead">Frontier LLM <span class="vchip bad">✗ answers from memory</span></div>
+          <p>"Most standard refund policies are 30 days…"</p>
+          <div class="vscore bad"><span class="pct">37.8%</span><span>faithful · same document</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -384,7 +414,7 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
             <td>9B</td>
             <td><span class="big win">89.8%</span></td>
             <td class="big win">91.8%</td>
-            <td class="big win">$0.03</td>
+            <td class="big win">from $1.20</td>
           </tr>
           <tr><td class="model"><img class="mlogo" src="assets/openai.svg?v=2" alt="OpenAI">GPT-5.6</td><td>frontier</td><td><span class="big low">40.6%</span></td><td class="big mid">60.2%</td><td class="tsmall">$30</td></tr>
           <tr><td class="model"><img class="mlogo" src="assets/anthropic.svg?v=2" alt="Anthropic">Claude Opus 5</td><td>frontier</td><td><span class="big low">37.8%</span></td><td class="big mid">73.8%</td><td class="tsmall">$25</td></tr>
@@ -483,13 +513,13 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
       <div class="plan reveal">
         <div class="ptag">Hosted API</div>
         <h3>Pay as you go</h3>
-        <div class="price">$0.50</div>
-        <div class="per">per 1M tokens · no minimums, no seats</div>
+        <div class="price">$1.20 <span style="font-size:22px;color:var(--mute)">/</span> $6</div>
+        <div class="per">input / output · per 1M tokens · no minimums, no seats</div>
         <ul>
+          <li><span class="tick">✓</span><span><b>60% below Claude Sonnet 5</b> ($3 / $15) — and it follows your data better</span></li>
           <li><span class="tick">✓</span><span><b>api.canonn.ai/v1</b> — OpenAI-compatible, streaming included</span></li>
           <li><span class="tick">✓</span><span><b>Metered per token</b> — you pay for what actually runs</span></li>
-          <li><span class="tick">✓</span><span><b>Extraction mode</b> on by default, balanced mode opt-in</span></li>
-          <li><span class="tick">✓</span><span>Still <b>60× cheaper</b> than frontier APIs</span></li>
+          <li><span class="tick">✓</span><span><b>Grounded by default</b> — the model only says what your data supports</span></li>
         </ul>
         <a class="btn btn-p" href="mailto:info@officely.ai?subject=Canonn%20API%20access">Get an API key</a>
       </div>
@@ -515,7 +545,7 @@ footer .brand{font-size:16px;color:var(--dark-ink)}
     <div class="tag reveal">Why it's a moat</div>
     <h2 class="reveal">Cheaper. Private. Yours.</h2>
     <div class="prob-grid">
-      <div class="pcard reveal"><div class="n">↓ 1000×</div><h3>Self-host economics</h3><p>A 9B model on one GPU serves faithful answers at ~$0.03 per million tokens. Sell at $0.50 and keep a 90%+ margin — still 60× under GPT.</p></div>
+      <div class="pcard reveal"><div class="n">↓ 1000×</div><h3>Self-host economics</h3><p>A 9B model on one GPU serves faithful answers at ~$0.03 per million tokens of compute — a weights license pays for itself within weeks at scale.</p></div>
       <div class="pcard reveal"><div class="n">⛓</div><h3>On-prem, zero-trust</h3><p>Runs inside your network. Sensitive data never leaves — opening regulated markets that closed cloud APIs can't serve.</p></div>
       <div class="pcard reveal"><div class="n">◇</div><h3>No prompt engineering</h3><p>Faithfulness is in the weights. No 300-token rulebook on every call, no attention diluted by instructions.</p></div>
       <div class="pcard reveal"><div class="n">⚡</div><h3>Open weights</h3><p>You own the model. No vendor lock-in, no per-seat surprise, no deprecation of the endpoint you built on.</p></div>

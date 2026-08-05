@@ -278,6 +278,25 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 </div></section>
 
 <section><div class="wrap">
+  <h2>Legal contracts: scored against lawyers, not against a model</h2>
+  <p>Every number above is scored mechanically, and every judged number on this page involves a model somewhere. This benchmark removes that entirely: <b>CUAD</b> (Atticus Project, CC&nbsp;BY&nbsp;4.0) provides 510 real commercial contracts in which practicing lawyers marked the exact answer spans. We asked 388 questions over 40 of the held-out test contracts, retrieved through the same pipeline the product ships with, identical prompt and token budget for every model, temperature&nbsp;0. The gold answers are human. Anyone can re-run it.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>Extraction F1 vs gold span</th><th>Contains the full gold span</th><th>Correct abstention (200 unanswerable)</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">47.8%</td><td class="n low">52.1%</td><td class="n low">80.5%</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">33.3%</td><td class="n mid">62.8%</td><td class="n win">92.0%</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">28.0%</td><td class="n mid">66.0%</td><td class="n win">92.5%</td></tr>
+        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n low">13.8%</td><td class="n win">69.7%</td><td class="n win">92.5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Read all three columns together, because they pull in different directions. <b>F1</b> rewards answering with the value and nothing else: ask for the expiration date and Canonn returns the date, which is why it leads by 14 points. <b>Contains-gold</b> rewards quoting the clause wholesale, which is Opus&nbsp;5's style: it quotes the most contract language and drowns its own F1 doing it. Neither column alone is "the" extraction score.</p>
+  <p><b>The third column is a loss, and we are publishing it anyway.</b> On the 200 questions the annotating lawyer certified as unanswerable from the contract, every frontier model correctly declines about 92% of the time; Canonn fabricates a provision in 19.5% of cases, roughly 2.6x their rate. Judged by blinded readers over full answers, labels shuffled per item. Our abstention training was built on support-style documents and does not yet transfer to contractual language; a training round targeting exactly this is in progress. If you are evaluating Canonn for legal work, weigh this column, not just the first.</p>
+  <p class="foot-note">CUAD v1 test split · 40 contracts, 388 questions (188 with expert gold spans, 200 expert-certified unanswerable) · retrieval frozen once for all models · max_tokens 1400 · temperature 0 · abstention judged by blinded full-text readers.</p>
+</div></section>
+
+<section><div class="wrap">
   <h2>The prompt-cost effect</h2>
   <p>Frontier models only reach high faithfulness when an explicit rule is present <em>and isolated</em>. That rule costs tokens on every call, and, more importantly, it stops working once other instructions compete with it. Claude Opus 5 across the three regimes:</p>
   <div class="tbl">
@@ -336,7 +355,9 @@ Answer:</div>
     <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.3% on inconsistent passages means the model fails roughly half the time; 24.8% abstention without instruction means it invents an answer three times in four when none is present. We lead these columns; we do not own them.</li>
     <li><b>Only one of the twelve enterprise rules was measured.</b> We tested whether the grounding rule survives being surrounded. Whether the tone, escalation, formatting and security rules are followed is untested.</li>
     <li><b>All competitor numbers are self-measured.</b> No external party has reproduced them. Raw per-item outputs are published so that anyone can.</li>
-    <li>Multi-turn and LLM-judged open-answer evaluation are still withheld pending a harness we trust.</li>
+    <li><b>Completeness is our weakest measured axis.</b> On a production support corpus, blinded readers judged only 53.7% of Canonn's answers complete against what the passages supported, last of the four models tested (Opus 5: 97.7%). The answers were judged well-grounded; they were too short. A training round targeting completeness is in progress and this page will carry its numbers either way.</li>
+    <li><b>Abstention does not yet transfer out of domain.</b> See the CUAD section above: on legal contracts we fabricate more than the frontier models we beat elsewhere.</li>
+    <li>Open-answer evaluation now uses blinded full-text readers (labels shuffled per item, key withheld until every verdict is written) after regex and single-call classifiers were each caught inverting a ranking. Multi-turn evaluation is still withheld.</li>
   </ul>
 </div></section>
 

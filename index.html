@@ -1089,14 +1089,39 @@ async function askCanonn(){
   if(!data||!q)return;
   pgo.disabled=true;parea.classList.add('show','thinking');
   pans.classList.remove('err');pans.textContent='';psec.textContent='';
+  const t0=performance.now();
   try{
     const r=await fetch('https://api.canonn.ai/v1/demo',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({data:data,question:q})});
-    const j=await r.json();
-    parea.classList.remove('thinking');
-    if(!r.ok){pans.classList.add('err');pans.textContent=j.error||'Something went wrong, try again.';}
-    else{pans.textContent=j.answer;psec.textContent='· '+j.seconds+'s';}
+      body:JSON.stringify({data:data,question:q,stream:true})});
+    const sse=(r.headers.get('Content-Type')||'').includes('text/event-stream');
+    if(r.ok&&sse&&r.body){
+      // tokens land as they are generated
+      const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+      for(;;){
+        const {done,value}=await rd.read();
+        if(done)break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split('\n');buf=lines.pop();
+        for(const ln of lines){
+          if(!ln.startsWith('data:'))continue;
+          const p=ln.slice(5).trim();
+          if(p==='[DONE]')continue;
+          try{
+            const d=((JSON.parse(p).choices||[])[0]||{}).delta||{};
+            if(d.content){parea.classList.remove('thinking');pans.textContent+=d.content;}
+          }catch(e){}
+        }
+      }
+      parea.classList.remove('thinking');
+      psec.textContent='· '+((performance.now()-t0)/1000).toFixed(1)+'s';
+    }else{
+      // non-stream fallback (rollback path or error bodies)
+      const j=await r.json();
+      parea.classList.remove('thinking');
+      if(!r.ok){pans.classList.add('err');pans.textContent=j.error||'Something went wrong, try again.';}
+      else{pans.textContent=j.answer;psec.textContent='· '+(j.seconds!=null?j.seconds:((performance.now()-t0)/1000).toFixed(1))+'s';}
+    }
   }catch(e){
     parea.classList.remove('thinking');
     pans.classList.add('err');pans.textContent='Could not reach the model, try again in a moment.';

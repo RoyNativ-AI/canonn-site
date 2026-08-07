@@ -10,7 +10,7 @@ import { applyTheme, readTheme, type Theme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const SCREENS = [
-  { id: 'activity', label: 'Activity' },
+  { id: 'activity', label: 'Usage' },
   { id: 'logs', label: 'Logs' },
   { id: 'keys', label: 'API keys' },
   { id: 'billing', label: 'Billing' },

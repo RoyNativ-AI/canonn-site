@@ -140,7 +140,9 @@ export function Activity({
                 onClick={() => { setRange({ from: '', to: '' }); setDays(r.days) }}
                 className={cn(
                   'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
-                  days === r.days ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                  !range.from && !range.to && days === r.days
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {r.label}

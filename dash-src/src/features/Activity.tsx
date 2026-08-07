@@ -13,23 +13,12 @@ const RANGES = [
   { days: 30, label: '30d' },
 ]
 
+// Mirrors the worker's PRICE_IN / PRICE_OUT so the daily spend bars add up to
+// the same figure the metering reports.
+const PRICE_IN = 1.2
+const PRICE_OUT = 6
 
-function Stat({ label, value, money }: { label: string; value: string; money?: boolean }) {
-  return (
-    <Card className="gap-2 py-5">
-      <CardHeader className="px-5">
-        <CardTitle className="font-mono text-[10px] font-normal tracking-[0.1em] text-muted-foreground uppercase">
-          {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-5">
-        <div className={cn('font-display text-[32px] leading-none font-semibold tracking-tight tabular-nums', money && 'text-[#3f7d54]')}>
-          {value}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+const LABEL = 'font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase'
 
 export function Activity({
   me, days, setDays, keyFilter, setKeyFilter, range, setRange,
@@ -42,14 +31,20 @@ export function Activity({
   range: { from: string; to: string }
   setRange: (r: { from: string; to: string }) => void
 }) {
-  const buckets = me ? Object.keys(me.by_day).sort().slice(-24) : []
-  const max = Math.max(1, ...buckets.map((d) => me!.by_day[d].requests))
+  const buckets = me ? Object.keys(me.by_day).sort().slice(-31) : []
+  const cost = (d: string) => {
+    const b = me!.by_day[d]
+    return (b.pt / 1e6) * PRICE_IN + (b.ct / 1e6) * PRICE_OUT
+  }
+  const maxCost = Math.max(0.000001, ...buckets.map(cost))
+  const maxReq = Math.max(1, ...buckets.map((d) => me!.by_day[d].requests))
+  const maxTok = Math.max(1, ...buckets.map((d) => me!.by_day[d].pt + me!.by_day[d].ct))
 
   return (
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[32px] font-semibold tracking-tight">Activity</h1>
+          <h1 className="font-display text-[32px] font-semibold tracking-tight">Usage</h1>
           <p className="text-sm text-muted-foreground">Your usage · api.canonn.ai</p>
         </div>
         <div className="flex items-center gap-2">
@@ -139,79 +134,75 @@ export function Activity({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
-        <Stat label="Spend (est.)" value={`$${(me?.spend_usd ?? 0).toFixed(2)}`} money />
-        <Stat label="Requests" value={fmt(me?.requests ?? 0)} />
-        <Stat label="Input tokens" value={fmt(me?.input_tokens ?? 0)} />
-        <Stat label="Output tokens" value={fmt(me?.output_tokens ?? 0)} />
-        <Stat label="Avg latency" value={me?.avg_ms ? `${(me.avg_ms / 1000).toFixed(1)}s` : '·'} />
-        <Stat label="Throughput" value={me?.avg_tok_s ? `${me.avg_tok_s} t/s` : '·'} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Stat label="P50 latency" value={me?.p50_ms ? `${(me.p50_ms / 1000).toFixed(1)}s` : '·'} />
-        <Stat label="P95 latency" value={me?.p95_ms ? `${(me.p95_ms / 1000).toFixed(1)}s` : '·'} />
-        <Stat
-          label="Avg cost / request"
-          value={me?.requests ? `$${(me.spend_usd / me.requests).toFixed(4)}` : '·'}
-        />
-        <Stat label="Hit token limit" value={String(me?.truncated ?? 0)} />
-      </div>
-
-      <div className="mt-7 grid gap-5 xl:grid-cols-2">
-        <Card className="py-5">
-          <CardHeader className="px-5">
-            <CardTitle className="font-display text-lg">
-              Requests {days === 1 ? 'by hour' : 'by day'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-5">
-            <div className="flex h-[190px] items-end gap-1.5 border-b border-border pb-0.5">
-              {buckets.length > 0
-                ? buckets.map((d) => {
-                    const b = me!.by_day[d]
-                    return (
+      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+        {/* Main column: the money chart first, like every usage page people know. */}
+        <div className="space-y-6">
+          <Card className="py-5">
+            <CardContent className="px-5">
+              <div className={LABEL}>Total spend</div>
+              <div className="mt-1 font-display text-5xl font-semibold tracking-tight text-[#3f7d54]">
+                ${(me?.spend_usd ?? 0).toFixed(2)}
+              </div>
+              <div className="mt-8 flex h-[280px] items-end gap-1.5 border-b border-border pb-0.5">
+                {buckets.length > 0
+                  ? buckets.map((d) => (
                       <div
                         key={d}
-                        className="group relative min-h-0.5 flex-1 rounded-t bg-[#c96442]/60 hover:bg-[#c96442]"
-                        style={{ height: `${(b.requests / max) * 100}%` }}
+                        className="group relative min-h-0.5 flex-1 rounded-t bg-[#c96442]/70 hover:bg-[#c96442]"
+                        style={{ height: `${(cost(d) / maxCost) * 100}%` }}
                       >
                         <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
-                          {d} · {b.requests} req · {fmt(b.pt + b.ct)} tok
+                          {d} · ${cost(d).toFixed(3)} · {me!.by_day[d].requests} req
                         </span>
                       </div>
-                    )
-                  })
-                : Array.from({ length: 14 }, (_, i) => (
-                    <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 37) % 23)}%` }} />
-                  ))}
-            </div>
-            <div className="mt-2 flex gap-1.5 overflow-hidden">
-              {buckets.map((d) => (
-                <span key={d} className="flex-1 truncate text-center font-mono text-[9px] text-muted-foreground">
-                  {days === 1 ? d : d.slice(3)}
-                </span>
-              ))}
-            </div>
-            {buckets.length === 0 && (
-              <p className="mt-3 font-mono text-xs text-muted-foreground">No traffic in this window.</p>
-            )}
-          </CardContent>
-        </Card>
+                    ))
+                  : Array.from({ length: 16 }, (_, i) => (
+                      <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 37) % 23)}%` }} />
+                    ))}
+              </div>
+              <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
+                <span>{buckets[0] ?? ''}</span>
+                <span>{buckets[buckets.length - 1] ?? ''}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="py-5">
-          <CardHeader className="px-5">
-            <CardTitle className="font-display text-lg">Token volume {days === 1 ? 'by hour' : 'by day'}</CardTitle>
-          </CardHeader>
-          <CardContent className="px-5">
-            <div className="flex h-[190px] items-end gap-1.5 border-b border-border pb-0.5">
-              {buckets.length > 0
-                ? buckets.map((d) => {
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="py-5">
+              <CardHeader className="px-5">
+                <CardTitle className="font-display text-lg">
+                  Requests {days === 1 ? 'by hour' : 'by day'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-5">
+                <div className="flex h-[150px] items-end gap-1 border-b border-border pb-0.5">
+                  {buckets.map((d) => (
+                    <div
+                      key={d}
+                      className="group relative min-h-0.5 flex-1 rounded-t bg-[#c96442]/60 hover:bg-[#c96442]"
+                      style={{ height: `${(me!.by_day[d].requests / maxReq) * 100}%` }}
+                    >
+                      <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
+                        {d} · {me!.by_day[d].requests} req
+                      </span>
+                    </div>
+                  ))}
+                  {buckets.length === 0 && <p className="font-mono text-xs text-muted-foreground">No traffic in this window.</p>}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="py-5">
+              <CardHeader className="px-5">
+                <CardTitle className="font-display text-lg">Token volume {days === 1 ? 'by hour' : 'by day'}</CardTitle>
+              </CardHeader>
+              <CardContent className="px-5">
+                <div className="flex h-[150px] items-end gap-1 border-b border-border pb-0.5">
+                  {buckets.map((d) => {
                     const b = me!.by_day[d]
-                    const tmax = Math.max(1, ...buckets.map((x) => me!.by_day[x].pt + me!.by_day[x].ct))
                     const total = b.pt + b.ct
                     return (
-                      <div key={d} className="group relative flex min-h-0.5 flex-1 flex-col justify-end" style={{ height: `${(total / tmax) * 100}%` }}>
+                      <div key={d} className="group relative flex min-h-0.5 flex-1 flex-col justify-end" style={{ height: `${(total / maxTok) * 100}%` }}>
                         <div className="w-full rounded-t bg-[#3f7d54]/70" style={{ height: `${total ? (b.ct / total) * 100 : 0}%` }} />
                         <div className="w-full bg-[#c96442]/50" style={{ height: `${total ? (b.pt / total) * 100 : 0}%` }} />
                         <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
@@ -219,68 +210,102 @@ export function Activity({
                         </span>
                       </div>
                     )
-                  })
-                : Array.from({ length: 14 }, (_, i) => (
-                    <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 29) % 21)}%` }} />
-                  ))}
-            </div>
-            <div className="mt-2.5 flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#c96442]/50" /> input</span>
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
-            </div>
-          </CardContent>
-        </Card>
+                  })}
+                </div>
+                <div className="mt-2.5 flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#c96442]/50" /> input</span>
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-        <Card className="py-5">
-          <CardHeader className="px-5">
-            <CardTitle className="font-display text-lg">Latency</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-5">
-            {[
-              ['Median', me?.p50_ms != null ? `${me.p50_ms} ms` : '·'],
-              ['p95', me?.p95_ms != null ? `${me.p95_ms} ms` : '·'],
-              ['Average', me?.avg_ms != null ? `${me.avg_ms} ms` : '·'],
-              ['Throughput', me?.avg_tok_s != null ? `${me.avg_tok_s} tok/s` : '·'],
-            ].map(([label, value]) => (
-              <div key={label} className="flex items-baseline justify-between">
-                <span className="font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">{label}</span>
-                <span className="font-mono text-sm">{value}</span>
+        {/* Sidebar: the totals at a glance, like the usage pages people know. */}
+        <div className="space-y-6">
+          <Card className="gap-2 py-5">
+            <CardHeader className="px-5">
+              <CardTitle className={LABEL}>Total tokens</CardTitle>
+            </CardHeader>
+            <CardContent className="px-5">
+              <div className="font-display text-[28px] leading-none font-semibold tracking-tight tabular-nums">
+                {(me ? me.input_tokens + me.output_tokens : 0).toLocaleString()}
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              {buckets.length > 1 && (
+                <svg viewBox="0 0 100 26" preserveAspectRatio="none" className="mt-4 h-10 w-full">
+                  <polyline
+                    fill="none" stroke="#c96442" strokeWidth="1.5"
+                    points={buckets.map((d, i) => {
+                      const t = me!.by_day[d].pt + me!.by_day[d].ct
+                      return `${(i / (buckets.length - 1)) * 100},${24 - (t / maxTok) * 22}`
+                    }).join(' ')}
+                  />
+                </svg>
+              )}
+              <p className="mt-2 font-mono text-[10.5px] text-muted-foreground">
+                in {fmt(me?.input_tokens ?? 0)} · out {fmt(me?.output_tokens ?? 0)}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="py-5">
-          <CardHeader className="px-5">
-            <CardTitle className="font-display text-lg">Top keys</CardTitle>
-          </CardHeader>
-          <CardContent className="px-5">
-            {Object.keys(me?.by_key ?? {}).length === 0 && (
-              <p className="font-mono text-xs text-muted-foreground">No usage yet.</p>
-            )}
-            <div className="space-y-3">
-              {Object.entries(me?.by_key ?? {})
-                .sort((a, b) => b[1].pt + b[1].ct - (a[1].pt + a[1].ct))
-                .slice(0, 6)
-                .map(([name, k]) => {
-                  const total = k.pt + k.ct
-                  const gmax = Math.max(1, ...Object.values(me?.by_key ?? {}).map((x) => x.pt + x.ct))
-                  return (
-                    <div key={name}>
-                      <div className="mb-1 flex items-baseline justify-between text-sm">
-                        <span className="font-medium">{name}</span>
-                        <span className="font-mono text-xs text-muted-foreground">{fmt(total)} tok · {k.requests} req</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded bg-secondary">
-                        <div className="h-full rounded bg-[#c96442]/70" style={{ width: `${(total / gmax) * 100}%` }} />
-                      </div>
+          <Card className="gap-2 py-5">
+            <CardHeader className="px-5">
+              <CardTitle className={LABEL}>Total requests</CardTitle>
+            </CardHeader>
+            <CardContent className="px-5">
+              <div className="font-display text-[28px] leading-none font-semibold tracking-tight tabular-nums">
+                {(me?.requests ?? 0).toLocaleString()}
+              </div>
+              <div className="mt-4 flex h-9 items-end gap-[3px]">
+                {buckets.map((d) => (
+                  <div key={d} className="min-h-[2px] flex-1 rounded-sm bg-[#c96442]/60"
+                       style={{ height: `${(me!.by_day[d].requests / maxReq) * 100}%` }} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gap-2 py-5">
+            <CardHeader className="px-5">
+              <CardTitle className={LABEL}>Latency</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2.5 px-5">
+              {[
+                ['Median', me?.p50_ms != null ? `${me.p50_ms} ms` : '·'],
+                ['p95', me?.p95_ms != null ? `${me.p95_ms} ms` : '·'],
+                ['Average', me?.avg_ms != null ? `${me.avg_ms} ms` : '·'],
+                ['Throughput', me?.avg_tok_s != null ? `${me.avg_tok_s} tok/s` : '·'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-baseline justify-between">
+                  <span className="font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">{label}</span>
+                  <span className="font-mono text-sm">{value}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="gap-2 py-5">
+            <CardHeader className="px-5">
+              <CardTitle className={LABEL}>API keys</CardTitle>
+            </CardHeader>
+            <CardContent className="px-5">
+              {Object.keys(me?.by_key ?? {}).length === 0 && (
+                <p className="font-mono text-xs text-muted-foreground">No usage yet.</p>
+              )}
+              <div className="space-y-2">
+                {Object.entries(me?.by_key ?? {})
+                  .sort((a, b) => b[1].requests - a[1].requests)
+                  .slice(0, 8)
+                  .map(([name, k]) => (
+                    <div key={name} className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2">
+                      <span className="truncate text-sm font-medium">{name}</span>
+                      <span className="ml-3 font-mono text-xs text-muted-foreground">{fmt(k.requests)}</span>
                     </div>
-                  )
-                })}
-            </div>
-          </CardContent>
-        </Card>
-
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

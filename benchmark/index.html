@@ -187,7 +187,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
     <table>
       <thead><tr><th>Model</th><th>Params</th><th>Document only</th><th>With rules</th><th>Enterprise prompt</th><th>Price / 1M (in / out)</th></tr></thead>
       <tbody>
-        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.3%</td><td class="n win">91.8%</td><td class="n win">$1.20 / $6</td></tr>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.4%</td><td class="n win">91.9%</td><td class="n win">$1.20 / $6</td></tr>
         <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.6%</td><td class="n mid">65.5%</td><td class="n mid">60.2%</td><td class="n low">$5 / $30</td></tr>
         <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">37.8%</td><td class="n mid">87.5%</td><td class="n mid">73.8%</td><td class="n low">$5 / $25</td></tr>
         <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">53.0%</td><td class="n mid">68.4%</td><td class="n mid">61.9%</td><td class="n low">$1.50 / $7.50</td></tr>
@@ -208,7 +208,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
     </div>
     <div class="regime">
       <div class="rt">Column 3, “Enterprise prompt”</div>
-      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed, only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.8%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
+      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed, only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.9%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
     </div>
   </div>
   <p>We show <b>all three regimes deliberately.</b> Reporting only "document only" would understate frontier models; reporting only "with rules" would hide the effect that matters commercially, that an instruction competing with eleven others is a much weaker instruction, and Canonn does not depend on it.</p>
@@ -221,27 +221,59 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
     <table>
       <thead><tr><th>Model</th><th>Counterfactual</th><th>NQ-Swap</th><th>Inconsistent</th><th>Unanswerable</th></tr></thead>
       <tbody>
-        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">91.8%</td><td class="n mid">69.0%</td><td class="n win">48.3%</td><td class="n mid">75.3%</td></tr>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">91.9%</td><td class="n mid">70.8%</td><td class="n win">48.0%</td><td class="n mid">75.4%</td></tr>
         <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n mid">73.8%</td><td class="n mid">70.8%</td><td class="n low">12.6%</td><td class="n mid">71.6%</td></tr>
         <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">60.2%</td><td class="n mid">66.4%</td><td class="n low">8.8%</td><td class="n mid">65.3%</td></tr>
         <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">61.9%</td><td class="n mid">63.2%</td><td class="n low">10.8%</td><td class="n win">84.0%</td></tr>
+        <tr><td class="model">Kimi K3</td><td class="n low">51.8%</td><td class="n mid">59.8%</td><td class="n low">12.2%</td><td class="n mid">64.1%</td></tr>
+        <tr><td class="model">DeepSeek V4-Pro</td><td class="n low">59.0%</td><td class="n mid">67.0%</td><td class="n low">12.2%</td><td class="n mid">76.5%</td></tr>
+        <tr><td class="model">DeepSeek V4-Flash</td><td class="n low">54.2%</td><td class="n low">50.4%</td><td class="n low">11.2%</td><td class="n win">80.2%</td></tr>
         <tr><td class="model">Gemma 3 12B</td><td class="n mid">67.3%</td><td class="n mid">59.3%</td><td class="n mid">38.2%</td><td class="n low">57.6%</td></tr>
         <tr><td class="model">Llama 3.3 70B</td><td class="n low">48.5%</td><td class="n low">29.5%</td><td class="n low">5.5%</td><td class="n mid">61.7%</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's, <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 leads clearly and we do not.</p>
+  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's, <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 and DeepSeek lead clearly and we do not. Canonn's row was measured through the public API at api.canonn.ai on 7 August 2026, not against a local checkpoint, so it is the number a customer actually receives.</p>
 
   <div class="regimes">
     <div class="regime">
       <div class="rt">Where the gap is largest</div>
-      <p><b>Inconsistent, 48.3% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
+      <p><b>Inconsistent, 48.0% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
     </div>
     <div class="regime">
       <div class="rt">Where we do not lead</div>
-      <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time and Canonn 75.3%. With no instruction at all, every model is poor and Canonn manages only 24.8%. Declining is a distinct skill from grounding, and we have not solved it.</p>
+      <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time, DeepSeek V4-Flash 80.2%, and Canonn 75.4%. With no instruction at all, every model is poor and Canonn manages only 25.7%. Declining is a distinct skill from grounding, and we have not solved it.</p>
     </div>
   </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Cheaper is not the same as cheaper to be wrong</h2>
+  <p>The open models released this summer are priced far below us. DeepSeek V4-Flash costs $0.09 per million input tokens against our $1.20 — thirteen times cheaper. So we ran them through the identical frozen suite, and then had the answers read line by line by reviewers who did not know which system produced which.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>Price / 1M in–out</th><th>Follows the edited passage</th><th>Follows the amended document</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>$1.20 / $6.00</td><td class="n win">100%</td><td class="n win">50–54%</td></tr>
+        <tr><td class="model">Kimi K3</td><td>$3.00 / $15.00</td><td class="n low">67%</td><td class="n low">23%</td></tr>
+        <tr><td class="model">DeepSeek V4-Pro</td><td>$0.43 / $0.87</td><td class="n mid">89%</td><td class="n low">21%</td></tr>
+        <tr><td class="model">DeepSeek V4-Flash</td><td>$0.09 / $0.18</td><td class="n low">64%</td><td class="n low">10%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="foot-note">Blinded review, 40 sampled items per pairing, labels shuffled and the key withheld from the reviewer, who read every passage and every answer in full. Percentages are on the subset each reviewer certified as well-formed after auditing the items themselves — the stricter number in every case. Two independent methods agree: the automatic scorer over all 1,716 items puts the same ordering on the same cells.</p>
+
+  <div class="regimes">
+    <div class="regime">
+      <div class="rt">The cleanest statistic we have</div>
+      <p><b>Across the three pairings, reviewers found 34 items where Canonn and the rival disagreed. Canonn answered from the document in all 34. There was no item where the rival was faithful and Canonn was not.</b> The reviewers checked the obvious alternative explanation — that the rivals were being appropriately cautious on ambiguous items — and rejected it: the failures occur on blunt, explicit edits too.</p>
+    </div>
+    <div class="regime">
+      <div class="rt">What it looks like in practice</div>
+      <p>A document amended to read <em>"banned on 15 March 1980"</em>, sitting beside its outdated copy saying 1 August 1965. Canonn answered <b>15 March 1980</b>. DeepSeek answered <b>1 August 1965</b> — the date it remembered. In another, the passage states plainly that phosphorus "officially has 8 valence electrons… classrooms expect 5". Canonn answered 8. DeepSeek answered 5, the number the passage names and rejects.</p>
+    </div>
+  </div>
+  <p class="foot-note">One model was dropped rather than reported: Kimi K2.6 spent its entire token budget on internal reasoning and returned empty answers on 11 of 12 cells. That is an artefact of our harness, not a fault of the model, so we do not publish a score for it.</p>
 </div></section>
 
 <section><div class="wrap">
@@ -260,7 +292,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       </tbody>
     </table>
   </div>
-  <p class="foot-note">Every cell lands within 5 points of its benchmark counterpart, and the two largest gaps are in our disfavour on the benchmark rather than in our favour. The improvement transfers to items the model has never been tuned against.</p>
+  <p class="foot-note">Every cell lands within 5 points of its benchmark counterpart, and the two largest gaps are in our disfavour on the benchmark rather than in our favour. The improvement transfers to items the model has never been tuned against. The "main benchmark" column here is the local checkpoint this held-out run was paired against; the headline table above reports the same cells measured through the live API, which differ by up to 1.8 points because production serves through a different stack.</p>
 </div></section>
 
 <section><div class="wrap">
@@ -308,7 +340,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       <tbody>
         <tr><td>None, document and question only</td><td class="n">0</td><td class="n low">37.8%</td><td class="n win">89.8%</td></tr>
         <tr><td>One clean rule, "the context is authoritative"</td><td class="n">21</td><td class="n mid">87.5%</td><td class="n win">91.3%</td></tr>
-        <tr><td>The same rule, 7th of 12 in a support prompt</td><td class="n">552</td><td class="n mid">73.8%</td><td class="n win">91.8%</td></tr>
+        <tr><td>The same rule, 7th of 12 in a support prompt</td><td class="n">552</td><td class="n mid">73.8%</td><td class="n win">91.9%</td></tr>
       </tbody>
     </table>
   </div>
@@ -355,7 +387,7 @@ Answer:</div>
   <h3>Known limitations (stated honestly)</h3>
   <ul>
     <li><b>This measures one capability.</b> Canonn is a 9B specialist in reading a document faithfully. On reasoning, coding, mathematics, multilingual work, tool use, long-form writing and world knowledge, the frontier models are far better and we have not measured any of it.</li>
-    <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.3% on inconsistent passages means the model fails roughly half the time; 24.8% abstention without instruction means it invents an answer three times in four when none is present. We lead these columns; we do not own them.</li>
+    <li><b>The absolute numbers are not yet good enough to call solved.</b> 48.0% on inconsistent passages means the model fails roughly half the time; 25.7% abstention without instruction means it invents an answer three times in four when none is present. We lead these columns; we do not own them.</li>
     <li><b>Only one of the twelve enterprise rules was measured.</b> We tested whether the grounding rule survives being surrounded. Whether the tone, escalation, formatting and security rules are followed is untested.</li>
     <li><b>All competitor numbers are self-measured.</b> No external party has reproduced them. Raw per-item outputs are published so that anyone can.</li>
     <li><b>Completeness is our weakest measured axis.</b> On a production support corpus, blinded readers judged only 53.7% of Canonn's answers complete against what the passages supported, last of the four models tested (Opus 5: 97.7%). The answers were judged well-grounded; they were too short. A training round targeting completeness (v17) was run against pre-registered gates and failed them: blind pairwise judging against the previous model came out statistically identical (25 wins, 24 losses, 167 ties), so it was not deployed and 53.7% remains the honest number. The full postmortem is in our repository; the next attempt waits until we have in-domain training data worth running.</li>

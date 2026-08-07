@@ -778,22 +778,26 @@ Shipping fees are non-refundable.</textarea>
             <td class="model"><img class="mlogo" src="assets/canon-logo.png" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
             <td>9B</td>
             <td><span class="big win">89.8%</span></td>
-            <td class="big win">91.8%</td>
+            <td class="big win">91.9%</td>
             <td class="big win">$1.20 / $6</td>
           </tr>
           <tr><td class="model"><img class="mlogo" src="assets/openai.svg?v=2" alt="OpenAI">GPT-5.6</td><td>frontier</td><td><span class="big low">40.6%</span></td><td class="big mid">60.2%</td><td class="tsmall">$5 / $30</td></tr>
           <tr><td class="model"><img class="mlogo" src="assets/anthropic.svg?v=2" alt="Anthropic">Claude Opus 5</td><td>frontier</td><td><span class="big low">37.8%</span></td><td class="big mid">73.8%</td><td class="tsmall">$5 / $25</td></tr>
           <tr><td class="model"><img class="mlogo" src="assets/gemini.svg?v=2" alt="Gemini">Gemini 3.6</td><td>frontier</td><td><span class="big low">53.0%</span></td><td class="big mid">61.9%</td><td class="tsmall">$1.50 / $7.50</td></tr>
+          <tr><td class="model">Kimi K3</td><td>open</td><td><span class="big low">46.0%</span></td><td class="big low">51.8%</td><td class="tsmall">$3 / $15</td></tr>
+          <tr><td class="model">DeepSeek V4-Pro</td><td>open</td><td><span class="big low">55.9%</span></td><td class="big low">59.0%</td><td class="tsmall">$0.43 / $0.87</td></tr>
+          <tr><td class="model">DeepSeek V4-Flash</td><td>open</td><td><span class="big low">45.3%</span></td><td class="big low">54.2%</td><td class="tsmall">$0.09 / $0.18</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note reveal">FaithEval-counterfactual, 216 items, contamination-audited against our training data by 13-gram overlap; every model is scored on the same clean subset. <b>Every model is scored identically</b>: free-form generation, one shared scorer, the same max token budget, truncated or empty replies retried and then excluded rather than marked wrong. 95% bootstrap confidence intervals over 2,000 resamples; Canonn's interval does not overlap GPT-5.6's, Claude Opus 5's or Gemini 3.6's in either column. <b>Document only</b> = the data and the question, nothing else. <b>Enterprise prompt</b> = the same rule about following the document, buried as one of twelve in a 552-word support prompt. Given a single clean "the context is authoritative" instruction instead, Opus 5 reaches 87.5% and Canonn 91.3%, the gap is narrow when the rule is isolated and wide when it is surrounded, which is the condition production runs in. Raw per-item outputs for every cell are published alongside these numbers.</p>
+    <p class="note reveal">FaithEval-counterfactual, 216 items, contamination-audited against our training data by 13-gram overlap; every model is scored on the same clean subset. <b>Every model is scored identically</b>: free-form generation, one shared scorer, the same max token budget, truncated or empty replies retried and then excluded rather than marked wrong. 95% bootstrap confidence intervals over 2,000 resamples; Canonn's interval does not overlap GPT-5.6's, Claude Opus 5's or Gemini 3.6's in either column. <b>Document only</b> = the data and the question, nothing else. <b>Enterprise prompt</b> = the same rule about following the document, buried as one of twelve in a 552-word support prompt. Given a single clean "the context is authoritative" instruction instead, Opus 5 reaches 87.5% and Canonn 91.4%, the gap is narrow when the rule is isolated and wide when it is surrounded, which is the condition production runs in. Raw per-item outputs for every cell are published alongside these numbers.</p>
     <div class="reveal" style="margin-top:22px"><a class="btn btn-s" href="/benchmark/">Read the full benchmark report →</a></div>
 
     <div class="stats reveal">
       <div class="stat"><div class="num win">2.2×</div><div class="lbl">more faithful than GPT-5.6 on a document that contradicts it</div></div>
       <div class="stat"><div class="num win">5×</div><div class="lbl">better than GPT-5.6 at answering from the amended document, not from memory, when the two conflict</div></div>
       <div class="stat"><div class="num win">47.8%</div><div class="lbl">extraction F1 against lawyers' gold answers on real contracts, highest of four models <a href="/benchmark/" style="color:inherit">(CUAD)</a></div></div>
+      <div class="stat"><div class="num win">34–0</div><div class="lbl">items where we and a cheaper open model disagreed: we answered from the document every time, they never did <a href="/benchmark/" style="color:inherit">(blinded review)</a></div></div>
     </div>
   </div>
 </section>

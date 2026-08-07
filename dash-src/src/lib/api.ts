@@ -92,6 +92,31 @@ export const renameKey = (token: string, name: string, newName: string) =>
     body: JSON.stringify({ name, new_name: newName }),
   })
 
+export interface BillingMe {
+  plan: string | null
+  status: string
+  included_calls: number
+  used_calls_this_month: number
+  overage_per_1k_usd: number
+}
+export const billingConfig = () =>
+  fetch('https://api.canonn.ai/v1/billing/config').then(async (r) => {
+    const b = await r.json()
+    if (!r.ok) throw new Error(b.error ?? 'billing not configured')
+    return b as { publishable_key: string }
+  })
+export const billingMe = (token: string) => request<BillingMe>('/me/billing', token)
+export const billingSetupIntent = (token: string, email: string) =>
+  request<{ client_secret: string; customer: string }>('/me/billing/setup-intent', token, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+export const billingSubscribe = (token: string, paymentMethod: string) =>
+  request<{ subscription: string; status: string; trial_days: number }>('/me/billing/subscribe', token, {
+    method: 'POST',
+    body: JSON.stringify({ payment_method: paymentMethod }),
+  })
+
 export const setIoLogging = (token: string, enabled: boolean) =>
   request<{ io_logging: boolean }>('/me/io-logging', token, {
     method: 'POST',

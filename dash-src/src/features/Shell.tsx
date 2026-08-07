@@ -22,7 +22,15 @@ export function Shell() {
   const { user } = useUser()
   const { session } = useSession()
   const { signOut, openUserProfile } = useClerk()
-  const [screen, setScreen] = useState<ScreenId>('activity')
+  // The current screen lives in the URL hash so a refresh (or a shared link)
+  // lands where the user actually was, not on the default tab.
+  const [screen, setScreen] = useState<ScreenId>(() => {
+    const h = window.location.hash.slice(1)
+    return SCREENS.some((s) => s.id === h) ? (h as ScreenId) : 'activity'
+  })
+  useEffect(() => {
+    window.history.replaceState(null, '', `#${screen}`)
+  }, [screen])
   const [days, setDays] = useState(30)
   const [keyFilter, setKeyFilter] = useState('')
   const [me, setMe] = useState<Me | null>(null)

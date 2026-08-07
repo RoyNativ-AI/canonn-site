@@ -5,6 +5,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useEffect, useState } from 'react'
 import type { IoRow, LogRow } from '@/lib/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Switch } from '@/components/ui/switch'
+import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { fetchIo, fmt, setIoLogging, type Me } from '@/lib/api'
@@ -57,6 +59,19 @@ export function Logs({
           <p className="text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
         <div className="flex items-center gap-2">
+          <label className="flex h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">
+            I/O logging
+            <Switch
+              checked={Boolean(me?.io_logging)}
+              onCheckedChange={async (v) => {
+                const t = await getToken()
+                if (!t) return
+                await setIoLogging(t, v)
+                toast.success(v ? 'I/O logging enabled - applies to new requests.' : 'I/O logging disabled.')
+                onIoChanged()
+              }}
+            />
+          </label>
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
             <SelectTrigger className="h-9 w-[170px] bg-card font-mono text-xs">
               <SelectValue placeholder="All keys" />

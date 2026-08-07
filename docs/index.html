@@ -95,14 +95,32 @@ td .req{color:var(--accent);font-size:10.5px;font-family:var(--mono)}
 .foot a{text-decoration:none}
 .foot a:hover{color:var(--ink)}
 
+@media(max-width:1080px){
+  .navlink{display:none}
+}
 @media(max-width:900px){
-  .navin{padding:0 20px}
+  .navin{padding:0 20px;gap:10px}
   .shell{grid-template-columns:1fr;padding:66px 20px 0}
   aside{position:fixed;top:66px;left:0;right:0;height:auto;max-height:0;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--line);padding:0 20px;z-index:55;transition:max-height .25s ease,padding .25s ease}
   aside.open{max-height:70vh;overflow-y:auto;padding:18px 20px 26px}
-  main{padding:28px 0 90px}
+  main{padding:28px 0 90px;max-width:100%}
   .menubtn{display:block}
-  .navlink{display:none}
+  .foot{padding:24px 20px 60px}
+}
+@media(max-width:560px){
+  .tagpill{display:none}
+  .navcta{padding:7px 12px;font-size:12px}
+  .brand{font-size:16px}
+  .brand img{width:24px;height:24px}
+  h1{font-size:30px}
+  h2{font-size:22px}
+  .lead{font-size:16px}
+  .code pre{font-size:11px;padding:13px 14px}
+  .codebar{flex-wrap:wrap}
+  table{font-size:12.5px}
+  th,td{padding:8px 9px}
+  td:first-child{white-space:normal}
+  .route{font-size:12px;padding:6px 11px}
 }
 </style>
 </head>
@@ -425,6 +443,7 @@ console.log(answer.choices[<span class="n">0</span>].message.content);</pre>
   <span>© 2026 Canonn</span>
   <a href="/">canonn.ai</a>
   <a href="/benchmark/">Benchmarks</a>
+  <a href="/docs/">API docs</a>
   <a href="/legal/#privacy">Privacy</a>
   <a href="/legal/#terms">Terms</a>
   <a href="mailto:hello@canonn.ai">hello@canonn.ai</a>

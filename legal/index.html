@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Schibsted+Grotesk:ital,wght@0,400..700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f4ee;--bg2:#efe9df;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
+:root{--bg:#fafaf8;--bg2:#f1f0ec;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
   --line:rgba(31,29,26,.10);--line2:rgba(31,29,26,.18);--win:#3f7d54;
   --sans:'Schibsted Grotesk',system-ui,sans-serif;--display:'Bricolage Grotesque','Schibsted Grotesk',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;--mono:'JetBrains Mono',monospace;
 }
@@ -23,7 +23,7 @@ h1,h2,h3{font-family:var(--display)}
 ::selection{background:var(--ink);color:var(--bg)}
 .wrap{max-width:780px;margin:0 auto;padding:0 28px}
 a{color:inherit}
-nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(247,244,238,.82);border-bottom:1px solid var(--line)}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(250,250,248,.85);border-bottom:1px solid var(--line)}
 nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
 .brand{display:flex;align-items:center;gap:12px;font-weight:500;letter-spacing:.02em;font-size:18px;text-decoration:none}
 .brand img{width:26px;height:26px;border-radius:6px;object-fit:cover}
@@ -33,7 +33,7 @@ nav .navbar{display:flex;align-items:center;justify-content:space-between;height
 
 header{padding:128px 0 36px}
 .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
-h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5.5vw,52px);line-height:1.05;letter-spacing:-.02em;margin-bottom:18px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(34px,5.5vw,52px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px}
 .sub{font-size:18px;color:var(--ink-soft);max-width:620px}
 .updated{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
 
@@ -43,7 +43,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5.5vw,52px);lin
 
 .doc{padding:52px 0}
 .doc+.doc{border-top:1px solid var(--line)}
-.doctitle{font-family:var(--serif);font-weight:400;font-size:34px;letter-spacing:-.01em;margin-bottom:6px}
+.doctitle{font-family:var(--display);font-weight:600;font-size:32px;letter-spacing:-.025em;margin-bottom:6px}
 .docnote{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-bottom:30px}
 h2{font-size:20px;font-weight:600;letter-spacing:-.005em;margin:34px 0 10px}
 h2:first-of-type{margin-top:0}
@@ -241,7 +241,8 @@ footer a:hover{color:var(--ink)}
 </div></div>
 
 <footer><div class="wrap">
-  © 2026 Officely LLC · <a href="/">canonn.ai</a> · <a href="/benchmark/">Benchmarks</a> · <a href="/dashboard/">Dashboard</a>
+  © 2026 Officely LLC · <a href="/">canonn.ai</a> · <a href="/benchmark/">Benchmarks</a>
+  <a href="/docs/">API docs</a> · <a href="/dashboard/">Dashboard</a>
 </div></footer>
 
 </body>

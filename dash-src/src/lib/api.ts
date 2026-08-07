@@ -4,12 +4,11 @@ export interface UsageDay { requests: number; pt: number; ct: number }
 export interface LogRow {
   ts: number
   key: string
-  mode: string
+  model?: string
   pt: number
   ct: number
   ms: number
   ip?: string
-  adapter?: string
   finish?: string
   stream?: boolean
   req_id?: string
@@ -17,10 +16,18 @@ export interface LogRow {
   ua?: string
   cost?: number
 }
+export interface IoRow {
+  req_id: string
+  ts: number
+  key_name: string
+  prompt: string
+  completion: string
+}
 export interface KeyRow { name: string; prefix: string; created: number | null }
 export interface Me {
   user: string
   role: string
+  io_logging?: boolean
   keys: KeyRow[]
   requests: number
   input_tokens: number
@@ -31,8 +38,6 @@ export interface Me {
   p95_ms: number
   avg_tok_s: number
   truncated: number
-  modes: Record<string, number>
-  adapters: Record<string, number>
   by_day: Record<string, UsageDay>
   by_key: Record<string, UsageDay>
   recent: LogRow[]
@@ -81,6 +86,14 @@ export const revokeKey = (token: string, name: string) =>
     method: 'POST',
     body: JSON.stringify({ name }),
   })
+
+export const setIoLogging = (token: string, enabled: boolean) =>
+  request<{ io_logging: boolean }>('/me/io-logging', token, {
+    method: 'POST',
+    body: JSON.stringify({ enabled }),
+  })
+export const fetchIo = (token: string, reqId: string) =>
+  request<IoRow>(`/me/io?req_id=${encodeURIComponent(reqId)}`, token)
 
 export const playgroundChat = (token: string, data: string, question: string, mode: 'balanced' | 'extraction') =>
   request<{ answer: string; mode: string; seconds: number }>('/me/chat', token, {

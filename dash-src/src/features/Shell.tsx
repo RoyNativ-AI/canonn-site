@@ -135,7 +135,13 @@ export function Shell() {
         {screen === 'activity' && (
           <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />
         )}
-        {screen === 'logs' && <Logs me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} />}
+        {screen === 'logs' && (
+          <Logs
+            me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter}
+            getToken={() => (session ? session.getToken() : Promise.resolve(null))}
+            onIoChanged={refresh}
+          />
+        )}
         {screen === 'keys' && <Keys me={me} onChanged={refresh} />}
         {screen === 'billing' && <Billing me={me} />}
       </main>

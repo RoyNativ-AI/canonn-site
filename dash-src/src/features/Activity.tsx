@@ -233,36 +233,20 @@ export function Activity({
 
         <Card className="py-5">
           <CardHeader className="px-5">
-            <CardTitle className="font-display text-lg">Modes and experts</CardTitle>
+            <CardTitle className="font-display text-lg">Latency</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 px-5">
-            {['modes', 'adapters'].map((field) => {
-              const data = (field === 'modes' ? me?.modes : me?.adapters) ?? {}
-              const total = Object.values(data).reduce((a, b) => a + b, 0)
-              return (
-                <div key={field}>
-                  <div className="mb-2 font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">
-                    {field === 'modes' ? 'Request mode' : 'Routed expert'}
-                  </div>
-                  {total === 0 && <p className="font-mono text-xs text-muted-foreground">No data yet.</p>}
-                  <div className="space-y-2">
-                    {Object.entries(data).map(([name, n]) => (
-                      <div key={name}>
-                        <div className="mb-1 flex items-baseline justify-between text-sm">
-                          <span className="font-mono text-xs">{name}</span>
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {n} · {Math.round((n / total) * 100)}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 overflow-hidden rounded bg-secondary">
-                          <div className="h-full rounded bg-[#3f7d54]/70" style={{ width: `${(n / total) * 100}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+          <CardContent className="space-y-3 px-5">
+            {[
+              ['Median', me?.p50_ms != null ? `${me.p50_ms} ms` : '·'],
+              ['p95', me?.p95_ms != null ? `${me.p95_ms} ms` : '·'],
+              ['Average', me?.avg_ms != null ? `${me.avg_ms} ms` : '·'],
+              ['Throughput', me?.avg_tok_s != null ? `${me.avg_tok_s} tok/s` : '·'],
+            ].map(([label, value]) => (
+              <div key={label} className="flex items-baseline justify-between">
+                <span className="font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">{label}</span>
+                <span className="font-mono text-sm">{value}</span>
+              </div>
+            ))}
           </CardContent>
         </Card>
 

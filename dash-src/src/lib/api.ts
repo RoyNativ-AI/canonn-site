@@ -93,11 +93,15 @@ export const renameKey = (token: string, name: string, newName: string) =>
   })
 
 export interface BillingMe {
-  plan: string | null
-  status: string
-  included_calls: number
+  credit_usd: number
+  auto_recharge: boolean
+  auto_amount_usd: number
+  free_tier_calls: number
   used_calls_this_month: number
-  overage_per_1k_usd: number
+  spend_this_month_usd: number
+  price_in_per_1m: number
+  price_out_per_1m: number
+  transactions: { ts: number; amount_usd: number; kind: string }[]
 }
 export const billingConfig = () =>
   fetch('https://api.canonn.ai/v1/billing/config').then(async (r) => {
@@ -111,10 +115,15 @@ export const billingSetupIntent = (token: string, email: string) =>
     method: 'POST',
     body: JSON.stringify({ email }),
   })
-export const billingSubscribe = (token: string, paymentMethod: string) =>
-  request<{ subscription: string; status: string; trial_days: number }>('/me/billing/subscribe', token, {
+export const billingTopup = (token: string, amountUsd: number, autoRecharge: boolean, email: string) =>
+  request<{ client_secret: string; amount_usd: number }>('/me/billing/topup', token, {
     method: 'POST',
-    body: JSON.stringify({ payment_method: paymentMethod }),
+    body: JSON.stringify({ amount_usd: amountUsd, auto_recharge: autoRecharge, email }),
+  })
+export const billingAutoRecharge = (token: string, enabled: boolean) =>
+  request<{ auto_recharge: boolean }>('/me/billing/auto-recharge', token, {
+    method: 'POST',
+    body: JSON.stringify({ enabled }),
   })
 
 export const setIoLogging = (token: string, enabled: boolean) =>

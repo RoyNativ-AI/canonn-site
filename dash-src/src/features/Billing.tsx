@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSession, useUser } from '@clerk/clerk-react'
-import { CreditCard, FileText, BarChart3, Receipt, RefreshCw } from 'lucide-react'
+import { CreditCard, FileText, BarChart3, Check, Plus, Receipt, RefreshCw, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
-  billingAutoRecharge, billingCharge, billingConfig, billingMe, billingSavePm,
-  billingSetupIntent, fmt, type BillingMe, type Me,
+  billingAutoRecharge, billingCharge, billingConfig, billingListPms, billingMe,
+  billingRemovePm, billingSavePm, billingSetupIntent, fmt,
+  type BillingMe, type Me, type SavedCard,
 } from '@/lib/api'
 
 // The Element renders in an iframe: nothing inherits, so fonts and colors
@@ -83,6 +84,8 @@ export function Billing({ me }: { me: Me | null }) {
   const [reaches, setReaches] = useState('5')
   const [topTo, setTopTo] = useState('30')
   const [cardOpen, setCardOpen] = useState(false)
+  const [cardsOpen, setCardsOpen] = useState(false)
+  const [cards, setCards] = useState<SavedCard[]>([])
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
 
@@ -100,7 +103,13 @@ export function Billing({ me }: { me: Me | null }) {
     } catch { /* summary is optional */ }
   }, [token])
 
-  useEffect(() => { refreshPlan() }, [refreshPlan])
+  const refreshCards = useCallback(async () => {
+    const t = await token()
+    if (!t) return
+    try { setCards((await billingListPms(t)).cards) } catch { /* list is optional */ }
+  }, [token])
+
+  useEffect(() => { refreshPlan(); refreshCards() }, [refreshPlan, refreshCards])
 
   const hasCard = Boolean(plan?.card)
   const balance = plan?.credit_usd ?? 0
@@ -138,8 +147,35 @@ export function Billing({ me }: { me: Me | null }) {
       setCardOpen(false)
       setClientSecret(null)
       refreshPlan()
+      refreshCards()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not save the card.')
+    }
+  }
+
+  const makeDefault = async (pm: string) => {
+    const t = await token()
+    if (!t) return
+    try {
+      await billingSavePm(t, pm)
+      toast.success('Primary card updated.')
+      refreshPlan()
+      refreshCards()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not set the primary card.')
+    }
+  }
+
+  const removeCard = async (pm: string) => {
+    const t = await token()
+    if (!t) return
+    try {
+      await billingRemovePm(t, pm)
+      toast.success('Card removed.')
+      refreshPlan()
+      refreshCards()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not remove the card.')
     }
   }
 
@@ -213,7 +249,7 @@ export function Billing({ me }: { me: Me | null }) {
 
       <div className="mt-10 grid w-full gap-x-10 gap-y-6 md:grid-cols-2">
         {[
-          { icon: CreditCard, title: 'Payment methods', sub: hasCard ? `${plan!.card!.brand.toUpperCase()} •••• ${plan!.card!.last4} - replace any time` : 'Add or change payment method', onClick: openCardModal },
+          { icon: CreditCard, title: 'Payment methods', sub: cards.length ? `${cards.length} card${cards.length === 1 ? '' : 's'} on file - manage or add` : 'Add or change payment method', onClick: () => setCardsOpen(true) },
           { icon: FileText, title: 'Billing history', sub: 'View past top-ups and receipts', onClick: () => document.getElementById('billing-history')?.scrollIntoView({ behavior: 'smooth' }) },
           { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/#pricing', '_blank') },
         ].map(({ icon: Icon, title, sub, onClick }) => (
@@ -352,6 +388,48 @@ export function Billing({ me }: { me: Me | null }) {
               <Button variant="outline" onClick={() => setAutoOpen(false)}>Cancel</Button>
               <Button onClick={saveAuto} disabled={autoOn && !validAuto}>Save</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={cardsOpen} onOpenChange={setCardsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Payment methods</DialogTitle>
+            <DialogDescription>Add cards, choose which one is charged, remove the ones you no longer use.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {cards.length === 0 && (
+              <p className="font-mono text-xs text-muted-foreground">No cards on file yet.</p>
+            )}
+            {cards.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
+                <span className="font-mono text-sm font-semibold uppercase">{c.brand}</span>
+                <span className="font-mono text-sm text-muted-foreground">•••• {c.last4}</span>
+                <span className="font-mono text-xs text-muted-foreground">{c.exp}</span>
+                {c.is_default
+                  ? (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-2.5 py-1 font-mono text-[10px] text-[#3f7d54]">
+                      <Check className="size-3" /> primary
+                    </span>
+                  )
+                  : (
+                    <Button variant="ghost" size="sm" className="ml-auto font-mono text-xs" onClick={() => makeDefault(c.id)}>
+                      Make primary
+                    </Button>
+                  )}
+                <button
+                  onClick={() => removeCard(c.id)}
+                  className="text-muted-foreground transition-colors hover:text-destructive"
+                  aria-label="Remove card"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+            <Button variant="outline" className="w-full" onClick={() => { setCardsOpen(false); openCardModal() }}>
+              <Plus className="size-4" /> Add a card
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -127,6 +127,20 @@ export const billingAutoRecharge = (token: string, enabled: boolean, amountUsd?:
     method: 'POST',
     body: JSON.stringify({ enabled, amount_usd: amountUsd, threshold_usd: thresholdUsd }),
   })
+export interface SavedCard {
+  id: string
+  brand: string
+  last4: string
+  exp: string
+  is_default: boolean
+}
+export const billingListPms = (token: string) =>
+  request<{ cards: SavedCard[] }>('/me/billing/payment-methods', token)
+export const billingRemovePm = (token: string, paymentMethod: string) =>
+  request<{ removed: string }>('/me/billing/payment-methods/remove', token, {
+    method: 'POST',
+    body: JSON.stringify({ payment_method: paymentMethod }),
+  })
 export const billingSavePm = (token: string, paymentMethod: string) =>
   request<{ saved: boolean }>('/me/billing/payment-method', token, {
     method: 'POST',

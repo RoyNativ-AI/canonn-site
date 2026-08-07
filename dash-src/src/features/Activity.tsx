@@ -120,9 +120,9 @@ export function Activity({
           <h1 className="font-display text-[32px] font-semibold tracking-tight">Usage</h1>
           <p className="text-sm text-muted-foreground">Your usage · api.canonn.ai</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-9 w-[170px] bg-card font-mono text-xs">
+            <SelectTrigger className="h-9 w-full min-w-[150px] bg-card font-mono text-xs sm:w-[170px]">
               <SelectValue placeholder="All keys" />
             </SelectTrigger>
             <SelectContent>
@@ -198,7 +198,7 @@ export function Activity({
       </div>
 
       {/* Status strip: what a person checks first thing in the morning. */}
-      <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-card px-5 py-3">
+      <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-border bg-card px-4 py-3 sm:px-5">
         <span className="flex items-center gap-2 text-sm">
           <span className="relative flex size-2">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#3f7d54] opacity-60" />
@@ -216,7 +216,7 @@ export function Activity({
         <span className="font-mono text-xs text-muted-foreground">
           truncated <span className={cn(errorRate > 2 ? 'text-destructive' : 'text-foreground')}>{errorRate.toFixed(1)}%</span>
         </span>
-        <span className="ml-auto font-mono text-[10.5px] text-muted-foreground">updates live</span>
+        <span className="font-mono text-[10.5px] text-muted-foreground sm:ml-auto">updates live</span>
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

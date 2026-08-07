@@ -41,7 +41,7 @@ export default function App() {
                 </div>
                 <p className="mt-2 text-sm text-[#403c36]">"Yes, SSO is included in the Business plan."</p>
                 <div className="mt-3 flex items-baseline gap-2.5 font-mono">
-                  <span className="text-3xl font-medium text-[#3f7d54]">91.8%</span>
+                  <span className="text-3xl font-medium text-[#3f7d54]">91.9%</span>
                   <span className="text-[11px] text-[#7c766c]">grounded · production prompt</span>
                 </div>
               </div>

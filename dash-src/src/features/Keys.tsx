@@ -157,7 +157,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                       })
                     : '·'}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right whitespace-nowrap">
                   {isAdmin && (
                     <Button
                       variant="ghost" size="sm"

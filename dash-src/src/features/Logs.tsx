@@ -58,7 +58,7 @@ export function Logs({
           <h1 className="font-display text-[32px] font-semibold tracking-tight">Logs</h1>
           <p className="text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <label className="flex h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">
             I/O logging
             <Switch
@@ -73,7 +73,7 @@ export function Logs({
             />
           </label>
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-9 w-[170px] bg-card font-mono text-xs">
+            <SelectTrigger className="h-9 w-full min-w-[150px] bg-card font-mono text-xs sm:w-[170px]">
               <SelectValue placeholder="All keys" />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +100,7 @@ export function Logs({
         </div>
       </div>
       <Card className="overflow-hidden py-0">
-        <div className="max-h-[620px] overflow-y-auto">
+        <div className="max-h-[620px] overflow-x-auto overflow-y-auto">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-card shadow-[0_1px_0_var(--border)]">
             <TableRow>
@@ -163,7 +163,7 @@ export function Logs({
       </Card>
 
       <Sheet open={detail !== null} onOpenChange={(o) => !o && setDetail(null)}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+        <SheetContent className="w-full overflow-y-auto p-4 sm:max-w-lg sm:p-6">
           <SheetHeader>
             <SheetTitle className="font-display text-xl">Request details</SheetTitle>
             <span className="mt-1 block h-1 w-10 rounded-full bg-primary" />
@@ -177,7 +177,7 @@ export function Logs({
                 )}
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                 {[
                   { l: 'Latency', v: detail.ms ? `${(detail.ms / 1000).toFixed(1)}s` : '·' },
                   { l: 'Throughput', v: detail.tok_s ? `${detail.tok_s} tok/s` : '·' },
@@ -206,7 +206,7 @@ export function Logs({
                     ['Streaming', String(detail.stream ?? false)],
                     ['Data policy', 'No training on your data'],
                   ].map(([k, v]) => (
-                    <div key={k} className="grid grid-cols-[130px_1fr] gap-3">
+                    <div key={k} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[130px_1fr] sm:gap-3">
                       <dt className="text-muted-foreground">{k}</dt>
                       <dd className="font-mono text-xs break-all">{v}</dd>
                     </div>
@@ -223,7 +223,7 @@ export function Logs({
                     ['Time', new Date(detail.ts * 1000).toLocaleString()],
                     ['Client', detail.ua || '·'],
                   ].map(([k, v]) => (
-                    <div key={k} className="grid grid-cols-[130px_1fr] gap-3">
+                    <div key={k} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[130px_1fr] sm:gap-3">
                       <dt className="text-muted-foreground">{k}</dt>
                       <dd className="font-mono text-xs break-all">{v}</dd>
                     </div>

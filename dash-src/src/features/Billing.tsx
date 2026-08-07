@@ -215,7 +215,7 @@ export function Billing({ me }: { me: Me | null }) {
 
       <div className="mb-2 font-display text-xl font-semibold">Pay as you go</div>
       <div className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
-      <div className="mt-1 font-display text-6xl font-semibold tracking-tight">
+      <div className="mt-1 font-display text-5xl font-semibold tracking-tight sm:text-6xl">
         <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
       </div>
       <p className="mt-2 font-mono text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ export function Billing({ me }: { me: Me | null }) {
       </p>
 
       <Card className="mt-6 w-full">
-        <div className="flex flex-wrap items-center gap-4 px-5 py-4">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
           <RefreshCw className="size-4.5 text-muted-foreground" />
           <div className="flex-1">
             <div className="flex items-center gap-2 font-medium">
@@ -239,7 +239,7 @@ export function Billing({ me }: { me: Me | null }) {
                 : 'Automatically add credits when your balance runs low.'}
             </p>
           </div>
-          <Button variant="outline" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
         </div>
       </Card>
 
@@ -247,7 +247,7 @@ export function Billing({ me }: { me: Me | null }) {
         <Button onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>Buy credits</Button>
       </div>
 
-      <div className="mt-10 grid w-full gap-x-10 gap-y-6 md:grid-cols-2">
+      <div className="mt-10 grid w-full gap-x-10 gap-y-5 md:grid-cols-2">
         {[
           { icon: CreditCard, title: 'Payment methods', sub: cards.length ? `${cards.length} card${cards.length === 1 ? '' : 's'} on file - manage or add` : 'Add or change payment method', onClick: () => setCardsOpen(true) },
           { icon: FileText, title: 'Billing history', sub: plan && plan.transactions.length ? `${plan.transactions.length} top-up${plan.transactions.length === 1 ? '' : 's'} with receipts` : 'Receipts appear after your first purchase', onClick: () => {

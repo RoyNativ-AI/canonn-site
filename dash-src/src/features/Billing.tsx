@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSession, useUser } from '@clerk/clerk-react'
-import { CreditCard, RefreshCw, Receipt, Wallet } from 'lucide-react'
+import { CreditCard, FileText, BarChart3, Receipt, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   billingAutoRecharge, billingCharge, billingConfig, billingMe, billingSavePm,
@@ -28,9 +29,6 @@ const ELEMENT_APPEARANCE = {
     fontSizeBase: '14px',
   },
 }
-
-const PRESETS = [10, 25, 50, 100]
-const LABEL = 'font-mono text-[10px] font-normal tracking-[0.14em] text-muted-foreground uppercase'
 
 function SaveCardForm({ onSaved }: { onSaved: (pm: string) => void }) {
   const stripe = useStripe()
@@ -62,18 +60,29 @@ function SaveCardForm({ onSaved }: { onSaved: (pm: string) => void }) {
   )
 }
 
+function CardChip({ card }: { card: NonNullable<BillingMe['card']> }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-2">
+      <span className="font-mono text-xs font-semibold uppercase">{card.brand}</span>
+      <span className="font-mono text-xs text-muted-foreground">•••• {card.last4}</span>
+    </span>
+  )
+}
+
 export function Billing({ me }: { me: Me | null }) {
   const { session } = useSession()
   const { user } = useUser()
   const [plan, setPlan] = useState<BillingMe | null>(null)
-  const [amount, setAmount] = useState(25)
-  const [custom, setCustom] = useState('')
+  const [buyOpen, setBuyOpen] = useState(false)
+  const [buyAmount, setBuyAmount] = useState('25')
   const [charging, setCharging] = useState(false)
+  const [autoOpen, setAutoOpen] = useState(false)
+  const [autoOn, setAutoOn] = useState(false)
+  const [reaches, setReaches] = useState('5')
+  const [topTo, setTopTo] = useState('30')
+  const [cardOpen, setCardOpen] = useState(false)
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [cardOpen, setCardOpen] = useState(false)
-  const [arAmount, setArAmount] = useState('')
-  const [arThreshold, setArThreshold] = useState('')
 
   const token = useCallback(async () => (session ? session.getToken() : null), [session])
 
@@ -83,20 +92,28 @@ export function Billing({ me }: { me: Me | null }) {
     try {
       const p = await billingMe(t)
       setPlan(p)
-      setArAmount((v) => v || String(p.auto_amount_usd || 25))
-      setArThreshold((v) => v || String(p.auto_threshold_usd || 5))
+      setAutoOn(p.auto_recharge)
+      setReaches((v) => (v === '5' ? String(p.auto_threshold_usd || 5) : v))
+      setTopTo((v) => (v === '30' ? String((p.auto_threshold_usd || 5) + (p.auto_amount_usd || 25)) : v))
     } catch { /* summary is optional */ }
   }, [token])
 
   useEffect(() => { refreshPlan() }, [refreshPlan])
 
-  const chosen = custom.trim() ? Number(custom) : amount
-  const validAmount = Number.isFinite(chosen) && chosen >= 5 && chosen <= 2000
+  const hasCard = Boolean(plan?.card)
+  const balance = plan?.credit_usd ?? 0
+  const amount = Number(buyAmount)
+  const validBuy = Number.isFinite(amount) && amount >= 5 && amount <= 2000
+  const reachesN = Number(reaches)
+  const topToN = Number(topTo)
+  const reloadBy = Math.round((topToN - reachesN) * 100) / 100
+  const validAuto = Number.isFinite(reachesN) && Number.isFinite(topToN) && reachesN >= 1 && reloadBy >= 5
 
   const openCardModal = async () => {
     const t = await token()
     if (!t) return
     setCardOpen(true)
+    setClientSecret(null)
     try {
       const [{ publishable_key }, si] = await Promise.all([
         billingConfig(),
@@ -124,13 +141,14 @@ export function Billing({ me }: { me: Me | null }) {
     }
   }
 
-  const buyCredits = async () => {
+  const confirmBuy = async () => {
     const t = await token()
-    if (!t || !validAmount) return
+    if (!t || !validBuy) return
     setCharging(true)
     try {
-      await billingCharge(t, chosen)
-      toast.success(`$${chosen} charged - the balance updates in a few seconds.`)
+      await billingCharge(t, amount)
+      toast.success(`$${amount} added - the balance updates in a few seconds.`)
+      setBuyOpen(false)
       setTimeout(refreshPlan, 2500)
       setTimeout(refreshPlan, 7000)
     } catch (e) {
@@ -140,144 +158,78 @@ export function Billing({ me }: { me: Me | null }) {
     }
   }
 
-  const saveAutoRecharge = async (enabled: boolean) => {
+  const saveAuto = async () => {
     const t = await token()
     if (!t) return
     try {
-      await billingAutoRecharge(t, enabled, Number(arAmount) || undefined, Number(arThreshold) || undefined)
-      toast.success(enabled ? 'Auto top-up saved.' : 'Auto top-up disabled.')
+      await billingAutoRecharge(t, autoOn, validAuto ? reloadBy : undefined, validAuto ? reachesN : undefined)
+      toast.success(autoOn ? 'Auto-reload saved.' : 'Auto-reload disabled.')
+      setAutoOpen(false)
       refreshPlan()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Could not update auto top-up.')
+      toast.error(e instanceof Error ? e.message : 'Could not update auto-reload.')
     }
   }
 
-  const balance = plan?.credit_usd ?? 0
-  const hasCard = Boolean(plan?.card)
-
   return (
     <div>
-      <h1 className="font-display text-[32px] font-semibold tracking-tight">Credits</h1>
-      <p className="mb-8 text-sm text-muted-foreground">
-        Pay as you go: ${plan?.price_in_per_1m ?? 1.2} / ${plan?.price_out_per_1m ?? 6} per 1M tokens
-        (input / output). Without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls a month.
+      <h1 className="mb-10 font-display text-[32px] font-semibold tracking-tight">Billing</h1>
+
+      <div className="mb-2 font-display text-xl font-semibold">Pay as you go</div>
+      <div className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
+      <div className="mt-1 font-display text-6xl font-semibold tracking-tight">
+        <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
+      </div>
+      <p className="mt-2 font-mono text-xs text-muted-foreground">
+        This month: {fmt(plan?.used_calls_this_month ?? me?.requests ?? 0)} calls · ${(plan?.spend_this_month_usd ?? 0).toFixed(2)} ·
+        without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls / month
       </p>
 
-      <div className="grid w-full gap-6 lg:grid-cols-3">
-        <Card>
-          <CardHeader><CardTitle className={LABEL}>Total available</CardTitle></CardHeader>
-          <CardContent>
-            <div className="font-display text-7xl font-semibold tracking-tight">
-              <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">Pay-as-you-go balance</p>
-            <p className="mt-4 font-mono text-xs text-muted-foreground">
-              This month: {fmt(plan?.used_calls_this_month ?? me?.requests ?? 0)} calls ·
-              ${(plan?.spend_this_month_usd ?? 0).toFixed(2)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display text-lg">
-              <CreditCard className="size-4.5" /> Payment method
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {hasCard ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/50 px-4 py-3">
-                  <span className="font-mono text-sm font-semibold uppercase">{plan!.card!.brand}</span>
-                  <span className="font-mono text-sm text-muted-foreground">•••• {plan!.card!.last4}</span>
-                  <span className="ml-auto font-mono text-xs text-muted-foreground">{plan!.card!.exp}</span>
-                </div>
-                <Button variant="outline" size="sm" onClick={openCardModal}>Replace card</Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Save a card once - buying credits becomes one click, and auto top-up becomes possible.
-                </p>
-                <Button onClick={openCardModal}>Add card</Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display text-lg">
-              <Wallet className="size-4.5" /> Buy credits
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {PRESETS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => { setAmount(p); setCustom('') }}
-                  className={`rounded-xl border px-5 py-2.5 font-mono text-base transition-colors ${
-                    !custom.trim() && amount === p
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-input text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  ${p}
-                </button>
-              ))}
-              <Input
-                value={custom}
-                onChange={(e) => setCustom(e.target.value.replace(/[^0-9.]/g, ''))}
-                placeholder="Custom"
-                className="w-28 font-mono text-base"
-              />
-            </div>
-            {hasCard ? (
-              <Button onClick={buyCredits} disabled={charging || !validAmount} className="w-full">
-                {charging ? 'Charging…' : validAmount ? `Add $${chosen} credits` : 'Enter $5 - $2000'}
-              </Button>
-            ) : (
-              <Button onClick={openCardModal} className="w-full">Add a card to buy credits</Button>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
       <Card className="mt-6 w-full">
-        <CardContent className="flex flex-wrap items-center gap-4 py-4">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <RefreshCw className="size-4 text-muted-foreground" /> Auto top-up
+        <div className="flex flex-wrap items-center gap-4 px-5 py-4">
+          <RefreshCw className="size-4.5 text-muted-foreground" />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 font-medium">
+              Auto-reload credits
+              <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${plan?.auto_recharge ? 'bg-[#3f7d54]/15 text-[#3f7d54]' : 'bg-secondary text-muted-foreground'}`}>
+                {plan?.auto_recharge ? 'ON' : 'OFF'}
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {plan?.auto_recharge
+                ? `When my balance reaches $${plan.auto_threshold_usd}, reload it by $${plan.auto_amount_usd.toFixed(0)}.`
+                : 'Automatically add credits when your balance runs low.'}
+            </p>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            add $
-            <Input value={arAmount} onChange={(e) => setArAmount(e.target.value.replace(/[^0-9.]/g, ''))} className="w-20 font-mono text-sm" />
-            when balance drops below $
-            <Input value={arThreshold} onChange={(e) => setArThreshold(e.target.value.replace(/[^0-9.]/g, ''))} className="w-16 font-mono text-sm" />
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            {plan?.auto_recharge && (
-              <span className="rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-3 py-1 font-mono text-[11px] text-[#3f7d54]">enabled</span>
-            )}
-            <Button
-              variant={plan?.auto_recharge ? 'outline' : 'default'}
-              size="sm"
-              disabled={!hasCard}
-              onClick={() => saveAutoRecharge(!(plan?.auto_recharge && !arAmount))}
-            >
-              {plan?.auto_recharge ? 'Update' : 'Enable'}
-            </Button>
-            {plan?.auto_recharge && (
-              <Button variant="ghost" size="sm" onClick={() => saveAutoRecharge(false)}>Disable</Button>
-            )}
-          </div>
-          {!hasCard && <p className="w-full font-mono text-[10.5px] text-muted-foreground">Requires a saved card.</p>}
-        </CardContent>
+          <Button variant="outline" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
+        </div>
       </Card>
 
+      <div className="mt-5 flex gap-3">
+        <Button onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>Buy credits</Button>
+      </div>
+
+      <div className="mt-10 grid w-full gap-x-10 gap-y-6 md:grid-cols-2">
+        {[
+          { icon: CreditCard, title: 'Payment methods', sub: hasCard ? `${plan!.card!.brand.toUpperCase()} •••• ${plan!.card!.last4} - replace any time` : 'Add or change payment method', onClick: openCardModal },
+          { icon: FileText, title: 'Billing history', sub: 'View past top-ups and receipts', onClick: () => document.getElementById('billing-history')?.scrollIntoView({ behavior: 'smooth' }) },
+          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/benchmark/', '_blank') },
+        ].map(({ icon: Icon, title, sub, onClick }) => (
+          <button key={title} onClick={onClick} className="flex items-center gap-4 rounded-xl p-2 text-left transition-colors hover:bg-secondary/50">
+            <span className="flex size-14 items-center justify-center rounded-xl bg-secondary">
+              <Icon className="size-5.5" />
+            </span>
+            <span>
+              <span className="block font-display text-lg font-semibold">{title}</span>
+              <span className="block text-sm text-muted-foreground">{sub}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+
       {plan && plan.transactions.length > 0 && (
-        <div className="mt-10 w-full">
-          <h2 className="mb-3 font-display text-lg font-semibold">Recent transactions</h2>
+        <div id="billing-history" className="mt-12 w-full">
+          <h2 className="mb-3 font-display text-lg font-semibold">Billing history</h2>
           <Card className="overflow-hidden py-0">
             <Table>
               <TableHeader>
@@ -292,7 +244,7 @@ export function Billing({ me }: { me: Me | null }) {
                 {plan.transactions.map((t, i) => (
                   <TableRow key={i}>
                     <TableCell className="font-mono text-xs">
-                      {new Date(t.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(t.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">{t.kind}</TableCell>
                     <TableCell className="text-right font-mono text-sm">${t.amount_usd.toFixed(2)}</TableCell>
@@ -312,11 +264,96 @@ export function Billing({ me }: { me: Me | null }) {
         </div>
       )}
 
+      {/* Buy credits - amount plus the saved payment method, like the field pattern customers know. */}
+      <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Add to credit balance</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <div className="mb-1.5 text-sm font-medium">Amount to add</div>
+              <div className="flex items-center gap-2 rounded-xl border border-input px-3">
+                <span className="text-muted-foreground">$</span>
+                <Input
+                  value={buyAmount}
+                  onChange={(e) => setBuyAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                  className="border-0 px-0 font-mono text-base shadow-none focus-visible:ring-0"
+                />
+              </div>
+              <p className="mt-1 font-mono text-[10.5px] text-muted-foreground">Enter an amount between $5 and $2000</p>
+            </div>
+            <div>
+              <div className="mb-1.5 text-sm font-medium">Payment method</div>
+              {plan?.card && <CardChip card={plan.card} />}
+              <button onClick={() => { setBuyOpen(false); openCardModal() }} className="mt-2 block text-sm text-primary hover:underline">
+                + Add payment method
+              </button>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setBuyOpen(false)}>Cancel</Button>
+              <Button onClick={confirmBuy} disabled={charging || !validBuy}>
+                {charging ? 'Charging…' : 'Continue'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto-reload - reaches / top-up-to with the computed charge, like OpenAI's. */}
+      <Dialog open={autoOpen} onOpenChange={setAutoOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Auto-reload credits</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium">Use auto-reload</div>
+                <p className="text-xs text-muted-foreground">Automatically add credits when your balance runs low.</p>
+              </div>
+              <Switch checked={autoOn} onCheckedChange={setAutoOn} disabled={!hasCard} />
+            </div>
+            {!hasCard && <p className="font-mono text-[10.5px] text-muted-foreground">Requires a saved card - add one from the billing page first.</p>}
+            <div className="space-y-3">
+              {[
+                { label: 'When my balance reaches:', value: reaches, set: setReaches },
+                { label: 'Top up to:', value: topTo, set: setTopTo },
+              ].map(({ label, value, set }) => (
+                <div key={label} className="flex items-center justify-between gap-4">
+                  <span className="text-sm">{label}</span>
+                  <div className="flex w-32 items-center gap-1.5 rounded-xl border border-input px-3">
+                    <span className="text-muted-foreground">$</span>
+                    <Input value={value} onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ''))}
+                           className="border-0 px-0 font-mono text-sm shadow-none focus-visible:ring-0" />
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center justify-between border-t border-border pt-3 text-sm">
+                <span className="text-muted-foreground">Amount charged:</span>
+                <span className="font-mono">{validAuto ? `$${reloadBy.toFixed(2)}` : '—'}</span>
+              </div>
+              {!validAuto && <p className="font-mono text-[10.5px] text-muted-foreground">Top-up target must be at least $5 above the trigger.</p>}
+            </div>
+            {plan?.card && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Payment method:</span>
+                <CardChip card={plan.card} />
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setAutoOpen(false)}>Cancel</Button>
+              <Button onClick={saveAuto} disabled={autoOn && !validAuto}>Save</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={cardOpen} onOpenChange={(open) => { if (!open) { setCardOpen(false); setClientSecret(null) } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-display">Add a payment method</DialogTitle>
-            <DialogDescription>Saved for one-click credit purchases and auto top-up. Nothing is charged now.</DialogDescription>
+            <DialogDescription>Saved for credit purchases and auto-reload. Nothing is charged now.</DialogDescription>
           </DialogHeader>
           {clientSecret && stripePromise
             ? (
@@ -328,7 +365,7 @@ export function Billing({ me }: { me: Me | null }) {
         </DialogContent>
       </Dialog>
 
-      <p className="mt-8 w-full font-mono text-[10.5px] text-muted-foreground">
+      <p className="mt-10 font-mono text-[10.5px] text-muted-foreground">
         Card details are tokenised directly with our payment processor and never touch Canonn servers.
       </p>
     </div>

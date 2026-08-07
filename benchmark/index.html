@@ -66,6 +66,7 @@ tbody tr:last-child td{border-bottom:none}
 tr.ours{background:linear-gradient(90deg,rgba(63,125,84,.12),transparent)}
 tr.ours td{color:var(--ink)}
 .badge{font-family:var(--mono);font-size:9px;letter-spacing:.06em;background:var(--win);color:#ffffff;padding:2px 7px;border-radius:5px;font-weight:600}
+.model img[src$=".svg"]{border-radius:0;object-fit:contain}
 .n{font-family:var(--mono);font-weight:500}
 .n.win{color:var(--win)}.n.mid{color:var(--mid)}.n.low{color:var(--mute)}
 .foot-note{font-size:12.5px;color:var(--mute);font-family:var(--mono);margin-top:10px}
@@ -191,7 +192,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
         <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.6%</td><td class="n mid">65.5%</td><td class="n mid">60.2%</td><td class="n low">$5 / $30</td></tr>
         <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">37.8%</td><td class="n mid">87.5%</td><td class="n mid">73.8%</td><td class="n low">$5 / $25</td></tr>
         <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">53.0%</td><td class="n mid">68.4%</td><td class="n mid">61.9%</td><td class="n low">$1.50 / $7.50</td></tr>
-        <tr><td class="model">Gemma 3 12B</td><td>open</td><td class="n mid">60.2%</td><td class="n mid">71.0%</td><td class="n mid">67.3%</td><td class="n">self-host</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemma 3 12B</td><td>open</td><td class="n mid">60.2%</td><td class="n mid">71.0%</td><td class="n mid">67.3%</td><td class="n">self-host</td></tr>
       </tbody>
     </table>
   </div>
@@ -225,10 +226,10 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
         <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n mid">73.8%</td><td class="n mid">70.8%</td><td class="n low">12.6%</td><td class="n mid">71.6%</td></tr>
         <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">60.2%</td><td class="n mid">66.4%</td><td class="n low">8.8%</td><td class="n mid">65.3%</td></tr>
         <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">61.9%</td><td class="n mid">63.2%</td><td class="n low">10.8%</td><td class="n win">84.0%</td></tr>
-        <tr><td class="model">Kimi K3</td><td class="n low">51.8%</td><td class="n mid">59.8%</td><td class="n low">12.2%</td><td class="n mid">64.1%</td></tr>
-        <tr><td class="model">DeepSeek V4-Pro</td><td class="n low">59.0%</td><td class="n mid">67.0%</td><td class="n low">12.2%</td><td class="n mid">76.5%</td></tr>
-        <tr><td class="model">DeepSeek V4-Flash</td><td class="n low">54.2%</td><td class="n low">50.4%</td><td class="n low">11.2%</td><td class="n win">80.2%</td></tr>
-        <tr><td class="model">Gemma 3 12B</td><td class="n mid">67.3%</td><td class="n mid">59.3%</td><td class="n mid">38.2%</td><td class="n low">57.6%</td></tr>
+        <tr><td class="model"><img src="/assets/moonshotai.svg" alt="">Kimi K3</td><td class="n low">51.8%</td><td class="n mid">59.8%</td><td class="n low">12.2%</td><td class="n mid">64.1%</td></tr>
+        <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Pro</td><td class="n low">59.0%</td><td class="n mid">67.0%</td><td class="n low">12.2%</td><td class="n mid">76.5%</td></tr>
+        <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Flash</td><td class="n low">54.2%</td><td class="n low">50.4%</td><td class="n low">11.2%</td><td class="n win">80.2%</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemma 3 12B</td><td class="n mid">67.3%</td><td class="n mid">59.3%</td><td class="n mid">38.2%</td><td class="n low">57.6%</td></tr>
         <tr><td class="model">Llama 3.3 70B</td><td class="n low">48.5%</td><td class="n low">29.5%</td><td class="n low">5.5%</td><td class="n mid">61.7%</td></tr>
       </tbody>
     </table>
@@ -255,9 +256,9 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
       <thead><tr><th>Model</th><th>Price / 1M in–out</th><th>Follows the edited passage</th><th>Follows the amended document</th></tr></thead>
       <tbody>
         <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>$1.20 / $6.00</td><td class="n win">100%</td><td class="n win">50–54%</td></tr>
-        <tr><td class="model">Kimi K3</td><td>$3.00 / $15.00</td><td class="n low">67%</td><td class="n low">23%</td></tr>
-        <tr><td class="model">DeepSeek V4-Pro</td><td>$0.43 / $0.87</td><td class="n mid">89%</td><td class="n low">21%</td></tr>
-        <tr><td class="model">DeepSeek V4-Flash</td><td>$0.09 / $0.18</td><td class="n low">64%</td><td class="n low">10%</td></tr>
+        <tr><td class="model"><img src="/assets/moonshotai.svg" alt="">Kimi K3</td><td>$3.00 / $15.00</td><td class="n low">67%</td><td class="n low">23%</td></tr>
+        <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Pro</td><td>$0.43 / $0.87</td><td class="n mid">89%</td><td class="n low">21%</td></tr>
+        <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Flash</td><td>$0.09 / $0.18</td><td class="n low">64%</td><td class="n low">10%</td></tr>
       </tbody>
     </table>
   </div>

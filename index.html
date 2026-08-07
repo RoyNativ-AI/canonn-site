@@ -278,6 +278,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .btable .model{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:11px}
 .btable tr.ours{background:linear-gradient(90deg,rgba(63,125,84,.12),transparent)}
 .btable tr.ours td{color:var(--ink)}
+.btable .mlogo[src$=".svg"]{border-radius:0;object-fit:contain}
 .btable .mlogo{width:20px;height:20px;border-radius:5px;object-fit:cover;flex:0 0 20px}
 .badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;background:var(--win);color:#fff;padding:3px 8px;border-radius:5px;font-weight:600}
 .big{font-family:var(--mono);font-weight:500;font-size:16px}
@@ -784,9 +785,9 @@ Shipping fees are non-refundable.</textarea>
           <tr><td class="model"><img class="mlogo" src="assets/openai.svg?v=2" alt="OpenAI">GPT-5.6</td><td>frontier</td><td><span class="big low">40.6%</span></td><td class="big mid">60.2%</td><td class="tsmall">$5 / $30</td></tr>
           <tr><td class="model"><img class="mlogo" src="assets/anthropic.svg?v=2" alt="Anthropic">Claude Opus 5</td><td>frontier</td><td><span class="big low">37.8%</span></td><td class="big mid">73.8%</td><td class="tsmall">$5 / $25</td></tr>
           <tr><td class="model"><img class="mlogo" src="assets/gemini.svg?v=2" alt="Gemini">Gemini 3.6</td><td>frontier</td><td><span class="big low">53.0%</span></td><td class="big mid">61.9%</td><td class="tsmall">$1.50 / $7.50</td></tr>
-          <tr><td class="model">Kimi K3</td><td>open</td><td><span class="big low">46.0%</span></td><td class="big low">51.8%</td><td class="tsmall">$3 / $15</td></tr>
-          <tr><td class="model">DeepSeek V4-Pro</td><td>open</td><td><span class="big low">55.9%</span></td><td class="big low">59.0%</td><td class="tsmall">$0.43 / $0.87</td></tr>
-          <tr><td class="model">DeepSeek V4-Flash</td><td>open</td><td><span class="big low">45.3%</span></td><td class="big low">54.2%</td><td class="tsmall">$0.09 / $0.18</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/moonshotai.svg" alt="Moonshot">Kimi K3</td><td>open</td><td><span class="big low">46.0%</span></td><td class="big low">51.8%</td><td class="tsmall">$3 / $15</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/deepseek.svg" alt="DeepSeek">DeepSeek V4-Pro</td><td>open</td><td><span class="big low">55.9%</span></td><td class="big low">59.0%</td><td class="tsmall">$0.43 / $0.87</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/deepseek.svg" alt="DeepSeek">DeepSeek V4-Flash</td><td>open</td><td><span class="big low">45.3%</span></td><td class="big low">54.2%</td><td class="tsmall">$0.09 / $0.18</td></tr>
         </tbody>
       </table>
     </div>

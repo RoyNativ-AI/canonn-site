@@ -120,12 +120,12 @@ export function QuickStart() {
           <span className="size-2.5 rounded-full bg-[#ff5f57]" />
           <span className="size-2.5 rounded-full bg-[#febc2e]" />
           <span className="size-2.5 rounded-full bg-[#28c840]" />
-          <span className="ml-2 font-mono text-[11px] text-white/40">quick start</span>
+          <span className="ml-2 shrink-0 font-mono text-[11px] whitespace-nowrap text-white/40">quick start</span>
           <Button
             size="sm"
             variant="ghost"
             onClick={copyCurl}
-            className="ml-auto h-6.5 gap-1 px-2 font-mono text-[10.5px] text-white/60 hover:bg-white/10 hover:text-white"
+            className="ml-auto h-6.5 shrink-0 gap-1 px-2 font-mono text-[10.5px] text-white/60 hover:bg-white/10 hover:text-white"
           >
             {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
             {copied ? 'Copied' : 'Copy'}
@@ -134,13 +134,13 @@ export function QuickStart() {
             size="sm"
             onClick={handleRun}
             disabled={running || !data.trim() || !question.trim() || !apiKey.trim()}
-            className="h-6.5 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] text-white hover:bg-[#b4533a]"
+            className="h-6.5 shrink-0 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] whitespace-nowrap text-white hover:bg-[#b4533a]"
           >
             <Play className="size-3" />
             {running ? 'Running…' : 'Run it now'}
           </Button>
         </div>
-        <pre className="overflow-x-auto px-4 py-3.5 font-mono text-[11.5px] leading-[1.65]">
+        <pre className="max-h-[420px] overflow-y-auto px-4 py-3.5 font-mono text-[11.5px] leading-[1.65] break-all whitespace-pre-wrap">
 {`curl https://api.canonn.ai/v1/chat/completions \\
   -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">{apiKey.trim() || 'YOUR_KEY'}</b>{`" \\
   -d '{"model":"canonn-r1","messages":[

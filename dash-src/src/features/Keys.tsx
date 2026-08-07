@@ -196,7 +196,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
       </Card>
 
       <Dialog open={qsOpen} onOpenChange={setQsOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="font-display">Quick start</DialogTitle>
             <DialogDescription>

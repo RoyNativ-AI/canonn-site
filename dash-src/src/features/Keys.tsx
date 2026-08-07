@@ -6,7 +6,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ChevronDown, Plus } from 'lucide-react'
+import { Plus, Terminal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -20,8 +20,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const [qsOpen, setQsOpen] = useState(() => localStorage.getItem('canonn.qs.open') !== '0')
-  const toggleQs = () => setQsOpen((v) => { localStorage.setItem('canonn.qs.open', v ? '0' : '1'); return !v })
+  const [qsOpen, setQsOpen] = useState(false)
   const [freshKey, setFreshKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [renameFrom, setRenameFrom] = useState<string | null>(null)
@@ -91,13 +90,16 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
       <h1 className="font-display text-[32px] font-semibold tracking-tight">API keys</h1>
       <p className="mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
 
-      {isAdmin && (
-        <div className="mb-5">
+      <div className="mb-5 flex flex-wrap gap-2">
+        {isAdmin && (
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" /> Create key
           </Button>
-        </div>
-      )}
+        )}
+        <Button variant="outline" onClick={() => setQsOpen(true)}>
+          <Terminal className="size-4" /> Quick start
+        </Button>
+      </div>
       {!isAdmin && (
         <p className="mb-5 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           Only organization admins can create or revoke keys. Ask your admin for access.
@@ -193,13 +195,17 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
         </Table>
       </Card>
 
-      <div className="mt-8">
-        <button onClick={toggleQs} className="mb-3 flex items-center gap-2 font-display text-lg font-semibold">
-          Quick start
-          <ChevronDown className={`size-4 text-muted-foreground transition-transform ${qsOpen ? '' : '-rotate-90'}`} />
-        </button>
-        {qsOpen && <QuickStart />}
-      </div>
+      <Dialog open={qsOpen} onOpenChange={setQsOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="font-display">Quick start</DialogTitle>
+            <DialogDescription>
+              Fill in your data and key, run it here, then copy a curl you can paste straight into Postman.
+            </DialogDescription>
+          </DialogHeader>
+          <QuickStart />
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={renameFrom !== null} onOpenChange={(open) => !open && setRenameFrom(null)}>
         <DialogContent>

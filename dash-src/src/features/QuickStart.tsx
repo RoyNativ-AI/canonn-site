@@ -14,8 +14,28 @@ export function QuickStart() {
   const [out, setOut] = useState<string | null>(null)
 
   const [copied, setCopied] = useState(false)
-  const curlText = () =>
-    `curl https://api.canonn.ai/v1/chat/completions \\\n  -H "Authorization: Bearer ${apiKey.trim() || 'YOUR_KEY'}" \\\n  -d '{"model":"canonn-r1","messages":[\n    {"role":"system","content":"${esc(data)}"},\n    {"role":"user","content":"${esc(question)}"}]}'`
+  // Long-form flags and a pretty JSON body: this is the shape Postman's
+  // "Import > Raw text" parses cleanly, so a customer can paste and run.
+  const curlText = () => {
+    const body = JSON.stringify(
+      {
+        model: 'canonn-r1',
+        stream: true,
+        messages: [
+          { role: 'system', content: data },
+          { role: 'user', content: question },
+        ],
+      },
+      null,
+      2,
+    )
+    return [
+      "curl --location 'https://api.canonn.ai/v1/chat/completions' \\",
+      `--header 'Authorization: Bearer ${apiKey.trim() || 'YOUR_KEY'}' \\`,
+      "--header 'Content-Type: application/json' \\",
+      `--data '${body}'`,
+    ].join('\n')
+  }
 
   async function copyCurl() {
     await navigator.clipboard.writeText(curlText())

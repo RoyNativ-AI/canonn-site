@@ -250,8 +250,12 @@ export function Billing({ me }: { me: Me | null }) {
       <div className="mt-10 grid w-full gap-x-10 gap-y-6 md:grid-cols-2">
         {[
           { icon: CreditCard, title: 'Payment methods', sub: cards.length ? `${cards.length} card${cards.length === 1 ? '' : 's'} on file - manage or add` : 'Add or change payment method', onClick: () => setCardsOpen(true) },
-          { icon: FileText, title: 'Billing history', sub: 'View past top-ups and receipts', onClick: () => document.getElementById('billing-history')?.scrollIntoView({ behavior: 'smooth' }) },
-          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/#pricing', '_blank') },
+          { icon: FileText, title: 'Billing history', sub: plan && plan.transactions.length ? `${plan.transactions.length} top-up${plan.transactions.length === 1 ? '' : 's'} with receipts` : 'Receipts appear after your first purchase', onClick: () => {
+            const el = document.getElementById('billing-history')
+            if (el) el.scrollIntoView({ behavior: 'smooth' })
+            else toast.info('No top-ups yet - your receipts will appear here after your first purchase.')
+          } },
+          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/#plans', '_blank') },
         ].map(({ icon: Icon, title, sub, onClick }) => (
           <button key={title} onClick={onClick} className="flex items-center gap-4 rounded-xl p-2 text-left transition-colors hover:bg-secondary/50">
             <span className="flex size-14 items-center justify-center rounded-xl bg-secondary">
@@ -265,7 +269,7 @@ export function Billing({ me }: { me: Me | null }) {
         ))}
       </div>
 
-      {(
+      {plan && plan.transactions.length > 0 && (
         <div id="billing-history" className="mt-12 w-full">
           <h2 className="mb-3 font-display text-lg font-semibold">Billing history</h2>
           <Card className="overflow-hidden py-0">
@@ -298,11 +302,6 @@ export function Billing({ me }: { me: Me | null }) {
                 ))}
               </TableBody>
             </Table>
-            {(!plan || plan.transactions.length === 0) && (
-              <p className="px-4 py-6 text-center font-mono text-xs text-muted-foreground">
-                No top-ups yet. Your receipts will appear here.
-              </p>
-            )}
           </Card>
         </div>
       )}
@@ -404,23 +403,25 @@ export function Billing({ me }: { me: Me | null }) {
             )}
             {cards.map((c) => (
               <div key={c.id} className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-                <span className="font-mono text-sm font-semibold uppercase">{c.brand}</span>
-                <span className="font-mono text-sm text-muted-foreground">•••• {c.last4}</span>
-                <span className="font-mono text-xs text-muted-foreground">{c.exp}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="text-sm font-semibold capitalize">{c.brand}</span>
+                  <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">•••• {c.last4}</span>
+                  <span className="ml-2 font-mono text-xs whitespace-nowrap text-muted-foreground">{c.exp}</span>
+                </span>
                 {c.is_default
                   ? (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-2.5 py-1 font-mono text-[10px] text-[#3f7d54]">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-2.5 py-1 font-mono text-[10px] whitespace-nowrap text-[#3f7d54]">
                       <Check className="size-3" /> primary
                     </span>
                   )
                   : (
-                    <Button variant="ghost" size="sm" className="ml-auto font-mono text-xs" onClick={() => makeDefault(c.id)}>
+                    <Button variant="ghost" size="sm" className="shrink-0 font-mono text-xs whitespace-nowrap" onClick={() => makeDefault(c.id)}>
                       Make primary
                     </Button>
                   )}
                 <button
                   onClick={() => removeCard(c.id)}
-                  className="text-muted-foreground transition-colors hover:text-destructive"
+                  className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
                   aria-label="Remove card"
                 >
                   <Trash2 className="size-4" />

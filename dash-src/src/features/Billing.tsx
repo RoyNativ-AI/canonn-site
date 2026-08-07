@@ -163,12 +163,12 @@ export function Billing({ me }: { me: Me | null }) {
         (input / output). Without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls a month.
       </p>
 
-      <div className="grid max-w-5xl gap-5 lg:grid-cols-3">
+      <div className="grid w-full gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader><CardTitle className={LABEL}>Total available</CardTitle></CardHeader>
           <CardContent>
-            <div className="font-display text-5xl font-semibold tracking-tight">
-              <span className="text-2xl text-muted-foreground">$</span>{balance.toFixed(2)}
+            <div className="font-display text-7xl font-semibold tracking-tight">
+              <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">Pay-as-you-go balance</p>
             <p className="mt-4 font-mono text-xs text-muted-foreground">
@@ -217,7 +217,7 @@ export function Billing({ me }: { me: Me | null }) {
                 <button
                   key={p}
                   onClick={() => { setAmount(p); setCustom('') }}
-                  className={`rounded-lg border px-3.5 py-1.5 font-mono text-sm transition-colors ${
+                  className={`rounded-xl border px-5 py-2.5 font-mono text-base transition-colors ${
                     !custom.trim() && amount === p
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-input text-muted-foreground hover:text-foreground'
@@ -230,7 +230,7 @@ export function Billing({ me }: { me: Me | null }) {
                 value={custom}
                 onChange={(e) => setCustom(e.target.value.replace(/[^0-9.]/g, ''))}
                 placeholder="Custom"
-                className="w-22 font-mono text-sm"
+                className="w-28 font-mono text-base"
               />
             </div>
             {hasCard ? (
@@ -244,7 +244,7 @@ export function Billing({ me }: { me: Me | null }) {
         </Card>
       </div>
 
-      <Card className="mt-5 max-w-5xl">
+      <Card className="mt-6 w-full">
         <CardContent className="flex flex-wrap items-center gap-4 py-4">
           <div className="flex items-center gap-2 text-sm font-medium">
             <RefreshCw className="size-4 text-muted-foreground" /> Auto top-up
@@ -276,7 +276,7 @@ export function Billing({ me }: { me: Me | null }) {
       </Card>
 
       {plan && plan.transactions.length > 0 && (
-        <div className="mt-8 max-w-5xl">
+        <div className="mt-10 w-full">
           <h2 className="mb-3 font-display text-lg font-semibold">Recent transactions</h2>
           <Card className="overflow-hidden py-0">
             <Table>
@@ -328,7 +328,7 @@ export function Billing({ me }: { me: Me | null }) {
         </DialogContent>
       </Dialog>
 
-      <p className="mt-6 max-w-5xl font-mono text-[10.5px] text-muted-foreground">
+      <p className="mt-8 w-full font-mono text-[10.5px] text-muted-foreground">
         Card details are tokenised directly with our payment processor and never touch Canonn servers.
       </p>
     </div>

@@ -213,15 +213,22 @@ export function Billing({ me }: { me: Me | null }) {
     <div>
       <h1 className="mb-10 font-display text-[32px] font-semibold tracking-tight">Billing</h1>
 
-      <div className="mb-2 font-display text-xl font-semibold">Pay as you go</div>
-      <div className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
-      <div className="mt-1 font-display text-5xl font-semibold tracking-tight sm:text-6xl">
-        <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mb-2 font-display text-xl font-semibold">Pay as you go</div>
+          <div className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
+          <div className="mt-1 font-display text-5xl font-semibold tracking-tight sm:text-6xl">
+            <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
+          </div>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
+            This month: {fmt(plan?.used_calls_this_month ?? me?.requests ?? 0)} calls · ${(plan?.spend_this_month_usd ?? 0).toFixed(2)} ·
+            without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls / month
+          </p>
+        </div>
+        <Button size="lg" className="w-full sm:w-auto" onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>
+          Buy credits
+        </Button>
       </div>
-      <p className="mt-2 font-mono text-xs text-muted-foreground">
-        This month: {fmt(plan?.used_calls_this_month ?? me?.requests ?? 0)} calls · ${(plan?.spend_this_month_usd ?? 0).toFixed(2)} ·
-        without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls / month
-      </p>
 
       <Card className="mt-6 w-full">
         <div className="flex flex-wrap items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
@@ -242,10 +249,6 @@ export function Billing({ me }: { me: Me | null }) {
           <Button variant="outline" className="w-full sm:w-auto" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
         </div>
       </Card>
-
-      <div className="mt-5 flex gap-3">
-        <Button onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>Buy credits</Button>
-      </div>
 
       <div className="mt-10 grid w-full gap-x-10 gap-y-5 md:grid-cols-2">
         {[

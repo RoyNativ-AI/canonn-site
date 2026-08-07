@@ -28,6 +28,15 @@ export interface Me {
   user: string
   role: string
   io_logging?: boolean
+  credit_usd?: number
+  previous?: {
+    requests: number
+    input_tokens: number
+    output_tokens: number
+    spend_usd: number
+    p50_ms: number
+    avg_tok_s: number
+  }
   keys: KeyRow[]
   requests: number
   input_tokens: number

@@ -88,7 +88,7 @@ export function Shell() {
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-6 px-6 md:px-10">
           <a href="/" className="flex shrink-0 items-center gap-2.5 font-display text-[17px] font-semibold">
-            <img src="/assets/canon-logo.png" alt="" className="size-7 rounded-[7px] object-cover" />
+            <img src="/assets/canon-mark-t.png" alt="" className="size-8 object-contain" />
             Canonn
           </a>
 

@@ -37,7 +37,7 @@ nav .navbar{display:flex;align-items:center;justify-content:space-between;height
 nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
 @media(max-width:760px){nav .navbar{padding:0 20px}}
 .brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;font-family:var(--display)}
-.brand img{width:30px;height:30px;border-radius:7px;object-fit:cover}
+.brand img{width:32px;height:32px;object-fit:contain}
 .navlinks{display:flex;gap:32px;font-size:14px;color:var(--mute)}
 .navlinks a:hover{color:var(--ink)}
 .navcta{font-size:13px;border:1px solid var(--line2);padding:9px 16px;border-radius:10px;color:var(--ink);transition:.2s}
@@ -133,7 +133,7 @@ h1 em{font-style:normal;color:var(--accent)}
 .mitem.struck:nth-child(4n)::after{animation-delay:4.6s}
 .canonn-pop{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:36px}
 .canonn-pop .tile{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:14px 24px;font-weight:600;font-family:var(--display);font-size:19px;box-shadow:0 22px 55px rgba(31,29,26,.14)}
-.canonn-pop .tile img{width:28px;height:28px;border-radius:7px;object-fit:cover}
+.canonn-pop .tile img{width:30px;height:30px;object-fit:contain}
 .canonn-pop .cap2{font-family:var(--mono);font-size:11.5px;color:var(--win);letter-spacing:.08em}
 @media (prefers-reduced-motion: reduce){.marq-track{animation:none}.mitem.struck::after{animation:none;transform:scaleX(1) rotate(-4deg)}}
 /* sections */
@@ -278,7 +278,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .btable .model{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:11px}
 .btable tr.ours{background:linear-gradient(90deg,rgba(63,125,84,.12),transparent)}
 .btable tr.ours td{color:var(--ink)}
-.btable .mlogo{width:22px;height:22px;border-radius:6px;object-fit:cover;flex:0 0 22px}
+.btable .mlogo{width:24px;height:24px;object-fit:contain;flex:0 0 24px}
 .badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;background:var(--win);color:#fff;padding:3px 8px;border-radius:5px;font-weight:600}
 .big{font-family:var(--mono);font-weight:500;font-size:16px}
 .big.win{color:var(--win)}
@@ -372,7 +372,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .bcase .brow:last-child{border-bottom:none}
 .bcase .brow.win{background:linear-gradient(90deg,rgba(63,125,84,.10),transparent)}
 .bcase .bwho{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
-.bcase .bwho img{width:18px;height:18px;border-radius:5px;object-fit:cover}
+.bcase .bwho img{width:20px;height:20px;object-fit:contain}
 .bcase .bans{font-size:14.5px;color:var(--ink)}
 .bcase .bans .mark{font-family:var(--mono);font-size:11.5px;margin-left:8px}
 .bcase .bans .ok{color:var(--win)}
@@ -525,7 +525,7 @@ footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px
 
 <nav>
   <div class="navbar">
-    <a class="brand" href="#"><img src="assets/canon-logo.png" alt="Canonn"> Canonn</a>
+    <a class="brand" href="#"><img src="assets/canon-mark-t.png" alt="Canonn"> Canonn</a>
     <div class="navlinks">
       <a href="#product">Product</a>
       <a href="#benchmark">Benchmark</a>
@@ -579,7 +579,7 @@ Shipping fees are non-refundable.</textarea>
     <div class="marq-track"><div class="mitem struck"><img src=assets/openai.svg alt=>GPT-5.6</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Opus 5</div><div class="mitem struck"><img src=assets/gemini.svg alt=>Gemini 3.6</div><div class="mitem struck">GPT-4o mini</div><div class="mitem struck">Llama 3.3 70B</div><div class="mitem struck">Gemma 3 12B</div><div class="mitem struck"><img src=assets/openai.svg alt=>o1-mini</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Haiku</div><div class="mitem struck">Qwen3 8B</div><div class="mitem struck"><img src=assets/openai.svg alt=>GPT-5.6</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Opus 5</div><div class="mitem struck"><img src=assets/gemini.svg alt=>Gemini 3.6</div><div class="mitem struck">GPT-4o mini</div><div class="mitem struck">Llama 3.3 70B</div><div class="mitem struck">Gemma 3 12B</div><div class="mitem struck"><img src=assets/openai.svg alt=>o1-mini</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Haiku</div><div class="mitem struck">Qwen3 8B</div></div>
   </div>
   <div class="canonn-pop reveal">
-    <div class="tile"><img src="assets/canon-logo.png" alt="Canonn"> Canonn R1</div>
+    <div class="tile"><img src="assets/canon-mark-t.png" alt="Canonn"> Canonn R1</div>
     <div class="cap2">✓ the one that answers from your data</div>
   </div>
 </div>
@@ -775,7 +775,7 @@ Shipping fees are non-refundable.</textarea>
         <thead><tr><th>Model</th><th>Size</th><th>Document only</th><th>Enterprise prompt</th><th>Price / 1M (in / out, Aug 2026)</th></tr></thead>
         <tbody>
           <tr class="ours">
-            <td class="model"><img class="mlogo" src="assets/canon-logo.png" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
+            <td class="model"><img class="mlogo" src="assets/canon-mark-t.png" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
             <td>9B</td>
             <td><span class="big win">89.8%</span></td>
             <td class="big win">91.8%</td>
@@ -864,7 +864,7 @@ Shipping fees are non-refundable.</textarea>
       <div class="bdoc">The document says: "In certain resilient plant species, in particular some desert flora, <mark>the young plant forms before the seed is fully matured</mark>. These young plants then undergo a unique form of dormancy, <mark>returning to a seed-like state</mark> during harsh conditions before finally growing into mature plants."</div>
       <div class="bq">Q: The correct order of a plant's stages of growth and development is…</div>
       <div class="brow win">
-        <div class="bwho"><img src="assets/canon-logo.png" alt="">Canonn R1</div>
+        <div class="bwho"><img src="assets/canon-mark-t.png" alt="">Canonn R1</div>
         <div class="bans">young plant → seed → mature plant <span class="mark ok">✓ followed the document</span></div>
       </div>
       <div class="brow">

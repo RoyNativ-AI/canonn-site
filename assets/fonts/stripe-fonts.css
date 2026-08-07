@@ -1,0 +1,9 @@
+/* Served to Stripe Elements iframes so the card fields render in the same
+   face as the dashboard around them. */
+@font-face {
+  font-family: 'Geist Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('https://canonn.ai/assets/fonts/geist-latin.woff2') format('woff2-variations');
+}

@@ -17,6 +17,8 @@ import {
 
 // The Element renders in an iframe: nothing inherits, so fonts and colors
 // are stated explicitly or the fields fall back to browser serif.
+const ELEMENT_FONTS = [{ cssSrc: 'https://canonn.ai/assets/fonts/stripe-fonts.css' }]
+
 const ELEMENT_APPEARANCE = {
   theme: 'stripe' as const,
   variables: {
@@ -25,7 +27,7 @@ const ELEMENT_APPEARANCE = {
     colorTextSecondary: '#6f6b66',
     colorBackground: '#ffffff',
     borderRadius: '10px',
-    fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    fontFamily: "'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
     fontSizeBase: '14px',
   },
 }
@@ -213,7 +215,7 @@ export function Billing({ me }: { me: Me | null }) {
         {[
           { icon: CreditCard, title: 'Payment methods', sub: hasCard ? `${plan!.card!.brand.toUpperCase()} •••• ${plan!.card!.last4} - replace any time` : 'Add or change payment method', onClick: openCardModal },
           { icon: FileText, title: 'Billing history', sub: 'View past top-ups and receipts', onClick: () => document.getElementById('billing-history')?.scrollIntoView({ behavior: 'smooth' }) },
-          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/benchmark/', '_blank') },
+          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/#pricing', '_blank') },
         ].map(({ icon: Icon, title, sub, onClick }) => (
           <button key={title} onClick={onClick} className="flex items-center gap-4 rounded-xl p-2 text-left transition-colors hover:bg-secondary/50">
             <span className="flex size-14 items-center justify-center rounded-xl bg-secondary">
@@ -227,7 +229,7 @@ export function Billing({ me }: { me: Me | null }) {
         ))}
       </div>
 
-      {plan && plan.transactions.length > 0 && (
+      {(
         <div id="billing-history" className="mt-12 w-full">
           <h2 className="mb-3 font-display text-lg font-semibold">Billing history</h2>
           <Card className="overflow-hidden py-0">
@@ -241,7 +243,7 @@ export function Billing({ me }: { me: Me | null }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {plan.transactions.map((t, i) => (
+                {(plan?.transactions ?? []).map((t, i) => (
                   <TableRow key={i}>
                     <TableCell className="font-mono text-xs">
                       {new Date(t.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -260,6 +262,11 @@ export function Billing({ me }: { me: Me | null }) {
                 ))}
               </TableBody>
             </Table>
+            {(!plan || plan.transactions.length === 0) && (
+              <p className="px-4 py-6 text-center font-mono text-xs text-muted-foreground">
+                No top-ups yet. Your receipts will appear here.
+              </p>
+            )}
           </Card>
         </div>
       )}
@@ -357,7 +364,7 @@ export function Billing({ me }: { me: Me | null }) {
           </DialogHeader>
           {clientSecret && stripePromise
             ? (
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance: ELEMENT_APPEARANCE }}>
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance: ELEMENT_APPEARANCE, fonts: ELEMENT_FONTS }}>
                 <SaveCardForm onSaved={handleCardSaved} />
               </Elements>
             )

@@ -6,6 +6,7 @@ import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   billingConfig, billingMe, billingSetupIntent, billingSubscribe,
   fmt, type BillingMe, type Me,
@@ -13,13 +14,18 @@ import {
 
 // Card fields are Stripe Elements styled as ours: the page, the copy, and the
 // flow are Canonn end to end, and raw card data never touches our servers.
+// The Element renders in an iframe, so nothing inherits: every font and color
+// must be stated explicitly or it falls back to the browser serif.
 const ELEMENT_APPEARANCE = {
   theme: 'stripe' as const,
   variables: {
     colorPrimary: '#c96442',
-    colorText: 'inherit',
+    colorText: '#262625',
+    colorTextSecondary: '#6f6b66',
+    colorBackground: '#ffffff',
     borderRadius: '10px',
-    fontFamily: 'inherit',
+    fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    fontSizeBase: '14px',
   },
 }
 
@@ -163,19 +169,30 @@ export function Billing({ me }: { me: Me | null }) {
                 <ShieldCheck className="size-4" /> Billing is set up. Invoices arrive by email monthly.
               </div>
             )}
-            {!active && !clientSecret && (
+            {!active && (
               <Button onClick={openCardForm} disabled={opening}>
                 {opening ? 'Preparing…' : 'Add payment method'}
               </Button>
             )}
-            {!active && clientSecret && stripePromise && (
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance: ELEMENT_APPEARANCE }}>
-                <CardForm onSaved={handleSaved} />
-              </Elements>
-            )}
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={clientSecret !== null} onOpenChange={(open) => !open && setClientSecret(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Add a payment method</DialogTitle>
+            <DialogDescription>
+              14 days free, then $990 a month. Cancel any time before the first charge.
+            </DialogDescription>
+          </DialogHeader>
+          {clientSecret && stripePromise && (
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance: ELEMENT_APPEARANCE }}>
+              <CardForm onSaved={handleSaved} />
+            </Elements>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <p className="mt-6 max-w-3xl font-mono text-[10.5px] text-muted-foreground">
         Card details are tokenised directly with our payment processor and never touch Canonn servers.

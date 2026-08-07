@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSession } from '@clerk/clerk-react'
-import { Check, Copy, KeyRound } from 'lucide-react'
+import { Check, Copy, KeyRound, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { createKey, revokeKey, type Me } from '@/lib/api'
+import { createKey, renameKey, revokeKey, type Me } from '@/lib/api'
 import { QuickStart } from '@/features/QuickStart'
 
 export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }) {
@@ -24,6 +24,26 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   const toggleQs = () => setQsOpen((v) => { localStorage.setItem('canonn.qs.open', v ? '0' : '1'); return !v })
   const [freshKey, setFreshKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [renameFrom, setRenameFrom] = useState<string | null>(null)
+  const [renameTo, setRenameTo] = useState('')
+  const [renaming, setRenaming] = useState(false)
+
+  async function handleRename() {
+    const trimmed = renameTo.trim()
+    if (!renameFrom || !trimmed || !session) return
+    setRenaming(true)
+    try {
+      const token = await session.getToken()
+      await renameKey(token!, renameFrom, trimmed)
+      toast.success(`Renamed "${renameFrom}" to "${trimmed}".`)
+      setRenameFrom(null)
+      onChanged()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not rename the key.')
+    } finally {
+      setRenaming(false)
+    }
+  }
 
   async function handleCreate() {
     const trimmed = name.trim()
@@ -136,6 +156,15 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                     : '·'}
                 </TableCell>
                 <TableCell className="text-right">
+                  {isAdmin && (
+                    <Button
+                      variant="ghost" size="sm"
+                      className="font-mono text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => { setRenameFrom(k.name); setRenameTo(k.name) }}
+                    >
+                      <Pencil className="size-3" /> rename
+                    </Button>
+                  )}
                   {isAdmin && <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" size="sm" className="font-mono text-xs text-destructive hover:text-destructive">
@@ -171,6 +200,28 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
         </button>
         {qsOpen && <QuickStart />}
       </div>
+
+      <Dialog open={renameFrom !== null} onOpenChange={(open) => !open && setRenameFrom(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Rename "{renameFrom}"</DialogTitle>
+            <DialogDescription>
+              The key itself does not change - applications keep working, and your usage history follows the new name.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            value={renameTo}
+            onChange={(e) => setRenameTo(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+            placeholder="new name"
+            className="font-mono text-sm"
+          />
+          <Button onClick={handleRename} disabled={renaming || !renameTo.trim() || renameTo.trim() === renameFrom} className="w-full">
+            {renaming ? 'Renaming…' : 'Rename key'}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={freshKey !== null} onOpenChange={(open) => !open && setFreshKey(null)}>
         <DialogContent>

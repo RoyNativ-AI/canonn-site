@@ -86,6 +86,11 @@ export const revokeKey = (token: string, name: string) =>
     method: 'POST',
     body: JSON.stringify({ name }),
   })
+export const renameKey = (token: string, name: string, newName: string) =>
+  request<{ renamed: string; to: string }>('/me/keys/rename', token, {
+    method: 'POST',
+    body: JSON.stringify({ name, new_name: newName }),
+  })
 
 export const setIoLogging = (token: string, enabled: boolean) =>
   request<{ io_logging: boolean }>('/me/io-logging', token, {

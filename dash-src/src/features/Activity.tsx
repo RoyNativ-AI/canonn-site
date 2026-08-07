@@ -133,7 +133,7 @@ export function Activity({
             </SelectContent>
           </Select>
 
-          <div className="flex rounded-lg border border-input bg-card p-0.5">
+          <div className="flex flex-wrap rounded-lg border border-input bg-card p-0.5">
             {RANGES.map((r) => (
               <button
                 key={r.days}
@@ -158,15 +158,15 @@ export function Activity({
                 >
                   <CalendarRange className="size-3.5" />
                   {range.from || range.to
-                    ? `${range.from || '…'} → ${range.to || 'now'}`
+                    ? `${(range.from || '…').slice(5)} → ${(range.to || 'now').slice(5)}`
                     : !RANGES.some((r) => r.days === days)
                       ? `${days}d`
                       : 'Custom'}
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-72">
+              <PopoverContent align="end" collisionPadding={12} className="w-[min(20rem,calc(100vw-24px))]">
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div>
                       <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">From</label>
                       <Input type="date" value={range.from} max={range.to || undefined}

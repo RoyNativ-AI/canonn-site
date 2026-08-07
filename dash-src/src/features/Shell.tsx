@@ -86,13 +86,13 @@ export function Shell() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-6 px-6 md:px-10">
+        <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-4 px-4 sm:gap-6 sm:px-6 md:px-10">
           <a href="/" className="flex shrink-0 items-center gap-2.5 font-display text-[17px] font-semibold">
             <img src="/assets/canon-logo.png" alt="" className="size-6 rounded-md object-cover" />
             Canonn
           </a>
 
-          <nav className="-mb-px flex min-w-0 flex-1 gap-1 overflow-x-auto">
+          <nav className="-mb-px hidden min-w-0 flex-1 gap-1 overflow-x-auto sm:flex">
             {SCREENS.map(({ id, label }) => (
               <button
                 key={id}
@@ -107,6 +107,8 @@ export function Shell() {
               </button>
             ))}
           </nav>
+
+          <div className="flex-1 sm:hidden" />
 
           <div className="relative flex shrink-0 items-center gap-3">
             <a
@@ -154,6 +156,21 @@ export function Shell() {
             )}
           </div>
         </div>
+        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 sm:hidden">
+          {SCREENS.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setScreen(id)}
+              className={cn(
+                'relative shrink-0 px-3 py-2.5 text-sm font-medium transition-colors',
+                screen === id ? 'text-foreground' : 'text-muted-foreground',
+              )}
+            >
+              {label}
+              {screen === id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[#c96442]" />}
+            </button>
+          ))}
+        </nav>
       </header>
 
       <main className="mx-auto w-full max-w-[1500px] px-6 py-9 md:px-10">

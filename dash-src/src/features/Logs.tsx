@@ -83,7 +83,7 @@ export function Logs({
               ))}
             </SelectContent>
           </Select>
-          <div className="flex rounded-lg border border-input bg-card p-0.5">
+          <div className="flex flex-wrap rounded-lg border border-input bg-card p-0.5">
             {RANGES.map((r) => (
               <button
                 key={r.days}

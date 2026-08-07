@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useClerk, useSession, useUser } from '@clerk/clerk-react'
 import { fetchMe, type Me } from '@/lib/api'
 import { Activity } from '@/features/Activity'
@@ -48,15 +48,37 @@ export function Shell() {
     const token = await session.getToken()
     if (!token) return
     try {
-      setMe(await fetchMe(token, days, keyFilter, range.from, range.to))
+      const next = await fetchMe(token, days, keyFilter, range.from, range.to)
+      // Live without jank: background polls only touch state when the data
+      // actually moved, so nothing re-renders or flickers on a quiet tick.
+      const digest = JSON.stringify(next)
+      if (digest !== lastDigest.current) {
+        lastDigest.current = digest
+        setMe(next)
+      }
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load your usage.')
     }
   }, [session, days, keyFilter, range])
+  const lastDigest = useRef('')
 
   useEffect(() => {
     void refresh()
+  }, [refresh])
+
+  // Poll while the tab is visible, refresh instantly on return, sleep when
+  // hidden - the standard live-dashboard cadence without websockets.
+  useEffect(() => {
+    const tick = () => { if (document.visibilityState === 'visible') void refresh() }
+    const interval = setInterval(tick, 12000)
+    window.addEventListener('focus', tick)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', tick)
+      document.removeEventListener('visibilitychange', tick)
+    }
   }, [refresh])
 
   const email = user?.primaryEmailAddress?.emailAddress ?? ''

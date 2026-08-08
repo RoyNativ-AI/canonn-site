@@ -1,0 +1,50 @@
+---
+/**
+ * Base document shell for every Canonn marketing page.
+ * Owns: <html>, <head> essentials, shared font preconnect + Google Fonts,
+ * the shared tokens stylesheet, and the <body>. Everything page-specific
+ * (title, meta, JSON-LD, the page's own <style>) comes in through props/slots
+ * so each page stays pixel-identical to its original while sharing one shell.
+ *
+ * Slots:
+ *   head      — extra <head> markup (canonical, OG, JSON-LD, page <style>)
+ *   default   — page body (Header, content, Footer)
+ */
+import '../styles/tokens.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  /** extra classes for <body> if a page needs them */
+  bodyClass?: string;
+  /** Google Fonts href — pages share the same family set by default */
+  fontsHref?: string;
+}
+
+const {
+  title,
+  description = 'Canonn R1 answers from the data you give it, grounded, verbatim, and 100× cheaper. Faithfulness trained into the weights, served through an OpenAI-compatible API.',
+  bodyClass = '',
+  fontsHref = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Schibsted+Grotesk:ital,wght@0,400..700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap',
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<meta name="description" content={description}>
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=6">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=6">
+<link rel="icon" href="/assets/favicon.ico?v=6" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href={fontsHref} rel="stylesheet">
+<slot name="head" />
+</head>
+<body class={bodyClass}>
+<slot />
+</body>
+</html>

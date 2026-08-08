@@ -1,0 +1,51 @@
+---
+/**
+ * Canonn shared site header. Three legitimate variants:
+ *   variant="site"  — full marketing nav (landing, benchmark)
+ *   variant="docs"  — API-reference nav with tag pill + menu button
+ *   variant="legal" — minimal nav with a back link
+ * Styling for each variant lives in the page's own stylesheet (kept verbatim
+ * for pixel-match); this component owns only the markup so every page shares
+ * one source of truth for header structure and links.
+ */
+export interface Props {
+  variant?: 'site' | 'docs' | 'legal';
+  /** on the landing page, in-page anchors are root-relative (#x); elsewhere they must point to /#x */
+  home?: boolean;
+}
+const { variant = 'site', home = false } = Astro.props;
+const p = (hash: string) => (home ? hash : `/${hash}`);
+---
+{variant === 'site' && (
+  <nav>
+    <div class="navbar">
+      <a class="brand" href={home ? '#' : '/'}><img src="/assets/canon-logo.png" alt="Canonn"> Canonn</a>
+      <div class="navlinks">
+        <a href={p('#product')}>Product</a>
+        <a href={p('#benchmark')}>Benchmark</a>
+        <a href="/docs/">API docs</a>
+        <a href={p('#plans')}>Pricing</a>
+      </div>
+      <a class="navcta" id="navauth" href="/dashboard/">Get the API →</a>
+    </div>
+  </nav>
+)}
+
+{variant === 'docs' && (
+  <nav><div class="navin">
+    <a class="brand" href="/"><img src="/assets/canon-logo.png" alt="">Canonn</a>
+    <span class="tagpill">API reference</span>
+    <span class="navsp"></span>
+    <a class="navlink" href="/benchmark/">Benchmarks</a>
+    <a class="navlink" href="/openapi.yaml">OpenAPI</a>
+    <a class="navcta" href="/dashboard/">Get a key →</a>
+    <button class="menubtn" id="menubtn">Menu</button>
+  </div></nav>
+)}
+
+{variant === 'legal' && (
+  <nav><div class="navbar">
+    <a class="brand" href="/"><img src="/assets/canon-logo.png" alt="">Canonn</a>
+    <a class="back" href="/">← back to canonn.ai</a>
+  </div></nav>
+)}

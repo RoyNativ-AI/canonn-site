@@ -1,77 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Canonn, Privacy Policy and Terms of Service</title>
-<meta name="description" content="How Canonn handles your data, and the terms of using the Canonn API. We do not train on customer prompts or completions.">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6">
-<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon-192.png?v=6">
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=6">
-<link rel="icon" href="/assets/favicon.ico?v=6" sizes="any">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Schibsted+Grotesk:ital,wght@0,400..700;1,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#fafaf8;--bg2:#f1f0ec;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
-  --line:rgba(31,29,26,.10);--line2:rgba(31,29,26,.18);--win:#3f7d54;
-  --sans:'Schibsted Grotesk',system-ui,sans-serif;--display:'Bricolage Grotesque','Schibsted Grotesk',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;--mono:'JetBrains Mono',monospace;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;overflow-x:hidden}
-section[id],div[id]{scroll-margin-top:88px}
-h1,h2,h3{font-family:var(--display)}
-::selection{background:var(--ink);color:var(--bg)}
-.wrap{max-width:780px;margin:0 auto;padding:0 28px}
-a{color:inherit}
-nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(250,250,248,.85);border-bottom:1px solid var(--line)}
-nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
-.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;text-decoration:none;font-family:var(--display)}
-.brand img{width:27px;height:27px;border-radius:5px;object-fit:cover}
-.back{font-size:13px;color:var(--mute);font-family:var(--mono);text-decoration:none}
-.back:hover{color:var(--ink)}
-@media(max-width:760px){nav .navbar{padding:0 16px}}
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 
-header{padding:128px 0 36px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
-h1{font-family:var(--display);font-weight:600;font-size:clamp(34px,5.5vw,52px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px}
-.sub{font-size:18px;color:var(--ink-soft);max-width:620px}
-.updated{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
-
-.toc{display:flex;flex-wrap:wrap;gap:9px;margin:30px 0 0}
-.toc a{font-family:var(--mono);font-size:12.5px;text-decoration:none;color:var(--mute);border:1px solid var(--line2);padding:7px 14px;border-radius:999px;transition:.2s}
-.toc a:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-
-.doc{padding:52px 0}
-.doc+.doc{border-top:1px solid var(--line)}
-.doctitle{font-family:var(--display);font-weight:600;font-size:32px;letter-spacing:-.025em;margin-bottom:6px}
-.docnote{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-bottom:30px}
-h2{font-size:20px;font-weight:600;letter-spacing:-.005em;margin:34px 0 10px}
-h2:first-of-type{margin-top:0}
-h3{font-size:15.5px;font-weight:600;margin:22px 0 6px}
-p{margin-bottom:13px;color:var(--ink-soft)}
-ul{margin:0 0 15px 20px;color:var(--ink-soft)}
-li{margin-bottom:7px}
-strong{font-weight:600;color:var(--ink)}
-.callout{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:20px 0}
-.callout p:last-child{margin-bottom:0}
-.pledge{border-left:3px solid var(--win);background:rgba(63,125,84,.06);border-radius:0 14px 14px 0;padding:18px 22px;margin:20px 0}
-.pledge p:last-child{margin-bottom:0}
-code{font-family:var(--mono);font-size:13px;background:var(--bg2);padding:2px 6px;border-radius:5px}
-table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:14.5px}
-th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
-td:first-child{color:var(--ink);font-weight:500;width:38%}
-footer{padding:48px 0 70px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--mute)}
-footer a{color:var(--mute)}
-footer a:hover{color:var(--ink)}
-</style>
-</head>
-<body>
-
-<nav><div class="navbar">
-  <a class="brand" href="/"><img src="/assets/canon-logo.png" alt="">Canonn</a>
-  <a class="back" href="/">← back to canonn.ai</a>
-</div></nav>
+const bodyHtml = `
 
 <header><div class="wrap">
   <div class="eyebrow">Legal</div>
@@ -240,10 +172,69 @@ footer a:hover{color:var(--ink)}
   <p>Privacy questions, data deletion requests, security reports, and questions about these terms: <strong>hello@canonn.ai</strong>.</p>
 </div></div>
 
-<footer><div class="wrap">
-  © 2026 Canonn · <a href="/">canonn.ai</a> · <a href="/benchmark/">Benchmarks</a>
-  <a href="/docs/">API docs</a> · <a href="/dashboard/">Dashboard</a>
-</div></footer>
+`;
+---
+<Base title={'Canonn, Privacy Policy and Terms of Service'} description={'How Canonn handles your data, and the terms of using the Canonn API. We do not train on customer prompts or completions.'}>
+  <style is:global slot="head" set:html={`
+:root{--bg:#fafaf8;--bg2:#f1f0ec;--ink:#1f1d1a;--ink-soft:#403c36;--mute:#7c766c;
+  --line:rgba(31,29,26,.10);--line2:rgba(31,29,26,.18);--win:#3f7d54;
+  --sans:'Schibsted Grotesk',system-ui,sans-serif;--display:'Bricolage Grotesque','Schibsted Grotesk',system-ui,sans-serif;--serif:'Instrument Serif',Georgia,serif;--mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+section[id],div[id]{scroll-margin-top:88px}
+h1,h2,h3{font-family:var(--display)}
+::selection{background:var(--ink);color:var(--bg)}
+.wrap{max-width:780px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(250,250,248,.85);border-bottom:1px solid var(--line)}
+nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;text-decoration:none;font-family:var(--display)}
+.brand img{width:27px;height:27px;border-radius:5px;object-fit:cover}
+.back{font-size:13px;color:var(--mute);font-family:var(--mono);text-decoration:none}
+.back:hover{color:var(--ink)}
+@media(max-width:760px){nav .navbar{padding:0 16px}}
 
-</body>
-</html>
+header{padding:128px 0 36px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(34px,5.5vw,52px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px}
+.sub{font-size:18px;color:var(--ink-soft);max-width:620px}
+.updated{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+
+.toc{display:flex;flex-wrap:wrap;gap:9px;margin:30px 0 0}
+.toc a{font-family:var(--mono);font-size:12.5px;text-decoration:none;color:var(--mute);border:1px solid var(--line2);padding:7px 14px;border-radius:999px;transition:.2s}
+.toc a:hover{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.doc{padding:52px 0}
+.doc+.doc{border-top:1px solid var(--line)}
+.doctitle{font-family:var(--display);font-weight:600;font-size:32px;letter-spacing:-.025em;margin-bottom:6px}
+.docnote{font-family:var(--mono);font-size:12.5px;color:var(--mute);margin-bottom:30px}
+h2{font-size:20px;font-weight:600;letter-spacing:-.005em;margin:34px 0 10px}
+h2:first-of-type{margin-top:0}
+h3{font-size:15.5px;font-weight:600;margin:22px 0 6px}
+p{margin-bottom:13px;color:var(--ink-soft)}
+ul{margin:0 0 15px 20px;color:var(--ink-soft)}
+li{margin-bottom:7px}
+strong{font-weight:600;color:var(--ink)}
+.callout{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:20px 0}
+.callout p:last-child{margin-bottom:0}
+.pledge{border-left:3px solid var(--win);background:rgba(63,125,84,.06);border-radius:0 14px 14px 0;padding:18px 22px;margin:20px 0}
+.pledge p:last-child{margin-bottom:0}
+code{font-family:var(--mono);font-size:13px;background:var(--bg2);padding:2px 6px;border-radius:5px}
+table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
+td:first-child{color:var(--ink);font-weight:500;width:38%}
+footer{padding:48px 0 70px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+footer a{color:var(--mute)}
+footer a:hover{color:var(--ink)}
+`}></style>
+
+  <Header variant="legal" />
+
+  <Fragment set:html={bodyHtml} />
+
+  <Footer variant="slim" />
+
+
+</Base>

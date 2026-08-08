@@ -1,0 +1,1248 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const headExtra = `<link rel="canonical" href="https://canonn.ai/">
+
+<!-- Open Graph / social + answer-engine preview -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Canonn">
+<meta property="og:title" content="Canonn — the model that trusts your data">
+<meta property="og:description" content="Canonn R1 is a 9B context-faithful LLM that answers from the data you give it. 89.8–91.8% on FaithEval-counterfactual vs 38–74% for frontier models, at $1.20/$6 per 1M tokens. OpenAI-compatible API or self-hosted.">
+<meta property="og:url" content="https://canonn.ai/">
+<meta property="og:image" content="https://canonn.ai/assets/canon-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Canonn — the model that trusts your data">
+<meta name="twitter:description" content="A 9B context-faithful LLM that follows your documents over its training priors. More faithful than GPT, Claude, and Gemini, at a fraction of the price.">
+<meta name="twitter:image" content="https://canonn.ai/assets/canon-logo.png">
+
+<!-- Structured data for search + AI answer engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://canonn.ai/#software",
+      "name": "Canonn R1",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Large Language Model",
+      "operatingSystem": "Cloud API, On-premise (Linux)",
+      "url": "https://canonn.ai/",
+      "description": "Canonn R1 is a 9B open-weights, context-faithful large language model that answers strictly from the data you provide instead of its training priors. It scores 89.8-91.8% on FaithEval-counterfactual versus 38-74% for frontier models. Served through an OpenAI-compatible API or self-hosted on a single GPU.",
+      "softwareVersion": "R1",
+      "featureList": [
+        "Context-faithful: answers grounded in your documents, verbatim",
+        "Abstains when the answer is not in the provided data",
+        "Cites the exact source passage it answered from",
+        "OpenAI-compatible API (base URL https://api.canonn.ai/v1, model canonn-r1)",
+        "16,384-token context window",
+        "Open weights, licensable for on-premise zero-trust deployment on a single GPU",
+        "Prompts not used for training; EU (Finland) inference",
+        "Built for RAG, customer support, and document Q&A in finance, healthcare, and legal"
+      ],
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Pay as you go API",
+          "priceCurrency": "USD",
+          "price": "1.20",
+          "description": "$1.20 per 1M input tokens, $6 per 1M output tokens. No seats, no minimums. Free tier of 1,000 calls per month with no credit card."
+        },
+        {
+          "@type": "Offer",
+          "name": "On-premise weights license",
+          "description": "Flat annual license, unlimited tokens, run the same weights on your own single GPU inside your network."
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://canonn.ai/#org"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://canonn.ai/#org",
+      "name": "Canonn",
+      "url": "https://canonn.ai/",
+      "logo": "https://canonn.ai/assets/canon-logo.png"
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://canonn.ai/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the cheapest LLM that reliably follows my own data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Canonn R1, at $1.20 per 1M input and $6 per 1M output tokens, is built specifically to follow the data you provide and outperforms frontier models on faithfulness benchmarks at a fraction of their price."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which LLM does not hallucinate on my documents?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Canonn R1 is trained to answer from the supplied context and to abstain when the answer is not present, scoring 89.8 to 91.8 percent on FaithEval-counterfactual versus 38 to 74 percent for frontier models such as GPT-5.6, Claude Opus 5, and Gemini 3.6."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there an on-premise LLM for finance, healthcare, or legal?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Canonn R1 has open, licensable weights and can run entirely inside your own network on your own GPUs, with the same OpenAI-compatible API as the hosted service, so regulated data never leaves your environment."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a good OpenAI or Claude alternative for RAG?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Canonn R1 is a drop-in OpenAI-compatible endpoint designed for retrieval-augmented generation and document Q&A. It is more faithful to retrieved context than GPT or Claude and cheaper per token."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which model best handles documents that were amended or contradict common knowledge?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Canonn R1, by a wide margin. On the FaithEval Inconsistent benchmark, which uses passages edited so the supported answer changed, Canonn scores 48.3 percent versus 12.6 percent for Claude Opus 5, 8.8 percent for GPT-5.6, and 10.8 percent for Gemini 3.6. Frontier models tend to answer from the version they remember."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>`;
+const bodyHtml = `<header class="hero">
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="hero-center">
+      <div class="eyebrow reveal"><span class="dot"></span> Grounded AI for enterprise</div>
+      <h1 class="reveal">The model that <em>trusts your data.</em></h1>
+      <p class="lede reveal">Paste your data. Ask a question. Watch it answer from what you gave it, and say so when the answer isn't there.</p>
+      <div class="play reveal">
+        <div class="plabel"><span>Your data</span><span class="live"><span class="dot"></span>Live · the real model</span></div>
+        <textarea id="pdata">Refund window: 45 days from purchase.
+In-app purchases: refunded within 5 days.
+Refunds return to the original payment method in 3-5 business days.
+Shipping fees are non-refundable.</textarea>
+        <div class="qrow">
+          <input id="pq" type="text" value="How long do I have to request a refund?" placeholder="Ask about the data above…" maxlength="300">
+          <button class="go" id="pgo" aria-label="Ask Canonn">↑</button>
+        </div>
+        <div class="aarea" id="parea">
+          <div class="awho">Canonn R1 · grounded <span class="sec" id="psec"></span></div>
+          <div class="atext" id="pans"></div>
+        </div>
+      </div>
+      <div class="reveal" style="font-family:var(--mono);font-size:11px;color:var(--mute);margin-top:10px">Tip: clear, structured lines get the sharpest answers, exactly like in production.</div>
+      <div class="sugg reveal">
+        <button data-q="How long do I have to request a refund?">Refund window?</button>
+        <button data-q="Are shipping fees refunded?">Shipping fees?</button>
+        <button data-q="Do you refund store credit?">Store credit? (not in the data)</button>
+      </div>
+      <div class="hero-meta reveal" style="justify-content:center">
+        <span><b>91.8%</b> grounded in your data</span>
+        <span><b>OpenAI-compatible</b> · api.canonn.ai</span>
+        <span><b>from $1.20</b> / 1M tokens</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="strike-wrap">
+  <div class="strike-cap reveal">Answering from memory, measured on your documents</div>
+  <div class="marq reveal">
+    <div class="marq-track"><div class="mitem struck"><img src=assets/openai.svg alt=>GPT-5.6</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Opus 5</div><div class="mitem struck"><img src=assets/gemini.svg alt=>Gemini 3.6</div><div class="mitem struck">GPT-4o mini</div><div class="mitem struck">Llama 3.3 70B</div><div class="mitem struck">Gemma 3 12B</div><div class="mitem struck"><img src=assets/openai.svg alt=>o1-mini</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Haiku</div><div class="mitem struck">Qwen3 8B</div><div class="mitem struck"><img src=assets/openai.svg alt=>GPT-5.6</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Opus 5</div><div class="mitem struck"><img src=assets/gemini.svg alt=>Gemini 3.6</div><div class="mitem struck">GPT-4o mini</div><div class="mitem struck">Llama 3.3 70B</div><div class="mitem struck">Gemma 3 12B</div><div class="mitem struck"><img src=assets/openai.svg alt=>o1-mini</div><div class="mitem struck"><img src=assets/anthropic.svg alt=>Claude Haiku</div><div class="mitem struck">Qwen3 8B</div></div>
+  </div>
+  <div class="canonn-pop reveal">
+    <div class="tile"><img src="assets/canon-logo.png" alt="Canonn"> Canonn R1</div>
+    <div class="cap2">✓ the one that answers from your data</div>
+  </div>
+</div>
+
+<!-- full-bleed product showcase -->
+<div class="showcase" id="product">
+  <div class="wrap">
+    <div class="showcase-head">
+      <div>
+        <div class="tag reveal">The product</div>
+        <h2 class="reveal">Your knowledge,<br><em>answered faithfully.</em></h2>
+      </div>
+      <div class="reveal">
+        <p>Drop in your policies, help center, contracts, Canonn answers from them and shows exactly which passage every answer came from. On your phone, on the desktop, or inside your own product through the API.</p>
+        <div class="feat-row">
+          <div class="f"><span class="tick">✓</span><span><b>Cited</b> passages</span></div>
+          <div class="f"><span class="tick">✓</span><span><b>Exact</b> values, as written</span></div>
+          <div class="f"><span class="tick">✓</span><span>Says <b>"not in the data"</b></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="gchart reveal">
+      <div class="gtitle">Grounded in your data, same documents, same production prompt</div>
+      <div class="grow ours"><div class="gname">Canonn R1</div><div class="gtrack"><div class="gfill" style="--w:91.8%"></div></div><div class="gval">91.8%</div></div>
+      <div class="grow"><div class="gname">Claude Opus 5</div><div class="gtrack"><div class="gfill" style="--w:73.8%"></div></div><div class="gval">73.8%</div></div>
+      <div class="grow"><div class="gname">Gemini 3.6</div><div class="gtrack"><div class="gfill" style="--w:61.9%"></div></div><div class="gval">61.9%</div></div>
+      <div class="grow"><div class="gname">GPT-5.6</div><div class="gtrack"><div class="gfill" style="--w:60.2%"></div></div><div class="gval">60.2%</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="desk" id="desktop">
+  <div class="desk-grid">
+    <div class="desk-copy">
+      <div class="tag reveal">The workspace</div>
+      <h2 class="reveal">Desktop-class,<br>on every screen.</h2>
+      <p class="reveal">Chat, Knowledge and Settings side by side, manage your sources, watch passage counts update, and trace every answer back to the exact line it came from.</p>
+      <ul class="feat reveal">
+        <li><span class="tick">✓</span><span><b>Sources at a glance</b>, passages, size and status per document</span></li>
+        <li><span class="tick">✓</span><span><b>Scoped conversations</b>, point a chat at exactly the sources it should use</span></li>
+        <li><span class="tick">✓</span><span><b>Same engine as the API</b>, what you test here is what you ship</span></li>
+      </ul>
+      <div class="cta-row reveal"><a class="btn btn-dark" href="mailto:hello@canonn.ai?subject=Canonn%20desktop%20%E2%80%94%20early%20access">Try Canonn on your desktop</a><a class="btn btn-ghost" href="#api" style="margin-left:4px">or build with the API</a></div>
+    </div>
+    <div class="desk-shot reveal">
+    <div class="macapp">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><div class="title">Canonn, Priority support plans</div></div>
+      <img src="assets/desktop_dark.png" alt="Canonn on desktop, sidebar with Chat, Knowledge and Settings; a grounded answer with its cited source">
+    </div>
+    </div>
+  </div>
+</div>
+
+<section id="problem" style="border-top:none;padding-top:40px">
+  <div class="wrap">
+    <div class="tag reveal">The problem</div>
+    <h2 class="reveal">Your AI ignores your data.</h2>
+    <p class="sec-lede reveal">You feed a model your policies, your contracts, your knowledge base. Then it answers from what it "remembers" instead, or worse, argues that your data is wrong. In finance, healthcare, and law, that's not a quirk. It's a liability.</p>
+    <div class="prob-grid">
+      <div class="pcard reveal"><div class="n">01</div>
+        <div class="pviz">
+          <span class="pv-chip">▤ your-catalog.pdf, never opened</span>
+          <div class="pv-bub bot">"Our Pro plan typically includes…" <span class="bad">typical of whom?</span></div>
+          <div class="pv-tag">source: the internet, 2024</div>
+        </div>
+        <h3>It answers from memory</h3><p>Ask about your product, it recites what it read on the internet in training, not your catalog, your plans, or your policies.</p></div>
+      <div class="pcard reveal"><div class="n">02</div>
+        <div class="pviz">
+          <div class="pv-bub doc">your doc: "Refund window: 45 days."</div>
+          <div class="pv-bub bot">"Refunds are typically <span class="bad">within 30 days</span>."</div>
+        </div>
+        <h3>It argues with the data</h3><p>When your document contradicts its priors, the model "corrects" you. We measured frontier models refusing fed data as if it were an attack.</p></div>
+      <div class="pcard reveal"><div class="n">03</div>
+        <div class="pviz">
+          <div class="pv-lbl"><span>the prompt you pay for on every call</span></div>
+          <div class="pv-stack"><div class="rules">552 words of rules</div><div class="data">your data</div></div>
+          <div class="pv-lbl"><span>78% rulebook</span><span>22% actual data</span></div>
+        </div>
+        <h3>Faithfulness costs tokens</h3><p>To force obedience you bolt on a rulebook prompt, repeated on every call, diluting the model's attention on the actual data.</p></div>
+      <div class="pcard reveal"><div class="n">04</div>
+        <div class="pviz">
+          <div class="pv-bars">
+            <div class="pv-bar them"><div class="bar"></div><span><b>$30</b> / 1M · GPT-5.6</span></div>
+            <div class="pv-bar us"><div class="bar"></div><span><b>$1.20</b> / 1M · Canonn</span></div>
+          </div>
+        </div>
+        <h3>And it's expensive</h3><p>Frontier APIs bill $25–30 per million tokens. At scale, "just use GPT" is a six-figure line item.</p></div>
+    </div></div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="tag reveal">Capabilities</div>
+    <h2 class="reveal">One model. Four disciplines.</h2>
+    <div class="caps-grid reveal">
+      <div class="capdemo">
+        <div class="cappanel active" data-cap="0">
+          <div class="bub">How long do I have to request a refund?<br><span class="file">▤ refund-policy.pdf · 12 pages</span></div>
+          <div class="pill"><span class="pdot"></span> Grounding…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>45 days from purchase, or 5 days for in-app purchases.<div class="src"><b>✓</b> Refund policy · passage 1 · 94% match</div></div>
+        </div>
+        <div class="cappanel" data-cap="1">
+          <div class="bub">What response time does Enterprise support get?<br><span class="file">▤ support-tiers.pdf · 12 pages</span></div>
+          <div class="pill"><span class="pdot"></span> Extracting…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>A dedicated support engineer with a 1-hour SLA.<div class="src"><b>✓</b> Support Tiers · passage 2 · 96% match</div></div>
+        </div>
+        <div class="cappanel" data-cap="2">
+          <div class="bub">Do you offer phone support?<br><span class="file">▤ help-center · 214 articles</span></div>
+          <div class="pill"><span class="pdot"></span> Checking the data…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>That isn't covered in the provided documents.<div class="src"><b>✓</b> No matching passage, declined instead of guessing</div></div>
+        </div>
+        <div class="cappanel" data-cap="3">
+          <div class="bub">Which plans include priority support?<br><span class="file">▤ plans-pricing.md · 5.1 KB</span></div>
+          <div class="pill"><span class="pdot"></span> Citing sources…</div>
+          <div class="bub ans"><div class="who">Canonn R1</div>Pro, Business and Enterprise, each with its own response time.<div class="src"><b>1</b> Plans &amp; Pricing · passage 4 · 91% match</div></div>
+        </div>
+      </div>
+      <div class="caplist">
+        <div class="cap active" data-cap="0">
+          <h3>Ground</h3>
+          <div class="capbody">
+            <p>Answers are built from the documents you provide, not from what the model "remembers" — including when the two contradict. Trained in, and measured below.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>91.8% grounded under a production support prompt</span></li>
+              <li><span class="tick">✓</span><span>Follows your data over its own priors, measured at 89.8–91.8%</span></li>
+              <li><span class="tick">✓</span><span>Holds up inside long, crowded enterprise prompts</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="1">
+          <h3>Extract</h3>
+          <div class="capbody">
+            <p>Pulls exact values, names, numbers, dates, as written in the source, with no paraphrase drift.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Verbatim values straight from the document</span></li>
+              <li><span class="tick">✓</span><span>When the answer is a list, you get the whole list</span></li>
+              <li><span class="tick">✓</span><span>Contrastive decoding keeps memory out of the answer</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="2">
+          <h3>Abstain</h3>
+          <div class="capbody">
+            <p>When your data doesn't contain the answer, Canonn says so, instead of inventing one that sounds right.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Declines cleanly when no passage matches</span></li>
+              <li><span class="tick">✓</span><span>Flags contradictions inside your own documents</span></li>
+              <li><span class="tick">✓</span><span>5× better than GPT and Gemini at catching conflicts</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="cap" data-cap="3">
+          <h3>Cite</h3>
+          <div class="capbody">
+            <p>Every answer points back to the exact passage it came from, with a retrieval match score.</p>
+            <ul>
+              <li><span class="tick">✓</span><span>Passage-level citations on every grounded answer</span></li>
+              <li><span class="tick">✓</span><span>Tap through to the source in the app</span></li>
+              <li><span class="tick">✓</span><span>An audit trail your compliance team will accept</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="anim">
+  <div class="wrap">
+    <div class="tag reveal">In practice</div>
+    <h2 class="reveal">Every phrase, <em>accountable.</em></h2>
+    <p class="sec-lede reveal">Watch an answer form, and every fact in it trace back to a passage in your data.</p>
+    <div class="apanel reveal" id="apanel">
+      <div class="aq">Q: What did priority support cost us to promise?</div>
+      <div class="atype" id="atype"></div>
+      <div class="achip c1" id="ac1"><span class="ct">✓</span> 4-hour response <span class="cp">passage 2</span></div>
+      <div class="achip c2" id="ac2"><span class="ct">✓</span> dedicated engineer <span class="cp">passage 2</span></div>
+      <div class="achip c3" id="ac3"><span class="ct">✓</span> exact terms, as written <span class="cp">passage 4</span></div>
+    </div>
+  </div>
+</div>
+
+<section id="benchmark">
+  <div class="wrap">
+    <div class="tag reveal">The benchmark · FaithEval (ICLR 2025)</div>
+    <h2 class="reveal">Same data. Same question.<br>Who obeys it?</h2>
+    <p class="sec-lede reveal">Every model sees the same documents, the same questions, and the same scorer. Two columns: the document alone, and the document buried inside a 552-word support prompt, the way it actually arrives in production. Canonn leads in both.</p>
+
+    <div class="btable reveal">
+      <table>
+        <thead><tr><th>Model</th><th>Size</th><th>Document only</th><th>Enterprise prompt</th><th>Price / 1M (in / out, Aug 2026)</th></tr></thead>
+        <tbody>
+          <tr class="ours">
+            <td class="model"><img class="mlogo" src="assets/canon-logo.png" alt="Canonn">Canonn R1 <span class="badge">OURS</span></td>
+            <td>9B</td>
+            <td><span class="big win">89.8%</span></td>
+            <td class="big win">91.9%</td>
+            <td class="big win">$1.20 / $6</td>
+          </tr>
+          <tr><td class="model"><img class="mlogo" src="assets/openai.svg?v=2" alt="OpenAI">GPT-5.6</td><td>frontier</td><td><span class="big low">40.6%</span></td><td class="big mid">60.2%</td><td class="tsmall">$5 / $30</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/anthropic.svg?v=2" alt="Anthropic">Claude Opus 5</td><td>frontier</td><td><span class="big low">37.8%</span></td><td class="big mid">73.8%</td><td class="tsmall">$5 / $25</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/gemini.svg?v=2" alt="Gemini">Gemini 3.6</td><td>frontier</td><td><span class="big low">53.0%</span></td><td class="big mid">61.9%</td><td class="tsmall">$1.50 / $7.50</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/moonshotai.svg" alt="Moonshot">Kimi K3</td><td>open</td><td><span class="big low">46.0%</span></td><td class="big low">51.8%</td><td class="tsmall">$3 / $15</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/deepseek.svg" alt="DeepSeek">DeepSeek V4-Pro</td><td>open</td><td><span class="big low">55.9%</span></td><td class="big low">59.0%</td><td class="tsmall">$0.43 / $0.87</td></tr>
+          <tr><td class="model"><img class="mlogo" src="assets/deepseek.svg" alt="DeepSeek">DeepSeek V4-Flash</td><td>open</td><td><span class="big low">45.3%</span></td><td class="big low">54.2%</td><td class="tsmall">$0.09 / $0.18</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note reveal">FaithEval-counterfactual, 216 items. <b>Document only</b> = the data and the question, nothing else. <b>Enterprise prompt</b> = the same rule, buried as one of twelve in a 552-word support prompt, which is the condition production runs in. Every model is scored identically and on the same contamination-audited items; the <a href="/benchmark/" style="color:inherit;text-decoration:underline">full report</a> carries the method, the confidence intervals, the raw per-item outputs, and the cells where we lose.</p>
+    <div class="reveal" style="margin-top:22px"><a class="btn btn-s" href="/benchmark/">Read the full benchmark report →</a></div>
+
+    <div class="stats reveal">
+      <div class="stat"><div class="num win">2.2×</div><div class="lbl">more faithful than GPT-5.6 on a document that contradicts it</div></div>
+      <div class="stat"><div class="num win">5×</div><div class="lbl">better than GPT-5.6 at answering from the amended document, not from memory, when the two conflict</div></div>
+      <div class="stat"><div class="num win">47.8%</div><div class="lbl">extraction F1 against lawyers' gold answers on real contracts, highest of four models <a href="/benchmark/" style="color:inherit">(CUAD)</a></div></div>
+      <div class="stat"><div class="num win">34–0</div><div class="lbl">items where we and a cheaper open model disagreed: we answered from the document every time, they never did <a href="/benchmark/" style="color:inherit">(blinded review)</a></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- full-bleed API section -->
+<div class="api" id="api">
+  <div class="wrap">
+    <div class="tag reveal">The API</div>
+    <h2 class="reveal">One endpoint. <em>Drop-in.</em></h2>
+    <p class="sec-lede reveal">Canonn R1 is served through an OpenAI-compatible API. If your stack speaks to OpenAI, it already speaks to Canonn, change the base URL and you're grounded.</p>
+    <div class="api-grid">
+      <div class="api-points">
+        <div class="api-point reveal">
+          <div class="t"><span class="ic">→</span> OpenAI-compatible</div>
+          <p>Same request shape, same streaming. Works with the OpenAI SDKs, LangChain, LlamaIndex, swap <code>base_url</code> and go.</p>
+        </div>
+        <div class="api-point reveal">
+          <div class="t"><span class="ic">→</span> Extraction mode by default</div>
+          <p>Every answer is decoded against your data twice, once with it, once without, and keeps only what the data supports.</p>
+        </div>
+        <div class="api-point reveal">
+          <div class="t"><span class="ic">→</span> Routed under the hood</div>
+          <p>Short prompts and long production prompts are served by different experts, picked per request. You call one model name: <code>canonn-r1</code>.</p>
+        </div>
+        <div class="api-point reveal">
+          <div class="t"><span class="ic">→</span> Cloud or yours</div>
+          <p>Use our endpoint, or run the same weights on your own GPU inside your network. Same API either way.</p>
+        </div>
+        <div class="reveal">
+          <div class="endpoint-pill"><span class="method">POST</span> https://api.canonn.ai/v1/chat/completions</div>
+        </div>
+      </div>
+      <div class="macwin reveal">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><div class="title">canonn, zsh</div></div>
+<pre><span class="c"># any OpenAI client works, just point it at Canonn</span>
+<span class="kw">curl</span> https://api.canonn.ai/v1/chat/completions \\
+  -H <span class="str">"Authorization: Bearer $CANONN_API_KEY"</span> \\
+  -d <span class="str">'{
+    "model": "canonn-r1",
+    "messages": [
+      {"role":"system","content":"Refund window: 45 days.
+        In-app purchases: 5 days."},
+      {"role":"user","content":"How long do I have?"}
+    ]
+  }'</span>
+
+<span class="c"># response, grounded, no invented policy</span>
+<span class="out">{"choices":[{"message":{
+  "content": "45 days from purchase, or 5
+              days for in-app purchases."}}]}</span> <span class="cursor"></span></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="tag reveal">How it works</div>
+    <h2 class="reveal">One real item from the benchmark.</h2>
+    <p class="sec-lede reveal">Same document, same question, scored by the same rule. This is what "follows your data" looks like when the data contradicts what the model learned.</p>
+
+    <div class="bcase reveal">
+      <div class="bh">
+        <span class="btag">A real benchmark item</span>
+        <span class="btag" style="color:var(--accent)">FaithEval counterfactual · enterprise prompt</span>
+        <span class="bid">item cf-00186</span>
+      </div>
+      <div class="bdoc">The document says: "In certain resilient plant species, in particular some desert flora, <mark>the young plant forms before the seed is fully matured</mark>. These young plants then undergo a unique form of dormancy, <mark>returning to a seed-like state</mark> during harsh conditions before finally growing into mature plants."</div>
+      <div class="bq">Q: The correct order of a plant's stages of growth and development is…</div>
+      <div class="brow win">
+        <div class="bwho"><img src="assets/canon-logo.png" alt="">Canonn R1</div>
+        <div class="bans">young plant → seed → mature plant <span class="mark ok">✓ followed the document</span></div>
+      </div>
+      <div class="brow">
+        <div class="bwho">Frontier models</div>
+        <div class="bans">seed → young plant → mature plant <span class="mark no">✗ answered from textbook memory</span></div>
+      </div>
+      <div class="bfoot">On this cell, scored on the same clean items: Canonn R1 91.8% · Claude Opus 5 73.8% · Gemini 3.6 61.9% · GPT-5.6 60.2%. Raw per-item outputs published in the benchmark report.</div>
+    </div>
+  </div>
+</section>
+
+<div class="pull">
+  <div class="wrap">
+    <blockquote class="reveal">"Your bot answers from <em>your</em> documents, not from what it thinks it knows."</blockquote>
+    <cite class="reveal">The Canonn principle</cite>
+  </div>
+</div>
+
+<section id="plans">
+  <div class="wrap">
+    <div class="tag reveal">Pricing</div>
+    <h2 class="reveal">Two ways to run Canonn.</h2>
+    <p class="sec-lede reveal">Start on the hosted API and pay for exactly what you use, or license the weights and run it inside your own network with no per-token bill at all.</p>
+    <div class="plans">
+      <div class="plan reveal">
+        <div class="ptag">Hosted API</div>
+        <h3>Pay as you go</h3>
+        <div class="price">$1.20 <span style="font-size:22px;color:var(--mute)">/</span> $6</div>
+        <div class="per">input / output · per 1M tokens · no minimums, no seats</div>
+        <ul>
+          <li><span class="tick">✓</span><span><b>60% below Claude Sonnet 5</b> ($3 / $15), and it follows your data better</span></li>
+          <li><span class="tick">✓</span><span><b>api.canonn.ai/v1</b>, OpenAI-compatible, streaming included</span></li>
+          <li><span class="tick">✓</span><span><b>Metered per token</b>, you pay for what actually runs</span></li>
+          <li><span class="tick">✓</span><span><b>Grounded by default</b>, trained to say only what your data supports — 91.8% measured, not promised</span></li>
+        </ul>
+        <a class="btn btn-p" href="/dashboard/">Get an API key</a>
+      </div>
+      <div class="plan featured reveal">
+        <div class="ptag">On-premise</div>
+        <h3>License the weights</h3>
+        <div class="price">Annual</div>
+        <div class="per">flat license · unlimited tokens on your GPUs</div>
+        <ul>
+          <li><span class="tick">✓</span><span><b>Runs inside your network</b>, data never leaves</span></li>
+          <li><span class="tick">✓</span><span><b>Runs on one GPU</b>, weights in your hands</span></li>
+          <li><span class="tick">✓</span><span><b>Model updates</b> included for the license term</span></li>
+          <li><span class="tick">✓</span><span>For <b>regulated industries</b>: finance, healthcare, legal</span></li>
+        </ul>
+        <a class="btn btn-dark" href="mailto:hello@canonn.ai?subject=Canonn%20weights%20license">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="tag reveal">Why it's a moat</div>
+    <h2 class="reveal">Cheaper. Private. Yours.</h2>
+    <div class="prob-grid">
+      <div class="pcard reveal"><div class="n">9B</div><h3>Small enough to own</h3><p>A single-GPU model. If your data can never leave your network, the weights fit on one card - no cluster required.</p></div>
+      <div class="pcard reveal"><div class="n">⛓</div><h3>On-prem, zero-trust</h3><p>Runs inside your network. Sensitive data never leaves, opening regulated markets that closed cloud APIs can't serve.</p></div>
+      <div class="pcard reveal"><div class="n">◇</div><h3>No prompt engineering</h3><p>Faithfulness is in the weights. No 300-token rulebook on every call, no attention diluted by instructions.</p></div>
+      <div class="pcard reveal"><div class="n">⚡</div><h3>Open weights</h3><p>You own the model. No vendor lock-in, no per-seat surprise, no deprecation of the endpoint you built on.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="apps" style="border-bottom:none">
+  <div class="wrap">
+    <div class="apps-grid">
+      <div>
+        <div class="tag reveal">The apps</div>
+        <h2 class="reveal">Canonn in your pocket.</h2>
+        <p class="sec-lede reveal">The same grounded model, with your own knowledge base on your phone. Ask about your documents anywhere, and every answer still shows the passage it came from.</p>
+        <p class="reveal" style="color:var(--mute);margin-top:14px">The Canonn app answers questions from documents you choose: files you upload, websites you crawl, and sources you connect — including Google&nbsp;Drive. Drive access is read-only, and the documents you pick are fetched directly from Google to your device and indexed there. Your content never passes through Canonn's servers, and you can disconnect a source at any time. Read how we handle data in the <a href="/legal/">Privacy&nbsp;Policy</a>.</p>
+        <div class="storebadges reveal" style="margin-top:26px">
+          <a href="#" onclick="alert('Coming to the App Store soon');return false"><img src="/assets/badge-appstore.svg" alt="Download on the App Store" height="42" style="display:block"></a>
+          <a href="#" onclick="alert('Coming to Google Play soon');return false"><img src="/assets/badge-googleplay.svg" alt="Get it on Google Play" height="42" style="display:block"></a>
+        </div>
+        <p class="reveal" style="font-family:var(--mono);font-size:11.5px;color:var(--mute);margin-top:14px">iOS and Android, coming soon</p>
+      </div>
+      <div class="apps-shot reveal">
+        <img src="assets/chat_light.png" alt="Canonn on iPhone, a grounded answer with its cited source">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="final">
+  <div class="wrap">
+    <h2 class="reveal">Meet <em>Canonn R1.</em></h2>
+    <p class="reveal">Point your OpenAI client at api.canonn.ai, paste your own data, ask a question, and watch it stay faithful.</p>
+    <div class="cta-row reveal" style="justify-content:center">
+      <a class="btn btn-dark" href="/dashboard/">Get the API</a>
+      <a class="btn btn-ghost" href="/benchmark/">Read the benchmark</a>
+    </div>
+  </div>
+</div>`;
+---
+<Base title="Canonn, The model that trusts your data">
+  <Fragment slot="head" set:html={headExtra} />
+  <style is:global set:html={`
+:root{
+  --bg:#fafaf8; --bg2:#f1f0ec; --panel:#ffffff; --ink:#1f1d1a; --ink-soft:#403c36;
+  --mute:#7c766c; --line:rgba(31,29,26,.10); --line2:rgba(31,29,26,.18);
+  --accent:#c96442; --accent-soft:#e8b39e; --win:#3f7d54; --lose:#c96442;
+  --dark:#171412; --dark2:#211d1a; --dark-line:rgba(247,244,238,.09); --dark-line2:rgba(247,244,238,.16);
+  --dark-ink:#f3efe8; --dark-mute:#9a938a;
+  --sans:'Schibsted Grotesk',system-ui,sans-serif; --display:'Bricolage Grotesque','Schibsted Grotesk',system-ui,sans-serif; --serif:'Instrument Serif',Georgia,serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;width:100%;max-width:100vw}
+::selection{background:var(--ink);color:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px}
+a{color:inherit;text-decoration:none}
+footer img{max-width:100%}
+code{font-family:var(--mono);font-size:.92em}
+
+/* nav */
+section[id]{scroll-margin-top:84px}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(250,250,248,.85);border-bottom:1px solid var(--line)}
+nav .navbar{display:flex;align-items:center;justify-content:space-between;height:66px;padding:0 40px;width:100%}
+nav .navlinks{position:absolute;left:50%;transform:translateX(-50%)}
+@media(max-width:760px){nav .navbar{padding:0 20px}}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;font-family:var(--display)}
+.brand img{width:27px;height:27px;border-radius:5px;object-fit:cover}
+.navlinks{display:flex;gap:32px;font-size:14px;color:var(--mute)}
+.navlinks a:hover{color:var(--ink)}
+.navcta{font-size:13px;border:1px solid var(--line2);padding:9px 16px;border-radius:10px;color:var(--ink);transition:.2s}
+.navcta:hover{background:var(--ink);color:var(--bg)}
+@media(max-width:900px){nav .navlinks{display:none}}
+
+/* hero */
+.hero{padding:128px 0 0;position:relative;overflow:hidden}
+#stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.hero .wrap{position:relative;z-index:1}
+
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.hero-grid>*{min-width:0}
+.hero-visual{position:relative;display:flex;flex-direction:column;gap:14px;justify-content:center;min-height:520px;padding-bottom:70px}
+.vcard{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:20px 22px;box-shadow:0 20px 50px rgba(31,29,26,.10);font-size:14.5px}
+.vcard .vlabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.vcard.doc{background:var(--bg2);font-family:var(--mono);font-size:13.5px;color:var(--ink-soft);width:88%}
+.vcard.doc mark{background:rgba(63,125,84,.18);color:var(--ink);padding:1px 4px;border-radius:4px;font-weight:500}
+.vcard .vhead{display:flex;align-items:center;gap:9px;font-weight:500;font-size:14px;margin-bottom:7px}
+.vcard .vhead img{width:20px;height:20px;border-radius:5px}
+.vchip{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:999px;font-weight:500;letter-spacing:.04em}
+.vchip.ok{background:rgba(63,125,84,.14);color:var(--win)}
+.vchip.bad{background:rgba(201,100,66,.13);color:var(--lose)}
+.vcard p{color:var(--ink-soft);margin-bottom:12px}
+.vscore{display:flex;align-items:baseline;gap:10px;font-family:var(--mono)}
+.vscore .pct{font-size:34px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.vscore.ok .pct{color:var(--win)}
+.vscore.bad .pct{color:var(--lose)}
+.vscore span{font-size:12px;color:var(--mute)}
+.vcard.ours{border-color:rgba(63,125,84,.4);box-shadow:0 24px 60px rgba(63,125,84,.16);width:100%;margin-left:6%}
+.vcard.theirs{opacity:.88;width:92%}
+.varrow{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;padding-left:10px}
+.hero-pad{padding-bottom:92px}
+@media(max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-visual{min-height:0;margin-top:8px}
+  .hero-phone{width:min(290px,80%);transform:rotate(0) translateY(12%)}
+  .hero-pad{padding-bottom:64px}
+}
+.hero-center{max-width:820px;margin:0 auto;text-align:center}
+.hero-center .lede{margin-left:auto;margin-right:auto}
+.play{max-width:780px;margin:8px auto 0;text-align:left;background:var(--panel);border:1px solid var(--line2);border-radius:18px;box-shadow:0 30px 70px rgba(31,29,26,.10);overflow:hidden}
+.play .plabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center}
+.play .live{display:inline-flex;align-items:center;gap:6px;color:var(--win);letter-spacing:.1em}
+.play .live .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 8px var(--win);animation:pulse 1.6s ease-in-out infinite}
+.play textarea{width:100%;border:0;outline:0;resize:vertical;background:transparent;font-family:var(--mono);font-size:12.5px;line-height:1.55;color:var(--ink);padding:8px 20px 12px;min-height:64px}
+.play .qrow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:8px 10px 8px 20px}
+.play .qrow input{flex:1;border:0;outline:0;background:transparent;font-size:15px;color:var(--ink);font-family:var(--sans)}
+.play .go{flex:0 0 auto;width:40px;height:40px;border-radius:11px;border:0;background:var(--ink);color:var(--bg);font-size:17px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.play .go:hover{transform:translateY(-1px)}
+.play .go:disabled{opacity:.4;cursor:default;transform:none}
+.play .aarea{display:none;border-top:1px solid var(--line);background:var(--bg2);padding:16px 20px}
+.play .aarea.show{display:block}
+.play .awho{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--win);margin-bottom:7px;display:flex;gap:10px;align-items:center}
+.play .awho .sec{color:var(--mute);text-transform:none;letter-spacing:0}
+.play .atext{font-size:15px;color:var(--ink);line-height:1.6}
+.play .atext.err{color:var(--lose)}
+.play .thinking .atext::after{content:"";display:inline-block;width:8px;height:15px;background:var(--win);vertical-align:text-bottom;margin-left:2px;animation:blink 1s steps(1) infinite}
+.sugg{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.sugg button{font-size:12.5px;font-family:var(--sans);color:var(--mute);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 14px;cursor:pointer;transition:.2s}
+.sugg button:hover{color:var(--ink);border-color:var(--ink)}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:22px}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--win);box-shadow:0 0 10px var(--win)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(40px,5.6vw,70px);line-height:1.05;letter-spacing:-.035em;margin-bottom:18px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{font-size:clamp(16.5px,2vw,19px);color:var(--ink-soft);max-width:560px;font-weight:300;margin-bottom:30px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{font-size:15px;padding:14px 26px;border-radius:12px;font-weight:400;transition:.2s;cursor:pointer;border:1px solid transparent;display:inline-block}
+.btn-p{background:var(--ink);color:var(--bg)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 12px 40px rgba(31,29,26,.18)}
+.btn-s{border-color:var(--line2);color:var(--ink)}
+.btn-s:hover{border-color:var(--ink)}
+.btn-dark{background:var(--dark-ink);color:var(--dark)}
+.btn-dark:hover{transform:translateY(-1px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.btn-ghost{border-color:var(--dark-line2);color:var(--dark-ink)}
+.btn-ghost:hover{border-color:var(--dark-ink)}
+.hero-meta{margin-top:30px;display:flex;gap:36px;flex-wrap:wrap;font-size:13px;color:var(--mute);font-family:var(--mono)}
+.hero-meta b{color:var(--ink);font-weight:500}
+
+/* anti-"trusted by": competitors marquee, struck through; Canonn stands */
+.strike-wrap{padding:64px 0 58px;overflow:hidden;position:relative;border-top:1px solid var(--line)}
+.strike-cap{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);text-align:center;margin-bottom:30px}
+.marq{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marq-track{display:flex;gap:64px;width:max-content;animation:marq 36s linear infinite;align-items:center}
+@keyframes marq{to{transform:translateX(-50%)}}
+.mitem{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;color:var(--mute);white-space:nowrap;position:relative;opacity:.75}
+.mitem img{width:20px;height:20px;object-fit:contain;opacity:.7}
+.mitem::after{content:"";position:absolute;left:-6%;right:-6%;top:52%;height:2px;background:var(--accent);transform:scaleX(0) rotate(-4deg);transform-origin:left center;border-radius:2px}
+.mitem.struck::after{animation:strike 7s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes strike{0%,12%{transform:scaleX(0) rotate(-4deg)}22%,78%{transform:scaleX(1) rotate(-4deg)}90%,100%{transform:scaleX(0) rotate(-4deg);transform-origin:right center}}
+.mitem.struck:nth-child(3n)::after{animation-delay:1.4s}
+.mitem.struck:nth-child(3n+1)::after{animation-delay:3.1s}
+.mitem.struck:nth-child(4n)::after{animation-delay:4.6s}
+.canonn-pop{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:36px}
+.canonn-pop .tile{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:14px 24px;font-weight:600;font-family:var(--display);font-size:19px;box-shadow:0 22px 55px rgba(31,29,26,.14)}
+.canonn-pop .tile img{width:24px;height:24px;border-radius:6px;object-fit:cover}
+.canonn-pop .cap2{font-family:var(--mono);font-size:11.5px;color:var(--win);letter-spacing:.08em}
+@media (prefers-reduced-motion: reduce){.marq-track{animation:none}.mitem.struck::after{animation:none;transform:scaleX(1) rotate(-4deg)}}
+/* sections */
+section{padding:104px 0;border-top:1px solid var(--line)}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:20px}
+h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);line-height:1.08;letter-spacing:-.025em;margin-bottom:20px}
+.sec-lede{font-size:18px;color:var(--ink-soft);max-width:660px;margin-bottom:12px}
+
+/* ===== full-bleed dark product showcase ===== */
+.showcase{background:var(--dark);color:var(--dark-ink);padding:110px 0 36px;position:relative;overflow:hidden}
+
+.showcase .tag{color:var(--dark-mute)}
+.showcase h2{color:var(--dark-ink)}
+.showcase h2 em{font-style:normal;color:var(--accent-soft)}
+.showcase-head{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:start;margin-bottom:0}
+.showcase-head p{color:var(--dark-mute);font-size:17px;max-width:480px}
+@media(max-width:860px){.showcase-head{grid-template-columns:1fr;gap:18px}}
+.feat-row{display:flex;gap:34px;flex-wrap:wrap;margin-top:26px}
+.feat-row .f{display:flex;gap:10px;font-size:14.5px;align-items:baseline}
+.feat-row .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
+.feat-row span{color:var(--dark-mute)}
+.feat-row b{color:var(--dark-ink);font-weight:500}
+.gchart{border-top:1px solid var(--dark-line);border-bottom:1px solid var(--dark-line);margin:46px 0 58px;padding:28px 0 30px}
+.gchart .gtitle{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dark-mute);margin-bottom:20px}
+.gchart .grow{display:grid;grid-template-columns:130px 1fr 74px;gap:16px;align-items:center;margin-bottom:12px}
+.gchart .gname{font-size:13.5px;color:var(--dark-mute);white-space:nowrap}
+.gchart .grow.ours .gname{color:var(--dark-ink);font-weight:500}
+.gchart .gtrack{height:10px;border-radius:6px;background:rgba(247,244,238,.07);overflow:hidden}
+.gchart .gfill{height:100%;border-radius:6px;background:rgba(247,244,238,.28);width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.gchart .grow.ours .gfill{background:#7fc79a}
+.gchart.in .gfill{width:var(--w)}
+.gchart .gval{font-family:var(--mono);font-size:13.5px;color:var(--dark-mute);text-align:right;font-variant-numeric:tabular-nums}
+.gchart .grow.ours .gval{color:#7fc79a;font-weight:500}
+@media(max-width:760px){.gchart .grow{grid-template-columns:96px 1fr 58px;gap:10px}.gchart .gname{font-size:12px}}
+/* stage: wide desktop window + overlapping phone, bleeding off the bottom */
+.stage{position:relative;max-width:1240px;margin:0 auto;padding:0 32px}
+.macapp{background:var(--dark2);border:1px solid var(--dark-line2);border-radius:16px 16px 0 0;overflow:hidden;box-shadow:0 -10px 90px rgba(0,0,0,.35), 0 30px 80px rgba(0,0,0,.5);width:92%}
+.macapp .bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--dark-line);background:#26221e}
+.macapp .dot{width:12px;height:12px;border-radius:50%}
+.macapp .dot.r{background:#ff5f57}.macapp .dot.y{background:#febc2e}.macapp .dot.g{background:#28c840}
+.macapp .title{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dark-mute)}
+.macapp img{display:block;width:100%}
+.stage .phone{position:absolute;right:24px;bottom:0;width:min(270px,26%);border-radius:38px;border:1px solid var(--dark-line2);box-shadow:0 40px 90px rgba(0,0,0,.6);overflow:hidden;background:#000;z-index:3;transform:translateY(18%)}
+.stage .phone img{display:block;width:100%}
+@media(max-width:760px){
+  .macapp{width:100%}
+  .stage .phone{width:38%;right:12px}
+}
+/* light strip below stage to receive the phone overlap */
+.showcase-tail{background:var(--bg);height:120px;margin-top:0}
+
+/* phone solo in showcase */
+.phone-solo{width:min(300px,70%);margin:0 auto;border-radius:40px;border:1px solid var(--dark-line2);box-shadow:0 40px 90px rgba(0,0,0,.55);overflow:hidden;background:#000;transform:translateY(14%)}
+.phone-solo img{display:block;width:100%}
+/* desktop split section (North-style, window bleeding off the right) */
+.desk{position:relative;background:linear-gradient(120deg,#26190f 0%,#171412 55%);overflow:hidden;padding:110px 0}
+.desk-grid{display:grid;grid-template-columns:minmax(320px,470px) 1fr;gap:64px;align-items:center;padding-left:max(32px,calc((100vw - 1120px)/2))}
+.desk .tag{color:var(--dark-mute)}
+.desk h2{color:var(--dark-ink)}
+.desk p{color:var(--dark-mute);font-size:16.5px;max-width:420px;margin-bottom:26px}
+.desk-copy{position:relative;z-index:2}
+.desk ul.feat{list-style:none;display:flex;flex-direction:column;gap:13px;margin:0 0 32px}
+.desk ul.feat li{display:flex;gap:11px;font-size:14.5px;align-items:baseline}
+.desk ul.feat .tick{color:var(--win);font-family:var(--mono);filter:brightness(1.6)}
+.desk ul.feat span{color:var(--dark-mute)}
+.desk ul.feat b{color:var(--dark-ink);font-weight:500}
+.desk-shot{width:112%;min-width:0}
+.desk-shot .macapp{border-radius:16px 0 0 16px}
+.desk-shot .macapp .bar{border-radius:16px 0 0 0}
+@media(max-width:860px){
+  .desk{padding:80px 0}
+  .desk-grid{grid-template-columns:1fr;gap:40px;padding:0 20px}
+  .desk-shot{width:116%}
+}
+/* problem */
+.prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:50px}
+@media(max-width:720px){.prob-grid{grid-template-columns:1fr}}
+.pcard{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:32px}
+.pcard .n{font-family:var(--mono);font-size:13px;color:var(--mute);margin-bottom:16px}
+.pcard h3{font-size:19px;font-weight:500;margin-bottom:10px;letter-spacing:-.01em}
+.pcard p{font-size:15px;color:var(--mute);font-weight:300}
+
+/* problem card mini-visuals */
+.pviz{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:14px;margin-bottom:18px;min-height:104px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.pv-bub{font-size:12.5px;line-height:1.45;padding:8px 12px;border-radius:10px;max-width:95%}
+.pv-bub.doc{background:var(--bg2);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);align-self:flex-start}
+.pv-bub.bot{background:rgba(201,100,66,.08);color:var(--ink);align-self:flex-end;position:relative}
+.pv-bub.bot .bad{color:var(--lose);font-weight:500}
+.pv-chip{display:inline-flex;gap:6px;align-items:center;font-family:var(--mono);font-size:10.5px;color:var(--mute);border:1px dashed var(--line2);border-radius:7px;padding:4px 9px;align-self:flex-start;text-decoration:line-through;text-decoration-color:var(--lose)}
+.pv-tag{font-family:var(--mono);font-size:10px;color:var(--mute);align-self:flex-end}
+.pv-stack{display:flex;height:26px;border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:10px}
+.pv-stack .rules{background:repeating-linear-gradient(45deg,rgba(201,100,66,.25),rgba(201,100,66,.25) 6px,rgba(201,100,66,.15) 6px,rgba(201,100,66,.15) 12px);width:78%;display:flex;align-items:center;justify-content:center;color:#8a4a33}
+.pv-stack .data{background:rgba(63,125,84,.25);width:22%;display:flex;align-items:center;justify-content:center;color:var(--win)}
+.pv-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--mute)}
+.pv-bars{display:flex;gap:26px;align-items:flex-end;height:84px;padding:0 8px}
+.pv-bar{display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--mute);flex:1}
+.pv-bar .bar{width:100%;max-width:74px;border-radius:6px 6px 0 0;background:var(--line2)}
+.pv-bar.them .bar{height:64px;background:rgba(201,100,66,.35)}
+.pv-bar.us .bar{height:5px;background:var(--win)}
+.pv-bar b{color:var(--ink);font-weight:500}
+/* demo chat */
+.demo{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:30px;margin-top:46px;font-family:var(--mono);font-size:14px}
+.demo .row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.demo .row:last-child{border:none}
+.demo .k{color:var(--mute);min-width:96px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}
+.demo .v{color:var(--ink-soft);flex:1}
+.demo .hl{color:var(--win);font-weight:500}
+.demo .ans{color:var(--ink);font-weight:500}
+
+/* capabilities (Cohere-style accordion + live demo) */
+.caps-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:64px;margin-top:56px;align-items:start}
+.capdemo{order:0}.caplist{order:1}
+@media(max-width:960px){.caps-grid{grid-template-columns:1fr;gap:32px}.capdemo{order:2}.caplist{order:1}}
+@media(max-width:700px){.capdemo{padding:24px 18px;min-height:0}.caplist .cap h3{font-size:22px}}
+.capdemo{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:44px 36px;min-height:480px;position:relative;background-image:radial-gradient(circle,rgba(31,29,26,.05) 1px,transparent 1.4px);background-size:22px 22px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.capdemo .bub{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;font-size:14.5px;color:var(--ink-soft);box-shadow:0 10px 30px rgba(31,29,26,.06)}
+.capdemo .bub .file{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;margin-top:10px;color:var(--ink)}
+.capdemo .pill{align-self:center;background:var(--accent);color:#fff;font-size:13.5px;font-weight:500;border-radius:12px;padding:11px 22px;display:inline-flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(201,100,66,.3)}
+.capdemo .pill .pdot{width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.capdemo .ans .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.capdemo .ans .src{display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:11.5px;color:var(--mute);border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.capdemo .ans .src b{color:var(--win);font-weight:500}
+.cappanel{display:none;flex-direction:column;gap:22px}
+.cappanel.active{display:flex}
+.caplist .cap{border-top:1px solid var(--line2);padding:22px 0;cursor:pointer}
+.caplist .cap:last-child{border-bottom:1px solid var(--line2)}
+.caplist .cap h3{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.02em;color:var(--mute);transition:color .3s ease;margin:0}
+.caplist .cap.active h3{color:var(--ink)}
+.caplist .cap .capbody{display:none;padding-top:14px}
+.caplist .cap.active .capbody{display:block}
+.caplist .cap .capbody p{font-size:15.5px;color:var(--ink-soft);margin-bottom:16px}
+.caplist .cap .capbody ul{list-style:none;margin:0 0 6px;display:flex;flex-direction:column;gap:10px}
+.caplist .cap .capbody li{display:flex;gap:10px;font-size:14.5px;color:var(--ink-soft);align-items:baseline}
+.caplist .cap .capbody li .tick{color:var(--win);font-family:var(--mono)}
+/* benchmark */
+.btable{margin-top:50px;border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:var(--bg2)}
+.btable table{width:100%;border-collapse:collapse;font-size:15px}
+.btable th,.btable td{padding:18px 22px;text-align:left;border-bottom:1px solid var(--line)}
+.btable th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
+.btable td{color:var(--ink-soft)}
+.btable .model{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:11px}
+.btable tr.ours{background:linear-gradient(90deg,rgba(63,125,84,.12),transparent)}
+.btable tr.ours td{color:var(--ink)}
+.btable .mlogo[src$=".svg"]{border-radius:0;object-fit:contain}
+.btable .mlogo{width:20px;height:20px;border-radius:5px;object-fit:cover;flex:0 0 20px}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;background:var(--win);color:#fff;padding:3px 8px;border-radius:5px;font-weight:600}
+.big{font-family:var(--mono);font-weight:500;font-size:16px}
+.big.win{color:var(--win)}
+.big.mid{color:var(--ink-soft)}
+.big.low{color:var(--mute)}
+.tsmall{font-size:12px;color:var(--mute);font-family:var(--mono)}
+.btable tbody tr:last-child td{border-bottom:none}
+.note{margin-top:16px;font-size:12.5px;color:var(--mute);font-family:var(--mono)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:50px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+@media(max-width:720px){.stats{grid-template-columns:1fr}}
+.stat{background:var(--bg2);padding:38px 30px}
+.stat .num{font-family:var(--display);font-weight:600;font-size:46px;line-height:1;letter-spacing:-.03em;margin-bottom:12px}
+.stat .num.win{color:var(--win)}
+.stat .lbl{font-size:14px;color:var(--mute)}
+
+/* ===== full-bleed dark API section ===== */
+.api{background:var(--dark);color:var(--dark-ink);padding:110px 0;position:relative;overflow:hidden}
+
+.api .tag{color:var(--dark-mute)}
+.api h2{color:var(--dark-ink)}
+.api h2 em{font-style:normal;color:var(--accent-soft)}
+.api .sec-lede{color:var(--dark-mute)}
+.api-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:52px;margin-top:56px;align-items:start}
+.api-grid>*{min-width:0}
+.showcase-head>*{min-width:0}
+@media(max-width:960px){.api-grid{grid-template-columns:1fr}}
+.api-points{display:flex;flex-direction:column;gap:26px}
+.api-point .t{font-size:16px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:10px;color:var(--dark-ink)}
+.api-point .t .ic{font-family:var(--mono);color:var(--win);filter:brightness(1.6)}
+.api-point p{font-size:14.5px;color:var(--dark-mute)}
+.endpoint-pill{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;border:1px solid var(--dark-line2);border-radius:10px;padding:10px 16px;margin-top:8px;color:var(--dark-ink);background:var(--dark2);max-width:100%;overflow-x:auto;white-space:nowrap}
+.endpoint-pill .method{color:var(--win);filter:brightness(1.5);font-weight:500}
+.macwin{background:#211d1a;border:1px solid var(--dark-line2);border-radius:14px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.5)}
+.macwin .bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--dark-line);background:#26221e}
+.macwin .dot{width:12px;height:12px;border-radius:50%}
+.macwin .dot.r{background:#ff5f57}.macwin .dot.y{background:#febc2e}.macwin .dot.g{background:#28c840}
+.macwin .title{flex:1;text-align:center;font-family:var(--mono);font-size:12px;color:var(--dark-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.macwin pre{padding:24px 24px 28px;font-family:var(--mono);font-size:13px;line-height:1.75;overflow-x:auto;color:#d8d2c8}
+.macwin .c{color:#8a837a}
+.macwin .kw{color:#e8b39e}
+.macwin .str{color:#a9c9a4}
+.macwin .out{color:#f3efe8}
+.macwin .cursor{display:inline-block;width:8px;height:15px;background:#5aa877;vertical-align:text-bottom;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* animated "grounded highlights" moment */
+.anim{background:linear-gradient(135deg,#1d1410 0%,#171412 60%,#12100e 100%);position:relative;overflow:hidden;padding:110px 0}
+.anim::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(201,100,66,.22),transparent 70%);top:-160px;left:-120px;filter:blur(10px)}
+.anim::after{content:"";position:absolute;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(63,125,84,.16),transparent 70%);bottom:-140px;right:-100px;filter:blur(10px)}
+.anim .tag{color:var(--dark-mute)}
+.anim h2{color:var(--dark-ink)}
+.anim h2 em{color:var(--accent-soft);font-style:normal}
+.anim .sec-lede{color:var(--dark-mute)}
+.apanel{position:relative;max-width:760px;margin:52px auto 0;background:#211d1a;border:1px solid var(--dark-line2);border-radius:18px;padding:34px 38px;min-height:240px;box-shadow:0 40px 90px rgba(0,0,0,.5);z-index:2}
+.apanel .aq{font-family:var(--mono);font-size:12px;color:var(--dark-mute);margin-bottom:16px}
+.apanel .atype{font-size:16.5px;line-height:1.75;color:var(--dark-ink);transition:filter .7s ease,opacity .7s ease;min-height:120px}
+.apanel .atype b{color:#a9d8bb;font-weight:500}
+.apanel.blurred .atype{filter:blur(5px);opacity:.45}
+.apanel .caret{display:inline-block;width:8px;height:17px;background:#7fc79a;vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+.achip{position:absolute;background:#fdfdfc;color:#1f1d1a;border-radius:12px;padding:11px 16px;font-size:14px;font-weight:500;box-shadow:0 18px 50px rgba(0,0,0,.45);display:flex;align-items:center;gap:9px;opacity:0;transform:translateY(14px) scale(.96);transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1);z-index:3;white-space:nowrap}
+.achip .ct{color:var(--win);font-family:var(--mono)}
+.achip .cp{font-family:var(--mono);font-size:10.5px;color:var(--mute);font-weight:400}
+.achip.show{opacity:1;transform:none}
+.achip.c1{top:24%;left:6%}
+.achip.c2{top:48%;right:7%}
+.achip.c3{top:72%;left:22%}
+@media(max-width:700px){
+.apanel{padding:22px;min-height:0}
+/* chips occupy their space from the start so the panel height never grows
+   mid-scroll — only opacity animates, no layout shift / page jump */
+.achip{position:static;display:inline-flex;margin:10px 8px 0 0;font-size:12px;padding:9px 12px;transform:none;opacity:0;transition:opacity .5s ease}
+.achip.show{opacity:1;transform:none}
+/* reserve room for the full answer so typing doesn't grow the panel */
+.apanel .atype{min-height:150px}
+}
+@media (prefers-reduced-motion: reduce){.apanel .caret{display:none}}
+/* how */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
+@media(max-width:720px){.steps{grid-template-columns:1fr}}
+.step{padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--bg2)}
+.step .s{font-family:var(--mono);font-size:12px;color:var(--win);margin-bottom:16px;letter-spacing:.08em}
+.step h4{font-size:18px;font-weight:500;margin-bottom:8px}
+.step p{font-size:14px;color:var(--mute)}
+
+/* real benchmark case */
+.bcase{border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:var(--panel);margin-top:44px}
+.bcase .bh{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line2);background:var(--bg2)}
+.bcase .btag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.bcase .bid{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-left:auto}
+.bcase .bdoc{padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--ink-soft);border-bottom:1px solid var(--line)}
+.bcase .bdoc mark{background:rgba(63,125,84,.16);color:var(--ink);padding:1px 5px;border-radius:4px;font-weight:500}
+.bcase .bq{padding:14px 20px;font-size:15px;font-weight:500;border-bottom:1px solid var(--line2);background:var(--bg2)}
+.bcase .brow{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:15px 20px;border-bottom:1px solid var(--line);align-items:baseline;background:var(--bg2)}
+.bcase .brow:last-child{border-bottom:none}
+.bcase .brow.win{background:linear-gradient(90deg,rgba(63,125,84,.10),transparent)}
+.bcase .bwho{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.bcase .bwho img{width:17px;height:17px;border-radius:4px;object-fit:cover}
+.bcase .bans{font-size:14.5px;color:var(--ink)}
+.bcase .bans .mark{font-family:var(--mono);font-size:11.5px;margin-left:8px}
+.bcase .bans .ok{color:var(--win)}
+.bcase .bans .no{color:var(--lose)}
+.bcase .bfoot{padding:12px 20px;font-family:var(--mono);font-size:11.5px;color:var(--mute);background:var(--bg2);border-top:1px solid var(--line2)}
+@media(max-width:640px){.bcase .brow{grid-template-columns:1fr;gap:6px}}
+/* pricing plans */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px}
+@media(max-width:760px){.plans{grid-template-columns:1fr}}
+.plan{border:1px solid var(--line2);border-radius:20px;padding:38px 34px;background:var(--panel);display:flex;flex-direction:column;gap:0}
+.plan.featured{background:var(--dark);color:var(--dark-ink);border-color:var(--dark)}
+.plan .ptag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
+.plan.featured .ptag{color:var(--dark-mute)}
+.plan h3{font-size:22px;font-weight:500;letter-spacing:-.01em;margin-bottom:6px}
+.plan .price{font-family:var(--display);font-weight:600;font-size:38px;letter-spacing:-.03em;margin:14px 0 2px}
+.plan .per{font-size:13px;color:var(--mute);font-family:var(--mono);margin-bottom:22px}
+.plan.featured .per{color:var(--dark-mute)}
+.plan ul{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:30px}
+.plan li{display:flex;gap:10px;font-size:14.5px;color:var(--ink-soft);align-items:baseline}
+.plan.featured li{color:var(--dark-mute)}
+.plan li b{font-weight:500;color:var(--ink)}
+.plan.featured li b{color:var(--dark-ink)}
+.plan .tick{color:var(--win);font-family:var(--mono)}
+.plan.featured .tick{filter:brightness(1.6)}
+.plan .btn{margin-top:auto;text-align:center}
+
+/* head-to-head simulator */
+.sim-kb{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 22px;font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin:44px 0 22px;line-height:1.8}
+.sim-kb .kbt{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;font-family:var(--mono)}
+.sim-kb b{color:var(--ink);font-weight:500}
+.simq{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.simq button{font-size:14px;font-family:var(--sans);border:1px solid var(--line2);background:var(--panel);border-radius:12px;padding:12px 18px;cursor:pointer;color:var(--ink-soft);transition:.25s;text-align:left}
+.simq button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.simq button .ql{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px;opacity:.65}
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.sim-grid{grid-template-columns:1fr}}
+.sim-card{border-radius:16px;padding:24px;border:1px solid var(--line2);background:var(--panel);min-height:190px;display:flex;flex-direction:column}
+.sim-card.ours{border-color:rgba(63,125,84,.45);box-shadow:0 20px 50px rgba(63,125,84,.10)}
+.sim-card .sh{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px;margin-bottom:14px}
+.sim-card .sh img{width:20px;height:20px;border-radius:5px}
+.sim-card .sa{font-size:15px;color:var(--ink);line-height:1.65;flex:1;opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
+.sim-card .sa.show{opacity:1;transform:none}
+.sim-card .sv{margin-top:16px;font-family:var(--mono);font-size:12px;display:flex;gap:8px;align-items:baseline;opacity:0;transition:opacity .5s ease .35s}
+.sim-card .sv.show{opacity:1}
+.sim-card .sv.good{color:var(--win)}
+.sim-card .sv.bad{color:var(--lose)}
+.sim-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+@media(max-width:760px){.sim-steps{grid-template-columns:1fr}}
+.sim-step{border-top:2px solid var(--line2);padding-top:14px}
+.sim-step .sn{font-family:var(--mono);font-size:11px;color:var(--win);letter-spacing:.1em;margin-bottom:6px}
+.sim-step h4{font-size:15.5px;font-weight:600;margin-bottom:5px}
+.sim-step p{font-size:13.5px;color:var(--mute);margin:0}
+/* pull quote */
+.pull{padding:120px 0;text-align:center;border-top:1px solid var(--line)}
+.pull blockquote{font-family:var(--serif);font-size:clamp(28px,4vw,44px);line-height:1.2;letter-spacing:-.01em;max-width:820px;margin:0 auto;color:var(--ink)}
+.pull blockquote em{color:var(--accent);font-style:italic}
+.pull cite{display:block;margin-top:26px;font-family:var(--mono);font-size:13px;color:var(--mute);font-style:normal;letter-spacing:.06em}
+
+/* final cta */
+.final{background:var(--dark);color:var(--dark-ink);text-align:center;padding:130px 0;position:relative;overflow:hidden}
+
+.final h2{color:var(--dark-ink);margin-bottom:18px}
+.final h2 em{font-style:normal;color:var(--accent-soft)}
+.final p{color:var(--dark-mute);max-width:520px;margin:0 auto 40px;font-size:18px}
+
+
+.storebadges{display:flex;gap:12px;flex-wrap:wrap}
+.storebadges a{transition:.2s;display:block}
+.storebadges a:hover{transform:translateY(-1px);opacity:.92}
+
+.apps-grid{display:grid;grid-template-columns:1fr .8fr;gap:56px;align-items:center}
+.apps-shot{display:flex;justify-content:center}
+.apps-shot img{width:min(280px,80%);border-radius:38px;border:1px solid var(--line2);box-shadow:0 8px 24px rgba(31,29,26,.10),0 40px 80px rgba(31,29,26,.16)}
+@media(max-width:860px){.apps-grid{grid-template-columns:1fr;gap:36px}.apps-shot img{width:min(240px,70%)}}
+/* footer */
+footer{background:var(--dark);border-top:1px solid var(--dark-line);padding:64px 0 40px}
+.fgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr;gap:32px}}
+.fbrand p{font-size:13.5px;color:var(--dark-mute);margin-top:14px;max-width:240px}
+.fcol .ft{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dark-mute);margin-bottom:16px}
+.fcol a{display:block;font-size:14px;color:var(--dark-ink);opacity:.8;margin-bottom:11px;text-decoration:none;transition:opacity .25s ease}
+.fcol a:hover{opacity:1}
+.fcol .fmono{font-family:var(--mono);font-size:12.5px}
+.fbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:26px;border-top:1px solid var(--dark-line)}
+.fbar .fmeta{font-family:var(--mono);font-size:12px;color:var(--dark-mute)}
+
+/* ===== motion system ===== */
+.reveal{opacity:0;transform:translateY(26px) scale(.988);filter:blur(5px);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),filter .9s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;transform:none;filter:none}
+/* gentle idle float for the hero cards and phones */
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+
+/* soft hover lift on interactive surfaces */
+.pcard,.plan,.step,.vcard,.macwin,.stat{transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s cubic-bezier(.22,1,.36,1)}
+.pcard:hover,.plan:hover,.step:hover{transform:translateY(-4px)}
+.pcard:hover{box-shadow:0 18px 44px rgba(31,29,26,.08)}
+.plan:hover{box-shadow:0 24px 60px rgba(31,29,26,.12)}
+/* nav link underline glide */
+.navlinks a{position:relative;transition:color .25s ease}
+.navlinks a::after{content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.navlinks a:hover::after{transform:scaleX(1);transform-origin:left}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;filter:none;transition:none}
+  .macwin .cursor{animation:none}
+  .vcard.doc.in,.vcard.ours.in,.vcard.theirs.in,.stage.in .phone{animation:none}
+  .pcard,.plan,.step,.vcard,.macwin,.stat{transition:none}
+}
+
+/* mobile */
+@media(max-width:768px){
+  .wrap{padding:0 20px}
+  nav .wrap{height:60px}
+  .hero{padding:120px 0 70px}
+  h1{font-size:clamp(38px,11vw,56px)}
+  .lede{font-size:17px}
+  .btn{padding:13px 18px;font-size:14px;flex:1 1 auto;text-align:center;min-width:0}
+  .hero-meta{gap:16px;margin-top:38px;font-size:12px}
+  section{padding:64px 0}
+  h2{font-size:clamp(28px,7vw,38px)}
+  .sec-lede{font-size:16px}
+  .pcard{padding:24px}
+  .demo{padding:20px;font-size:12.5px;overflow-x:auto}
+  .demo .row{flex-direction:column;gap:5px;padding:11px 0}
+  .demo .k{min-width:0;font-size:11px}
+  .btable table{table-layout:fixed;font-size:11.5px}
+  .btable th,.btable td{padding:9px 5px;font-size:11px;word-break:break-word}
+  .btable th{font-size:9px;letter-spacing:0;line-height:1.2}
+  .btable th:nth-child(2),.btable td:nth-child(2),
+  .btable th:nth-child(5),.btable td:nth-child(5){display:none}
+  .btable .model{gap:5px;font-size:11px;line-height:1.15}
+  .btable .model .badge{display:none}
+  .big{font-size:13px;font-weight:600}
+  .mlogo{width:15px;height:15px;flex-basis:15px}
+  .stat .num{font-size:44px}
+  .macwin pre{font-size:11px;padding:16px}
+  .macwin .title{font-size:10.5px}
+  .api{padding:72px 0}
+  .pull,.final{padding:80px 0}
+  .showcase{padding-top:72px}
+  .showcase-tail{height:70px}
+}
+@media(max-width:420px){
+  h1{font-size:clamp(32px,10vw,44px)}
+  .cta-row{flex-direction:column}
+  .btn{width:100%}
+}
+`}></style>
+
+  <Header variant="site" home={true} />
+
+  <Fragment set:html={bodyHtml} />
+
+  <Footer variant="full" />
+
+<script is:inline>
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// One smart auth button: Clerk sets __client_uat on this domain (readable, epoch
+// when signed in, "0" when signed out) - no SDK needed just to pick a label.
+(function(){
+  const uat=document.cookie.split('; ').find(c=>c.startsWith('__client_uat='));
+  if(uat&&parseInt(uat.split('=')[1])>0){
+    const b=document.getElementById('navauth');
+    if(b)b.textContent='Dashboard →';
+  }
+})();
+(function(){
+  const cv=document.getElementById('stars');
+  if(!cv||reduced)return;
+  const cx=cv.getContext('2d');let W,H,ps;
+  function size(){W=cv.width=cv.offsetWidth*devicePixelRatio;H=cv.height=cv.offsetHeight*devicePixelRatio}
+  function seed(){ps=Array.from({length:70},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    r:(Math.random()*1.1+0.5)*devicePixelRatio,
+    v:(Math.random()*0.22+0.06)*devicePixelRatio,
+    dx:(Math.random()-.5)*0.06*devicePixelRatio,
+    a:Math.random()*0.16+0.05,
+    warm:Math.random()<0.35}))}
+  size();seed();
+  addEventListener('resize',()=>{size();seed()});
+  (function tick(){
+    cx.clearRect(0,0,W,H);
+    for(const p of ps){
+      p.y+=p.v;p.x+=p.dx;
+      if(p.y>H+4){p.y=-4;p.x=Math.random()*W}
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);
+      cx.fillStyle=p.warm?'rgba(201,100,66,'+p.a+')':'rgba(31,29,26,'+p.a*0.8+')';
+      cx.fill();
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+function countUp(el){
+  const target=parseFloat(el.dataset.target);
+  if(reduced){el.textContent=target.toFixed(1)+'%';return}
+  const dur=1100,t0=performance.now();
+  (function step(t){
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=(target*e).toFixed(1)+'%';
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  const el=e.target;
+  el.classList.add('in');
+  const delay=parseInt(el.style.transitionDelay)||0;
+  el.querySelectorAll('.pct[data-target]').forEach(p=>setTimeout(()=>countUp(p),delay+350));
+  setTimeout(()=>{el.style.transitionDelay='0ms'},delay+950);
+  io.unobserve(el);
+})},{threshold:.12});
+(function(){
+  const panel=document.getElementById('apanel'),out=document.getElementById('atype');
+  if(!panel)return;
+  const chips=[1,2,3].map(i=>document.getElementById('ac'+i));
+  const TEXT='Three plans include priority support: Pro with 24-hour email, Business with a <b>4-hour response</b>, and Enterprise with a <b>dedicated engineer</b> on a 1-hour SLA.';
+  const reducedA=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function typeLoop(){
+    if(reducedA){out.innerHTML=TEXT;panel.classList.add('blurred');chips.forEach(c=>c.classList.add('show'));return}
+    panel.classList.remove('blurred');chips.forEach(c=>c.classList.remove('show'));
+    out.innerHTML='';let i=0;
+    const plain=TEXT;let buf='';
+    const t=setInterval(()=>{
+      buf=plain.slice(0,i);
+      // never cut inside a tag
+      const open=buf.lastIndexOf('<'),close=buf.lastIndexOf('>');
+      out.innerHTML=(open>close?plain.slice(0,open):buf)+'<span class="caret"></span>';
+      i+=1;
+      if(i>plain.length+1){
+        clearInterval(t);
+        out.innerHTML=plain;
+        setTimeout(()=>{panel.classList.add('blurred');
+          chips.forEach((c,j)=>setTimeout(()=>c.classList.add('show'),500+j*700));
+          setTimeout(typeLoop,8000);
+        },1500);
+      }
+    },26);
+  }
+  const aio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){typeLoop();aio.disconnect()}})},{threshold:.4});
+  aio.observe(panel);
+})();
+const pgo=document.getElementById('pgo'),pq=document.getElementById('pq'),
+      pdata=document.getElementById('pdata'),parea=document.getElementById('parea'),
+      pans=document.getElementById('pans'),psec=document.getElementById('psec');
+async function askCanonn(){
+  const data=pdata.value.trim(),q=pq.value.trim();
+  if(!data||!q)return;
+  pgo.disabled=true;parea.classList.add('show','thinking');
+  pans.classList.remove('err');pans.textContent='';psec.textContent='';
+  const t0=performance.now();
+  try{
+    const r=await fetch('https://api.canonn.ai/v1/demo',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:data,question:q,stream:true})});
+    const sse=(r.headers.get('Content-Type')||'').includes('text/event-stream');
+    if(r.ok&&sse&&r.body){
+      // tokens land as they are generated
+      const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+      for(;;){
+        const {done,value}=await rd.read();
+        if(done)break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split('\n');buf=lines.pop();
+        for(const ln of lines){
+          if(!ln.startsWith('data:'))continue;
+          const p=ln.slice(5).trim();
+          if(p==='[DONE]')continue;
+          try{
+            const d=((JSON.parse(p).choices||[])[0]||{}).delta||{};
+            if(d.content){parea.classList.remove('thinking');pans.textContent+=d.content;}
+          }catch(e){}
+        }
+      }
+      parea.classList.remove('thinking');
+      psec.textContent='· '+((performance.now()-t0)/1000).toFixed(1)+'s';
+    }else{
+      // non-stream fallback (rollback path or error bodies)
+      const j=await r.json();
+      parea.classList.remove('thinking');
+      if(!r.ok){pans.classList.add('err');pans.textContent=j.error||'Something went wrong, try again.';}
+      else{pans.textContent=j.answer;psec.textContent='· '+(j.seconds!=null?j.seconds:((performance.now()-t0)/1000).toFixed(1))+'s';}
+    }
+  }catch(e){
+    parea.classList.remove('thinking');
+    pans.classList.add('err');pans.textContent='Could not reach the model, try again in a moment.';
+  }
+  pgo.disabled=false;
+}
+pgo.addEventListener('click',askCanonn);
+pq.addEventListener('keydown',e=>{if(e.key==='Enter')askCanonn()});
+document.querySelectorAll('.sugg button').forEach(b=>b.addEventListener('click',()=>{pq.value=b.dataset.q;askCanonn()}));
+(function(){
+  const SIMS=[
+    {a:'Your data is stored in EU data centers, in Frankfurt.',av:'✓ grounded, passage 3',
+     b:'"Your data is stored securely in the cloud across multiple global regions, with industry-standard encryption…"',bv:'✗ generic answer from memory, your docs say Frankfurt'},
+    {a:'That isn\u2019t in the provided knowledge. The plans include email and chat support only.',av:'✓ honest, no matching passage, so it declines',
+     b:'"Yes! Our 24/7 phone support team is happy to help, call us at 1-800-555-0123."',bv:'✗ invented a phone line that doesn\u2019t exist'}
+  ];
+  const A=document.getElementById('simA'),B=document.getElementById('simB'),
+        Av=document.getElementById('simAv'),Bv=document.getElementById('simBv');
+  if(!A)return;
+  function show(i){
+    [A,B,Av,Bv].forEach(e=>e.classList.remove('show'));
+    setTimeout(()=>{
+      A.textContent=SIMS[i].a;Av.textContent=SIMS[i].av;
+      B.textContent=SIMS[i].b;Bv.textContent=SIMS[i].bv;
+      A.classList.add('show');Av.classList.add('show');
+      setTimeout(()=>{B.classList.add('show');Bv.classList.add('show')},450);
+    },220);
+  }
+  document.querySelectorAll('.simq button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.simq button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');show(parseInt(b.dataset.s));
+  }));
+  const sio=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){show(0);sio.disconnect()}})},{threshold:.3});
+  sio.observe(A);
+})();
+document.querySelectorAll('.caplist .cap').forEach(cap=>{
+  cap.addEventListener('click',()=>{
+    document.querySelectorAll('.caplist .cap').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.cappanel').forEach(p=>p.classList.remove('active'));
+    cap.classList.add('active');
+    document.querySelector('.cappanel[data-cap="'+cap.dataset.cap+'"]').classList.add('active');
+  });
+});
+document.querySelectorAll('.reveal').forEach((el,i)=>{
+  el.style.transitionDelay=(el.dataset.delay?el.dataset.delay:(i%4*70))+'ms';
+  io.observe(el);
+});
+</script>
+</Base>

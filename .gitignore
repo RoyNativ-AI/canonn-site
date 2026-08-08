@@ -1,2 +1,9 @@
+# deps
+node_modules/
 dash-src/node_modules/
 dash-src/dist/
+
+# astro build output (published via CI, not committed)
+dist/
+.astro/
+.carve/

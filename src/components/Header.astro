@@ -49,3 +49,21 @@ const p = (hash: string) => (home ? hash : `/${hash}`);
     <a class="back" href="/">← back to canonn.ai</a>
   </div></nav>
 )}
+
+<style is:global>
+/* Canonical header geometry — shared across every page so the logo sits in
+   exactly the same place and size when navigating between pages. Page
+   stylesheets keep their own colour/link styling, but the brand mark and the
+   nav container padding are owned here to stop cross-page drift. */
+nav .navbar,
+nav .navin{padding:0 40px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;font-family:var(--display)}
+.brand img{width:27px;height:27px;border-radius:5px;object-fit:cover}
+@media(max-width:760px){
+  nav .navbar,
+  nav .navin{padding:0 20px}
+  .brand{font-size:16px}
+  .brand img{width:27px;height:27px}
+}
+</style>
+

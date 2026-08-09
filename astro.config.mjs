@@ -10,15 +10,17 @@ export default defineConfig({
   build: {
     // keep pretty URLs: /benchmark/ -> benchmark/index.html
     format: 'directory',
-    // Inline the small shared Header/Footer global stylesheet straight into
-    // every page instead of emitting an external /_astro/*.css file. That
-    // bundle held the canonical header geometry (brand mark, the CTA pill)
-    // and the footer styling; served externally it was fragile — a stale
-    // CDN/browser cache or a missing-file hiccup (see the earlier .nojekyll
-    // fix) left pages loading the header WITHOUT it, so the wordmark/logo/CTA
-    // rendered inconsistently between pages. Inlining removes that external
-    // dependency so the header + footer look identical everywhere, always.
-    inlineStylesheets: 'auto',
+    // Inline ALL CSS straight into each page's HTML — never emit an external
+    // /_astro/*.css file. The shared Header/Footer styles (brand mark, CTA
+    // pill, footer) live in one place (src/styles/header.css + footer.css) so
+    // there's a single source of truth, but served as an external bundle they
+    // were fragile: a stale CDN/browser cache or a missing-file hiccup (see the
+    // earlier .nojekyll fix) left pages loading their header WITHOUT it, so the
+    // wordmark/logo/CTA rendered differently from page to page. Inlining
+    // ('always', not 'auto' — the shared bundle is just over the auto-inline
+    // size limit) removes that external dependency entirely: the header and
+    // footer are self-contained on every page and render identically, always.
+    inlineStylesheets: 'always',
   },
   // We hand-author full HTML documents in .astro pages, so let Astro pass
   // through our markup without injecting its own scoped-style transforms.

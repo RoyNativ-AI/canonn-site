@@ -7,14 +7,16 @@
  * stylesheet (kept verbatim for pixel-match). The canonical link set is the
  * landing page's — the most complete and correct version.
  */
+import '../styles/footer.css';
+
 export interface Props {
   variant?: 'full' | 'slim';
 }
 const { variant = 'full' } = Astro.props;
 ---
 {variant === 'full' && (
-  <footer>
-    <div class="wrap">
+  <footer class="ftr-full">
+    <div class="fwrap">
       <div class="fgrid">
         <div class="fbrand">
           <a class="brand" href="/" style="color:var(--dark-ink)"><img src="/assets/canon-logo.png" alt="Canonn"> Canonn</a>
@@ -52,7 +54,7 @@ const { variant = 'full' } = Astro.props;
 )}
 
 {variant === 'slim' && (
-  <footer><div class="wrap">
+  <footer class="ftr-slim"><div class="fwrap">
     © 2026 Canonn · <a href="/">canonn.ai</a> · <a href="/benchmark/">Benchmarks</a>
     <a href="/docs/">API docs</a> · <a href="/dashboard/">Dashboard</a>
   </div></footer>

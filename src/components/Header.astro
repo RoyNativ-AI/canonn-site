@@ -13,6 +13,8 @@ export interface Props {
   /** on the landing page, in-page anchors are root-relative (#x); elsewhere they must point to /#x */
   home?: boolean;
 }
+import '../styles/header.css';
+
 const { variant = 'site', home = false } = Astro.props;
 const p = (hash: string) => (home ? hash : `/${hash}`);
 ---
@@ -49,25 +51,4 @@ const p = (hash: string) => (home ? hash : `/${hash}`);
     <a class="back" href="/">← back to canonn.ai</a>
   </div></nav>
 )}
-
-<style is:global>
-/* Canonical header geometry — shared across every page so the logo sits in
-   exactly the same place and size when navigating between pages. Page
-   stylesheets keep their own colour/link styling, but the brand mark and the
-   nav container padding are owned here to stop cross-page drift. */
-nav .navbar,
-nav .navin{padding:0 40px}
-.brand{display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.01em;font-size:18px;font-family:var(--display)}
-.brand img{width:27px;height:27px;border-radius:5px;object-fit:cover}
-/* Canonical CTA pill — one look on every page (was a rounded rect on the
-   landing page, a pill on benchmark/docs). Pill wins. */
-.navcta{font-size:13px;border:1px solid var(--line2);padding:9px 18px;border-radius:999px;color:var(--ink);text-decoration:none;transition:.2s;white-space:nowrap;font-family:var(--sans)}
-@media(max-width:760px){
-  nav .navbar,
-  nav .navin{padding:0 20px}
-  .brand{font-size:16px}
-  .brand img{width:27px;height:27px}
-  .navcta{padding:7px 12px;font-size:12px}
-}
-</style>
 

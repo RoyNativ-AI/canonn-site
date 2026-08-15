@@ -181,11 +181,11 @@ export function Logs({
                 {[
                   { l: 'Latency', v: detail.ms ? `${(detail.ms / 1000).toFixed(1)}s` : '·' },
                   { l: 'Throughput', v: detail.tok_s ? `${detail.tok_s} tok/s` : '·' },
-                  { l: 'Cost', v: detail.cost !== undefined ? `$${detail.cost.toFixed(5)}` : '·' },
+                  { l: 'Cost', v: detail.cost !== undefined ? `$${detail.cost.toFixed(4)}` : '·' },
                 ].map((s) => (
                   <div key={s.l} className="min-w-0 rounded-xl border border-border bg-card p-3">
                     <div className="font-mono text-[9.5px] tracking-[0.1em] text-muted-foreground uppercase">{s.l}</div>
-                    <div className="mt-1 min-w-0 font-display text-base font-semibold break-words sm:text-lg">{s.v}</div>
+                    <div className="mt-1 font-display text-base font-semibold whitespace-nowrap sm:text-lg">{s.v}</div>
                   </div>
                 ))}
               </div>

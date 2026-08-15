@@ -183,9 +183,9 @@ export function Logs({
                   { l: 'Throughput', v: detail.tok_s ? `${detail.tok_s} tok/s` : '·' },
                   { l: 'Cost', v: detail.cost !== undefined ? `$${detail.cost.toFixed(5)}` : '·' },
                 ].map((s) => (
-                  <div key={s.l} className="rounded-xl border border-border bg-card p-3">
+                  <div key={s.l} className="min-w-0 rounded-xl border border-border bg-card p-3">
                     <div className="font-mono text-[9.5px] tracking-[0.1em] text-muted-foreground uppercase">{s.l}</div>
-                    <div className="mt-1 font-display text-lg font-semibold">{s.v}</div>
+                    <div className="mt-1 min-w-0 font-display text-base font-semibold break-words sm:text-lg">{s.v}</div>
                   </div>
                 ))}
               </div>
@@ -208,7 +208,7 @@ export function Logs({
                   ].map(([k, v]) => (
                     <div key={k} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[130px_1fr] sm:gap-3">
                       <dt className="text-muted-foreground">{k}</dt>
-                      <dd className="font-mono text-xs break-all">{v}</dd>
+                      <dd className="font-mono text-xs break-words [overflow-wrap:anywhere]">{v}</dd>
                     </div>
                   ))}
                 </dl>
@@ -225,7 +225,7 @@ export function Logs({
                   ].map(([k, v]) => (
                     <div key={k} className="grid grid-cols-1 gap-0.5 sm:grid-cols-[130px_1fr] sm:gap-3">
                       <dt className="text-muted-foreground">{k}</dt>
-                      <dd className="font-mono text-xs break-all">{v}</dd>
+                      <dd className="font-mono text-xs break-words [overflow-wrap:anywhere]">{v}</dd>
                     </div>
                   ))}
                 </dl>

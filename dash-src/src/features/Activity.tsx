@@ -243,7 +243,7 @@ export function Activity({
                   ? buckets.map((d) => (
                       <div
                         key={d}
-                        className="group relative min-h-0.5 flex-1 rounded-t bg-[#c96442]/70 hover:bg-[#c96442]"
+                        className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/55 hover:bg-[#c96442]"
                         style={{ height: `${(cost(d) / maxCost) * 100}%` }}
                       >
                         <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
@@ -270,7 +270,7 @@ export function Activity({
               <CardContent className="px-5">
                 <div className="flex h-[150px] items-end gap-1 border-b border-border pb-0.5">
                   {buckets.map((d) => (
-                    <div key={d} className="group relative min-h-0.5 flex-1 rounded-t bg-[#c96442]/60 hover:bg-[#c96442]"
+                    <div key={d} className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/50 hover:bg-[#c96442]"
                          style={{ height: `${(me!.by_day[d].requests / maxReq) * 100}%` }}>
                       <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
                         {d} · {me!.by_day[d].requests} req
@@ -294,7 +294,7 @@ export function Activity({
                     return (
                       <div key={d} className="group relative flex min-h-0.5 flex-1 flex-col justify-end" style={{ height: `${(total / maxTok) * 100}%` }}>
                         <div className="w-full rounded-t bg-[#3f7d54]/70" style={{ height: `${total ? (b.ct / total) * 100 : 0}%` }} />
-                        <div className="w-full bg-[#c96442]/50" style={{ height: `${total ? (b.pt / total) * 100 : 0}%` }} />
+                        <div className="w-full bg-[#b3a894]/55" style={{ height: `${total ? (b.pt / total) * 100 : 0}%` }} />
                         <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
                           {d} · in {fmt(b.pt)} · out {fmt(b.ct)}
                         </span>
@@ -303,7 +303,7 @@ export function Activity({
                   })}
                 </div>
                 <div className="mt-2.5 flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#c96442]/50" /> input</span>
+                  <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#b3a894]/55" /> input</span>
                   <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
                 </div>
               </CardContent>
@@ -319,7 +319,7 @@ export function Activity({
                 {(me ? me.input_tokens + me.output_tokens : 0).toLocaleString()}
               </div>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-                <div className="h-full rounded-full bg-[#c96442]/70"
+                <div className="h-full rounded-full bg-[#b3a894]/65"
                      style={{ width: `${me && me.input_tokens + me.output_tokens ? (me.input_tokens / (me.input_tokens + me.output_tokens)) * 100 : 0}%` }} />
               </div>
               <p className="mt-2 font-mono text-[10.5px] text-muted-foreground">
@@ -368,7 +368,7 @@ export function Activity({
                           <span className="ml-3 font-mono text-xs text-muted-foreground">{fmt(k.requests)} · {share.toFixed(0)}%</span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded bg-secondary">
-                          <div className="h-full rounded bg-[#c96442]/70" style={{ width: `${share}%` }} />
+                          <div className="h-full rounded bg-[#b3a894]/65" style={{ width: `${share}%` }} />
                         </div>
                       </div>
                     )

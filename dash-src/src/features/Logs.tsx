@@ -164,7 +164,7 @@ export function Logs({
 
       <Sheet open={detail !== null} onOpenChange={(o) => !o && setDetail(null)}>
         <SheetContent className="w-full overflow-y-auto p-4 sm:max-w-lg sm:p-6">
-          <SheetHeader>
+          <SheetHeader className="p-0">
             <SheetTitle className="font-display text-xl">Request details</SheetTitle>
             <span className="mt-1 block h-1 w-10 rounded-full bg-primary" />
           </SheetHeader>

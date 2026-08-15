@@ -169,7 +169,7 @@ export function Logs({
             <span className="mt-1 block h-1 w-10 rounded-full bg-primary" />
           </SheetHeader>
           {detail && (
-            <div className="space-y-6 px-4 pb-8">
+            <div className="space-y-6 pb-8">
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] text-primary">canonn-r1</span>
                 {detail.stream && (

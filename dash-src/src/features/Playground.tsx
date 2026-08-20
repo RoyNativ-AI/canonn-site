@@ -284,9 +284,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     ))}
                   </div>
                 ) : (
-                  <div className={cn('text-[14.5px] leading-relaxed whitespace-pre-wrap', turn.error && 'text-destructive')}>
-                    {turn.content}
-                  </div>
+                  turn.error ? (
+                    <div className="text-[14.5px] leading-relaxed text-destructive">{turn.content}</div>
+                  ) : (
+                    <Answer text={turn.content} />
+                  )
                 )}
                 {!!turn.citations?.length && <Citations citations={turn.citations} />}
               </div>
@@ -409,6 +411,52 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+
+function Inline({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[\d+\])/g)
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+        if (/^`[^`]+`$/.test(part)) {
+          return <code key={i} className="rounded bg-secondary px-1 py-0.5 font-mono text-[12.5px]">{part.slice(1, -1)}</code>
+        }
+        if (/^\[\d+\]$/.test(part)) return <sup key={i} className="font-mono text-[11px] font-semibold" style={{ color: ACCENT }}>{part}</sup>
+        return <span key={i}>{part}</span>
+      })}
+    </>
+  )
+}
+
+function Answer({ text }: { text: string }) {
+  const blocks = text.split(/\n/)
+  return (
+    <div className="space-y-1 text-[14.5px] leading-relaxed">
+      {blocks.map((line, i) => {
+        const heading = line.match(/^(#{1,6})\s+(.*)$/)
+        if (heading) {
+          return (
+            <div key={i} className={cn('pt-1 font-semibold', heading[1].length <= 2 ? 'text-[16px]' : 'text-[14.5px]')}>
+              <Inline text={heading[2]} />
+            </div>
+          )
+        }
+        const bullet = line.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)$/)
+        if (bullet) {
+          return (
+            <div key={i} className="flex gap-2 pl-1">
+              <span className="mt-[9px] size-1 shrink-0 rounded-full bg-muted-foreground" />
+              <span className="min-w-0"><Inline text={bullet[1]} /></span>
+            </div>
+          )
+        }
+        if (!line.trim()) return <div key={i} className="h-1.5" />
+        return <div key={i}><Inline text={line} /></div>
+      })}
     </div>
   )
 }

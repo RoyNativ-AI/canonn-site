@@ -15,16 +15,18 @@ import { cn } from '@/lib/utils'
 
 type ScreenId = 'playground' | 'activity' | 'logs' | 'keys' | 'billing'
 
-// Navigation is grouped by what the user is doing, not flattened into
-// equal-weight tabs: the workspace, then observability, then plumbing.
+// Navigation follows what the user is doing, in order: work in the
+// product, watch it run, configure it. Group names stay boring on purpose.
 const NAV: { group: string | null; items: { id: ScreenId; label: string; icon: typeof Moon }[] }[] = [
   { group: null, items: [{ id: 'playground', label: 'Playground', icon: MessagesSquare }] },
-  { group: 'Observe', items: [
+  { group: 'Monitoring', items: [
     { id: 'activity', label: 'Usage', icon: ChartNoAxesColumn },
     { id: 'logs', label: 'Logs', icon: ScrollText },
   ] },
-  { group: 'Develop', items: [{ id: 'keys', label: 'API keys', icon: KeyRound }] },
-  { group: 'Account', items: [{ id: 'billing', label: 'Billing', icon: CreditCard }] },
+  { group: 'Settings', items: [
+    { id: 'keys', label: 'API keys', icon: KeyRound },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
+  ] },
 ]
 
 const SCREENS = NAV.flatMap((g) => g.items)
@@ -37,7 +39,7 @@ export function Shell() {
   // lands where the user actually was, not on the default tab.
   const [screen, setScreen] = useState<ScreenId>(() => {
     const h = window.location.hash.slice(1)
-    return SCREENS.some((s) => s.id === h) ? (h as ScreenId) : 'activity'
+    return SCREENS.some((s) => s.id === h) ? (h as ScreenId) : 'playground'
   })
   useEffect(() => {
     window.history.replaceState(null, '', `#${screen}`)

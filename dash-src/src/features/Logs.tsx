@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -19,6 +18,36 @@ const RANGES = [
   { days: 7, label: '7d' },
   { days: 30, label: '30d' },
 ]
+
+// One glanceable status per row instead of raw finish flags. A healthy row
+// stays quiet; only trouble gets color.
+function rowStatus(r: LogRow): 'ok' | 'truncated' | 'failed' {
+  if (r.finish === 'length') return 'truncated'
+  if (!r.finish && !r.ct) return 'failed'
+  return 'ok'
+}
+
+function StatusCell({ status }: { status: 'ok' | 'truncated' | 'failed' }) {
+  if (status === 'ok') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="size-1.5 rounded-full bg-[#3f7d54]/70" /> ok
+      </span>
+    )
+  }
+  if (status === 'truncated') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-[#996c1f] dark:text-[#d9a94e]">
+        <span className="size-1.5 rounded-full bg-current" /> truncated
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
+      <span className="size-1.5 rounded-full bg-current" /> failed
+    </span>
+  )
+}
 
 export function Logs({
   me, days, setDays, keyFilter, setKeyFilter, getToken, onIoChanged,
@@ -108,12 +137,11 @@ export function Logs({
             <TableRow>
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
-              <TableHead>Model</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead className="text-right">Latency</TableHead>
               <TableHead className="text-right">Speed</TableHead>
               <TableHead className="text-right">Cost</TableHead>
-              <TableHead>Finish</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Request ID</TableHead>
             </TableRow>
           </TableHeader>
@@ -122,18 +150,17 @@ export function Logs({
               <TableRow key={`s${i}`} className="hover:bg-transparent">
                 <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-10" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-12" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-14" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-10" /></TableCell>
-                <TableCell><Skeleton className="ml-auto h-3.5 w-24" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
               </TableRow>
             ))}
             {me !== null && rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={9} className="py-16 text-center">
+                <TableCell colSpan={8} className="py-16 text-center">
                   <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
                   <p className="text-sm font-medium">No requests in this window</p>
                   <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
@@ -146,35 +173,49 @@ export function Logs({
                 </TableCell>
               </TableRow>
             )}
-            {rows.map((r, i) => (
-              <TableRow key={i} onClick={() => setDetail(r)} className="cursor-pointer">
-                <TableCell className="font-mono text-xs">
-                  {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </TableCell>
-                <TableCell className="max-w-[130px] truncate">{r.key}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-mono text-[10px]">{r.model ?? 'canonn-r1'}</Badge>
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs whitespace-nowrap">
-                  {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs">{r.ms ? `${(r.ms / 1000).toFixed(1)}s` : '·'}</TableCell>
-                <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                  {r.tok_s ? `${r.tok_s} t/s` : '·'}
-                </TableCell>
-                <TableCell className="text-right font-mono text-xs">
-                  {r.cost !== undefined ? `$${r.cost.toFixed(5)}` : '·'}
-                </TableCell>
-                <TableCell>
-                  <span className={`font-mono text-[10.5px] ${r.finish === 'length' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    {r.finish ?? 'stop'}{r.stream ? ' · stream' : ''}
-                  </span>
-                </TableCell>
-                <TableCell className="max-w-[150px] truncate text-right font-mono text-[10.5px] text-muted-foreground">
-                  {r.req_id ?? '·'}
-                </TableCell>
-              </TableRow>
-            ))}
+            {rows.map((r, i) => {
+              const status = rowStatus(r)
+              return (
+                <TableRow
+                  key={i}
+                  onClick={() => setDetail(r)}
+                  className={cn('cursor-pointer', status === 'failed' && 'bg-destructive/[0.04] hover:bg-destructive/[0.07]')}
+                >
+                  <TableCell className="font-mono text-xs whitespace-nowrap">
+                    {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </TableCell>
+                  <TableCell className="max-w-[130px] truncate text-[13px] text-muted-foreground">{r.key}</TableCell>
+                  <TableCell className="text-right font-mono text-xs whitespace-nowrap">
+                    {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs">{r.ms ? `${(r.ms / 1000).toFixed(1)}s` : '·'}</TableCell>
+                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
+                    {r.tok_s ? `${r.tok_s} t/s` : '·'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs">
+                    {r.cost !== undefined ? `$${r.cost.toFixed(5)}` : '·'}
+                  </TableCell>
+                  <TableCell><StatusCell status={status} /></TableCell>
+                  <TableCell className="text-right">
+                    {r.req_id ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          void navigator.clipboard.writeText(r.req_id!)
+                          toast.success('Request ID copied.')
+                        }}
+                        title={r.req_id}
+                        className="rounded px-1 py-0.5 font-mono text-[10.5px] text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        …{r.req_id.slice(-8)}
+                      </button>
+                    ) : (
+                      <span className="font-mono text-[10.5px] text-muted-foreground">·</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
         </div>

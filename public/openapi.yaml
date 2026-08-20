@@ -1,8 +1,7 @@
 openapi: 3.1.0
-
 info:
   title: Canonn API
-  version: "1.0.0"
+  version: 1.1.0
   summary: Grounded answers from your own documents.
   description: |
     Canonn serves **canonn-r1**, a model fine-tuned for context faithfulness: it
@@ -57,14 +56,11 @@ info:
   license:
     name: Canonn Terms of Service
     url: https://canonn.ai/legal/#terms
-
 servers:
   - url: https://api.canonn.ai/v1
     description: Production
-
 security:
   - bearerAuth: []
-
 tags:
   - name: Chat
     description: Generating grounded answers.
@@ -72,25 +68,58 @@ tags:
     description: What this API serves.
   - name: Playground
     description: Keyless endpoints used by the public demo.
-
 paths:
   /chat/completions:
     post:
-      tags: [Chat]
+      tags:
+        - Chat
       operationId: createChatCompletion
       summary: Create a grounded completion
-      description: |
+      description: >
         OpenAI-compatible chat completion. Set `stream: true` for server-sent
-        events; chunks arrive as `data: {...}` lines terminated by `data: [DONE]`.
+
+        events; chunks arrive as `data: {...}` lines terminated by `data:
+        [DONE]`.
+
 
         Non-streamed generations longer than about 100 seconds can hit the
+
         edge's first-byte timeout — use streaming for long outputs.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ChatCompletionRequest"
+              $ref: '#/components/schemas/ChatCompletionRequest'
+              properties:
+                files:
+                  description: >-
+                    Ground the answer on uploaded knowledge files: `true`
+                    retrieves across every file the key's tenant uploaded, or
+                    pass an array of file ids. The server selects the most
+                    relevant passages (BM25, same ranking as the Canonn apps),
+                    builds the grounded prompt, and non-streamed responses
+                    include a `canonn.citations` array naming the passages used.
+                  oneOf:
+                    - type: boolean
+                    - type: array
+                      items:
+                        type: string
+                retrieval:
+                  type: object
+                  description: Optional retrieval tuning when `files` is set.
+                  properties:
+                    top_k:
+                      type: integer
+                      default: 8
+                      maximum: 40
+                    budget:
+                      type: integer
+                      default: 12000
+                      maximum: 60000
+                      description: >-
+                        Max characters of retrieved data placed in front of the
+                        model.
             examples:
               grounded:
                 summary: Answer from supplied data
@@ -98,10 +127,12 @@ paths:
                   model: canonn-r1
                   messages:
                     - role: system
-                      content: |
+                      content: >
                         Answer from the data below.
 
-                        Data: Refund window: 45 days from purchase. In-app purchases: refunded within 5 days.
+
+                        Data: Refund window: 45 days from purchase. In-app
+                        purchases: refunded within 5 days.
                     - role: user
                       content: How long do I have to request a refund?
               absent:
@@ -124,18 +155,21 @@ paths:
                   stream: true
                   messages:
                     - role: system
-                      content: "Answer from the data below.\n\nData: Support hours are 9am to 5pm on weekdays."
+                      content: |-
+                        Answer from the data below.
+
+                        Data: Support hours are 9am to 5pm on weekdays.
                     - role: user
                       content: Is support available on Saturday?
       responses:
-        "200":
+        '200':
           description: |
             A completion. When `stream` is true the media type is
             `text/event-stream` instead of `application/json`.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ChatCompletion"
+                $ref: '#/components/schemas/ChatCompletion'
               examples:
                 grounded:
                   value:
@@ -158,46 +192,59 @@ paths:
                 type: string
               examples:
                 stream:
-                  value: |
-                    data: {"id":"chatcmpl-…","object":"chat.completion.chunk","created":1786018376,"model":"canonn-r1","choices":[{"index":0,"delta":{"content":"No"},"finish_reason":null}]}
+                  value: >
+                    data:
+                    {"id":"chatcmpl-…","object":"chat.completion.chunk","created":1786018376,"model":"canonn-r1","choices":[{"index":0,"delta":{"content":"No"},"finish_reason":null}]}
 
-                    data: {"id":"chatcmpl-…","object":"chat.completion.chunk","created":1786018376,"model":"canonn-r1","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
+                    data:
+                    {"id":"chatcmpl-…","object":"chat.completion.chunk","created":1786018376,"model":"canonn-r1","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+
 
                     data: [DONE]
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "401": { $ref: "#/components/responses/Unauthorized" }
-        "402": { $ref: "#/components/responses/PaymentRequired" }
-        "429": { $ref: "#/components/responses/RateLimited" }
-        "502": { $ref: "#/components/responses/UpstreamUnavailable" }
-
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/UpstreamUnavailable'
   /models:
     get:
-      tags: [Models]
+      tags:
+        - Models
       operationId: listModels
       summary: List available models
       responses:
-        "200":
+        '200':
           description: The models this key can address.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  object: { type: string, const: list }
+                  object:
+                    type: string
+                    const: list
                   data:
                     type: array
-                    items: { $ref: "#/components/schemas/Model" }
+                    items:
+                      $ref: '#/components/schemas/Model'
               example:
                 object: list
                 data:
                   - id: canonn-r1
                     object: model
                     owned_by: canonn
-        "401": { $ref: "#/components/responses/Unauthorized" }
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /models/catalog:
     get:
-      tags: [Models]
+      tags:
+        - Models
       operationId: getModelCatalog
       summary: Model catalog with pricing
       description: |
@@ -206,7 +253,7 @@ paths:
         prices in USD.
       security: []
       responses:
-        "200":
+        '200':
           description: Catalog entry per served model.
           content:
             application/json:
@@ -215,33 +262,43 @@ paths:
                 properties:
                   data:
                     type: array
-                    items: { $ref: "#/components/schemas/CatalogModel" }
+                    items:
+                      $ref: '#/components/schemas/CatalogModel'
               example:
                 data:
                   - id: canonn-r1
                     name: Canonn R1
                     created: 1785196800
                     description: A 9B model fine-tuned for context faithfulness.
-                    input_modalities: [text]
-                    output_modalities: [text]
+                    input_modalities:
+                      - text
+                    output_modalities:
+                      - text
                     context_length: 16384
                     max_output_length: 4096
                     pricing:
-                      prompt: "0.0000012"
-                      completion: "0.000006"
-                      image: "0"
-                      request: "0"
-                      input_cache_read: "0.0000012"
+                      prompt: '0.0000012'
+                      completion: '0.000006'
+                      image: '0'
+                      request: '0'
+                      input_cache_read: '0.0000012'
                     quantization: bf16
-                    supported_sampling_parameters: [temperature, top_p, max_tokens, stop, seed]
-                    supported_features: [streaming]
-                    datacenters: [FIN]
+                    supported_sampling_parameters:
+                      - temperature
+                      - top_p
+                      - max_tokens
+                      - stop
+                      - seed
+                    supported_features:
+                      - streaming
+                    datacenters:
+                      - FIN
                     is_ready: true
                     is_free: false
-
   /demo:
     post:
-      tags: [Playground]
+      tags:
+        - Playground
       operationId: runDemo
       summary: Keyless demo call
       description: |
@@ -255,7 +312,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [data, question]
+              required:
+                - data
+                - question
               properties:
                 data:
                   type: string
@@ -268,68 +327,172 @@ paths:
                   type: boolean
                   default: false
             example:
-              data: "Refund window: 45 days from purchase."
+              data: 'Refund window: 45 days from purchase.'
               question: How long do I have to request a refund?
       responses:
-        "200":
+        '200':
           description: The grounded answer.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  answer: { type: string }
-                  seconds: { type: number }
+                  answer:
+                    type: string
+                  seconds:
+                    type: number
               example:
                 answer: The refund window is 45 days from purchase.
                 seconds: 0.8
             text/event-stream:
-              schema: { type: string }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "429": { $ref: "#/components/responses/RateLimited" }
-
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /files:
+    post:
+      summary: Upload a knowledge file
+      description: >-
+        Uploads a document to ground chat completions on. The file is split into
+        retrievable passages server-side using the same record-aware chunking as
+        the Canonn apps. Accepts multipart/form-data with a `file` field
+        (OpenAI-compatible) or `application/json` with `filename` and `content`.
+        Supported: plain text, Markdown, JSON (record-aware), HTML. Max 1 MB per
+        file.
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                purpose:
+                  type: string
+                  example: assistants
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: The processed file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+    get:
+      summary: List knowledge files
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Files owned by the key's tenant.
+  /files/{file_id}:
+    get:
+      summary: Retrieve a file's metadata
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/File'
+    delete:
+      summary: Delete a file and its passages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deletion confirmation.
+  /files/{file_id}/content:
+    get:
+      summary: Download the file's extracted text
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: file_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plain-text content reconstructed from the stored passages.
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       description: A Canonn API key, created in the dashboard (`canonn-sk-...`).
-
   responses:
     BadRequest:
       description: Malformed request body.
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
-          example: { error: invalid json }
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: invalid json
     Unauthorized:
       description: Missing, malformed, or revoked API key.
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
-          example: { error: invalid api key }
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: invalid api key
     PaymentRequired:
       description: |
         The free-tier allowance for the month is spent and the account has no
         credits. Add credits in the dashboard to continue.
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema:
+            $ref: '#/components/schemas/Error'
           example:
-            error: Free tier limit reached for this month (1000 calls). Add credits in the dashboard to continue.
+            error: >-
+              Free tier limit reached for this month (1000 calls). Add credits
+              in the dashboard to continue.
     RateLimited:
       description: Too many requests in the current window.
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
-          example: { error: Playground limit reached - try again in an hour. }
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Playground limit reached - try again in an hour.
     UpstreamUnavailable:
       description: The model could not be reached. Retry; requests are not billed.
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
-          example: { error: upstream unavailable }
-
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: upstream unavailable
   schemas:
     Error:
       type: object
@@ -337,24 +500,29 @@ components:
         error:
           type: string
           description: A human-readable description of what went wrong.
-      required: [error]
-
+      required:
+        - error
     Message:
       type: object
-      required: [role, content]
+      required:
+        - role
+        - content
       properties:
         role:
           type: string
-          enum: [system, user, assistant]
+          enum:
+            - system
+            - user
+            - assistant
           description: |
             Put the documents to answer from in the `system` message and the
             question in the `user` message.
         content:
           type: string
-
     ChatCompletionRequest:
       type: object
-      required: [messages]
+      required:
+        - messages
       properties:
         model:
           type: string
@@ -365,7 +533,8 @@ components:
         messages:
           type: array
           minItems: 1
-          items: { $ref: "#/components/schemas/Message" }
+          items:
+            $ref: '#/components/schemas/Message'
         stream:
           type: boolean
           default: false
@@ -388,83 +557,145 @@ components:
           oneOf:
             - type: string
             - type: array
-              items: { type: string }
+              items:
+                type: string
         seed:
           type: integer
           description: Same seed and inputs produce the same answer.
-
     Choice:
       type: object
       properties:
-        index: { type: integer }
-        message: { $ref: "#/components/schemas/Message" }
+        index:
+          type: integer
+        message:
+          $ref: '#/components/schemas/Message'
         finish_reason:
           type: string
-          enum: [stop, length]
+          enum:
+            - stop
+            - length
           description: |
             `length` means the answer was cut off by `max_tokens` - raise it and
             retry rather than shipping a truncated answer.
-
     Usage:
       type: object
       properties:
-        prompt_tokens: { type: integer }
-        completion_tokens: { type: integer }
-        total_tokens: { type: integer }
-
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
     ChatCompletion:
       type: object
       properties:
-        id: { type: string }
-        object: { type: string, const: chat.completion }
-        created: { type: integer, description: Unix seconds. }
-        model: { type: string }
+        id:
+          type: string
+        object:
+          type: string
+          const: chat.completion
+        created:
+          type: integer
+          description: Unix seconds.
+        model:
+          type: string
         choices:
           type: array
-          items: { $ref: "#/components/schemas/Choice" }
-        usage: { $ref: "#/components/schemas/Usage" }
-
+          items:
+            $ref: '#/components/schemas/Choice'
+        usage:
+          $ref: '#/components/schemas/Usage'
     Model:
       type: object
       properties:
-        id: { type: string }
-        object: { type: string, const: model }
-        owned_by: { type: string }
-
+        id:
+          type: string
+        object:
+          type: string
+          const: model
+        owned_by:
+          type: string
     CatalogModel:
       type: object
       properties:
-        id: { type: string }
-        name: { type: string }
-        created: { type: integer }
-        description: { type: string }
+        id:
+          type: string
+        name:
+          type: string
+        created:
+          type: integer
+        description:
+          type: string
         input_modalities:
           type: array
-          items: { type: string }
+          items:
+            type: string
         output_modalities:
           type: array
-          items: { type: string }
-        context_length: { type: integer }
-        max_output_length: { type: integer }
+          items:
+            type: string
+        context_length:
+          type: integer
+        max_output_length:
+          type: integer
         pricing:
           type: object
           description: USD per token, as strings.
           properties:
-            prompt: { type: string }
-            completion: { type: string }
-            image: { type: string }
-            request: { type: string }
-            input_cache_read: { type: string }
-        quantization: { type: string }
-        hugging_face_id: { type: [string, "null"] }
+            prompt:
+              type: string
+            completion:
+              type: string
+            image:
+              type: string
+            request:
+              type: string
+            input_cache_read:
+              type: string
+        quantization:
+          type: string
+        hugging_face_id:
+          type:
+            - string
+            - 'null'
         supported_sampling_parameters:
           type: array
-          items: { type: string }
+          items:
+            type: string
         supported_features:
           type: array
-          items: { type: string }
+          items:
+            type: string
         datacenters:
           type: array
-          items: { type: string }
-        is_ready: { type: boolean }
-        is_free: { type: boolean }
+          items:
+            type: string
+        is_ready:
+          type: boolean
+        is_free:
+          type: boolean
+    File:
+      type: object
+      properties:
+        id:
+          type: string
+          example: file-8e2295c3225b6abf
+        object:
+          type: string
+          example: file
+        purpose:
+          type: string
+          example: assistants
+        filename:
+          type: string
+        bytes:
+          type: integer
+        created_at:
+          type: integer
+        status:
+          type: string
+          example: processed
+        chunk_count:
+          type: integer
+          description: Retrievable passages extracted from the file.
+

@@ -175,5 +175,68 @@ export const playgroundChat = (token: string, data: string, question: string, mo
     body: JSON.stringify({ data, question, mode }),
   })
 
+// ---- Knowledge files (the playground grounds on the signed-in account) ----
+
+export interface KnowledgeFile {
+  id: string
+  filename: string
+  bytes: number
+  status: string
+  chunk_count: number
+  created_at: number
+}
+export interface GroundedCitation {
+  file_id: string
+  filename: string
+  ordinal: number
+  score: number
+  excerpt?: string
+}
+
+export const listFiles = (token: string) =>
+  request<{ data: KnowledgeFile[] }>('/files', token)
+
+export const uploadTextFile = (token: string, filename: string, content: string) =>
+  request<KnowledgeFile>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ filename, content }),
+  })
+
+export const uploadBinaryFile = async (token: string, file: File): Promise<KnowledgeFile> => {
+  const form = new FormData()
+  form.append('purpose', 'assistants')
+  form.append('file', file)
+  const r = await fetch(`${API}/files`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  })
+  const b = await r.json()
+  if (!r.ok) throw new Error(b.error ?? `upload failed (${r.status})`)
+  return b as KnowledgeFile
+}
+
+export const deleteFile = (token: string, id: string) =>
+  request<{ deleted: boolean }>(`/files/${id}`, token, { method: 'DELETE' })
+
+export const groundedChat = async (
+  token: string,
+  messages: { role: string; content: string }[],
+): Promise<{ answer: string; citations: GroundedCitation[]; seconds: number }> => {
+  const t0 = performance.now()
+  const r = await fetch(`${API}/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ model: 'canonn-r1', files: true, messages }),
+  })
+  const b = await r.json()
+  if (!r.ok) throw new Error(b.error ?? `request failed (${r.status})`)
+  return {
+    answer: b.choices?.[0]?.message?.content ?? '',
+    citations: b.canonn?.citations ?? [],
+    seconds: Math.round((performance.now() - t0) / 100) / 10,
+  }
+}
+
 export const fmt = (n: number) =>
   n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n)

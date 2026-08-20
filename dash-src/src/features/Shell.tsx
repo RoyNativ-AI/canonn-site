@@ -5,11 +5,13 @@ import { Activity } from '@/features/Activity'
 import { Logs } from '@/features/Logs'
 import { Keys } from '@/features/Keys'
 import { Billing } from '@/features/Billing'
+import { Playground } from '@/features/Playground'
 import { Moon, Sun } from 'lucide-react'
 import { applyTheme, readTheme, type Theme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const SCREENS = [
+  { id: 'playground', label: 'Playground' },
   { id: 'activity', label: 'Usage' },
   { id: 'logs', label: 'Logs' },
   { id: 'keys', label: 'API keys' },
@@ -187,6 +189,9 @@ export function Shell() {
           <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 font-mono text-xs text-destructive">
             {error}
           </div>
+        )}
+        {screen === 'playground' && (
+          <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
         )}
         {screen === 'activity' && (
           <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />

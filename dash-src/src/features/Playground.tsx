@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ArrowUp, ChevronDown, ClipboardType, FileText, Globe, Headset, Link2,
-  Loader2, Network, Plus, Trash2, Upload, X,
+  ArrowUp, Check, ChevronDown, ClipboardType, Copy, FileText, Globe, Headset,
+  Link2, Loader2, Network, Plus, Trash2, Upload, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -270,12 +270,15 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 <div className="max-w-[85%] rounded-2xl bg-secondary px-4 py-2.5 text-[14px]">{turn.content}</div>
               </div>
             ) : (
-              <div key={i} className="mb-6">
-                <div className="mb-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+              <div key={i} className="group/turn mb-6">
+                <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+                  <span>
                   Canonn R1
                   {turn.citations?.length
                     ? ` · grounded in ${turn.citations.length} ${turn.citations.length === 1 ? 'passage' : 'passages'}`
                     : (!turn.grounded && !turn.error ? ' · no sources in scope' : '')}
+                  </span>
+                  {!turn.error && turn.content && !(busy && i === turns.length - 1) && <CopyAnswer text={turn.content} />}
                 </div>
                 {turn.content === '' && busy && i === turns.length - 1 ? (
                   <div className="flex gap-1 pt-1">
@@ -415,6 +418,25 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   )
 }
 
+
+
+function CopyAnswer({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={() => {
+        void navigator.clipboard.writeText(text)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase opacity-0 transition-opacity group-hover/turn:opacity-100 hover:text-foreground focus:opacity-100"
+      aria-label="Copy answer"
+    >
+      {copied ? <Check className="size-3" style={{ color: ACCENT }} /> : <Copy className="size-3" />}
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  )
+}
 
 function Inline({ text }: { text: string }) {
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[\d+\])/g)

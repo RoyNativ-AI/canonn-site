@@ -57,8 +57,8 @@ export function Logs({
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-[32px] font-semibold tracking-tight">Logs</h1>
-          <p className="text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
+          <h1 className="font-display text-[22px] font-semibold tracking-tight">Logs</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">

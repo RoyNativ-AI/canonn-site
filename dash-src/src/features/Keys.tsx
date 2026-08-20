@@ -88,8 +88,8 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
 
   return (
     <div>
-      <h1 className="font-display text-[32px] font-semibold tracking-tight">API keys</h1>
-      <p className="mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
+      <h1 className="font-display text-[22px] font-semibold tracking-tight">API keys</h1>
+      <p className="mt-0.5 mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
 
       <div className="mb-5 flex flex-wrap gap-2">
         {isAdmin && (

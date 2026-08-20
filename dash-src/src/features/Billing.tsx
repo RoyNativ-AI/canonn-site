@@ -211,7 +211,7 @@ export function Billing({ me }: { me: Me | null }) {
 
   return (
     <div>
-      <h1 className="mb-10 font-display text-[32px] font-semibold tracking-tight">Billing</h1>
+      <h1 className="mb-10 font-display text-[22px] font-semibold tracking-tight">Billing</h1>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

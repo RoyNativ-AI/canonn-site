@@ -172,7 +172,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
   return (
-    <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] flex-col gap-4 lg:flex-row lg:items-stretch">
+    <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] lg:h-[calc(100vh-9.5rem)] flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
       <div className="flex shrink-0 flex-col rounded-xl border border-border bg-card lg:w-[320px]">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -528,12 +528,15 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
       <div className="mb-1.5 text-xs font-medium text-muted-foreground">
         Answered from {sources} {sources === 1 ? 'source' : 'sources'}
       </div>
-      <div className="space-y-1.5">
+      {/* Evidence is not another card: a terracotta hairline marks anything
+          the model can point to in the user's own data. */}
+      <div className="space-y-1">
         {citations.slice(0, 6).map((c, i) => (
           <button
             key={`${c.file_id}-${c.ordinal}`}
             onClick={() => setOpen(open === i ? null : i)}
-            className="block w-full rounded-xl border border-border bg-secondary/40 px-3.5 py-2.5 text-left transition-colors hover:bg-secondary/70"
+            className="block w-full rounded-r-lg border-l-2 py-2 pr-2 pl-3.5 text-left transition-colors hover:bg-secondary/50"
+            style={{ borderLeftColor: open === i ? ACCENT : `${ACCENT}66` }}
           >
             <div className="flex items-center gap-2">
               <span className="font-mono text-[11px] font-semibold" style={{ color: ACCENT }}>{i + 1}</span>
@@ -542,7 +545,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
               <ChevronDown className={cn('size-3.5 text-muted-foreground transition-transform', open === i && 'rotate-180')} />
             </div>
             {open === i && c.excerpt && (
-              <div className="mt-2 border-t border-border/60 pt-2 font-mono text-[11.5px] leading-relaxed whitespace-pre-wrap text-muted-foreground">
+              <div className="mt-2 font-serif text-[14px] leading-relaxed whitespace-pre-wrap text-muted-foreground">
                 {c.excerpt}
               </div>
             )}

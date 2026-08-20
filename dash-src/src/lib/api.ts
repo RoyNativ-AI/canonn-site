@@ -219,22 +219,63 @@ export const uploadBinaryFile = async (token: string, file: File): Promise<Knowl
 export const deleteFile = (token: string, id: string) =>
   request<{ deleted: boolean }>(`/files/${id}`, token, { method: 'DELETE' })
 
-export const groundedChat = async (
+export const uploadFromUrl = (token: string, url: string, crawl: boolean) =>
+  request<KnowledgeFile>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ url, crawl }),
+  })
+
+export const uploadFromZendesk = (token: string, subdomain: string) =>
+  request<KnowledgeFile>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ zendesk: subdomain }),
+  })
+
+export type StreamEvent =
+  | { kind: 'token'; text: string }
+  | { kind: 'citations'; citations: GroundedCitation[] }
+
+/** Streamed chat; grounds on the account's files when `useFiles` is set.
+ *  Citations arrive as a final `canonn` SSE event the edge injects. */
+export async function* streamChat(
   token: string,
   messages: { role: string; content: string }[],
-): Promise<{ answer: string; citations: GroundedCitation[]; seconds: number }> => {
-  const t0 = performance.now()
+  useFiles: boolean,
+): AsyncGenerator<StreamEvent> {
   const r = await fetch(`${API}/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ model: 'canonn-r1', files: true, messages }),
+    body: JSON.stringify({
+      model: 'canonn-r1',
+      stream: true,
+      ...(useFiles ? { files: true } : {}),
+      messages,
+    }),
   })
-  const b = await r.json()
-  if (!r.ok) throw new Error(b.error ?? `request failed (${r.status})`)
-  return {
-    answer: b.choices?.[0]?.message?.content ?? '',
-    citations: b.canonn?.citations ?? [],
-    seconds: Math.round((performance.now() - t0) / 100) / 10,
+  if (!r.ok) {
+    const b = await r.json().catch(() => ({}))
+    throw new Error((b as { error?: string }).error ?? `request failed (${r.status})`)
+  }
+  if (!r.body) throw new Error('no response stream')
+  const reader = r.body.getReader()
+  const dec = new TextDecoder()
+  let buf = ''
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += dec.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() ?? ''
+    for (const line of lines) {
+      const payload = line.startsWith('data:') ? line.slice(5).trim() : null
+      if (!payload || payload === '[DONE]') continue
+      try {
+        const j = JSON.parse(payload)
+        if (j.canonn?.citations) yield { kind: 'citations', citations: j.canonn.citations }
+        const delta = j.choices?.[0]?.delta?.content
+        if (delta) yield { kind: 'token', text: delta }
+      } catch { /* keepalive or partial */ }
+    }
   }
 }
 

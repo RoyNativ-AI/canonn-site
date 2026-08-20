@@ -1,26 +1,45 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowUp, ChevronDown, FileText, Loader2, Plus, Trash2, Upload, X } from 'lucide-react'
+import {
+  ArrowUp, ChevronDown, ClipboardType, FileText, Globe, Headset, Link2,
+  Loader2, Network, Plus, Trash2, Upload, X,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import {
-  deleteFile, groundedChat, listFiles, uploadBinaryFile, uploadTextFile,
+  deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
+  uploadFromZendesk, uploadTextFile,
   type GroundedCitation, type KnowledgeFile,
 } from '@/lib/api'
 
-// The dashboard twin of the app's Chat + Knowledge screens: same server,
-// same retrieval, same visual language - quiet warm cards, terracotta only
-// where the eye should go, mono uppercase labels, citation cards under every
-// answer. Everything here runs through the public /v1/files + grounded
-// chat API, so what a customer tries here is exactly what they integrate.
+// The dashboard twin of the app's Chat + Knowledge screens, running entirely
+// on the public API: /v1/files for ingestion, streamed grounded completions
+// for answers. Same visual language as the app - terracotta only where the
+// eye should go, mono uppercase labels, citation cards under every answer.
 
 const ACCENT = '#c96442'
+
+type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk'
+
+const LOADERS: { id: LoaderId; name: string; blurb: string; icon: typeof Globe }[] = [
+  { id: 'upload', name: 'Upload files', blurb: 'txt · md · json · html — 1 MB each', icon: Upload },
+  { id: 'pdf', name: 'PDF', blurb: 'Text extracted in your browser, page by page', icon: FileText },
+  { id: 'paste', name: 'Paste text', blurb: 'A policy, an email thread, a snippet of notes', icon: ClipboardType },
+  { id: 'web', name: 'Web page', blurb: 'Fetch one URL and strip it to clean text', icon: Link2 },
+  { id: 'crawl', name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages', icon: Network },
+  { id: 'zendesk', name: 'Zendesk Help Center', blurb: 'Every public article, straight from the API', icon: Headset },
+]
+
+// The rest of the app's loader catalog. Connector sync lands on the API
+// next; until then the catalog is honest about where each one runs.
+const COMING = ['Notion', 'Google Drive', 'Slack', 'GitHub', 'Confluence', 'Jira',
+  'Intercom', 'HubSpot', 'Salesforce', 'Dropbox', 'Linear', 'Airtable']
 
 interface Turn {
   role: 'user' | 'assistant'
   content: string
   citations?: GroundedCitation[]
-  seconds?: number
+  grounded: boolean
   error?: boolean
 }
 
@@ -29,12 +48,14 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [turns, setTurns] = useState<Turn[]>([])
   const [question, setQuestion] = useState('')
   const [busy, setBusy] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [pasteOpen, setPasteOpen] = useState(false)
-  const [pasteTitle, setPasteTitle] = useState('')
-  const [pasteText, setPasteText] = useState('')
+  const [uploading, setUploading] = useState<string | null>(null)
+  const [picker, setPicker] = useState(false)
+  const [form, setForm] = useState<LoaderId | null>(null)
+  const [formTitle, setFormTitle] = useState('')
+  const [formText, setFormText] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
+  const pdfInput = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
@@ -49,52 +70,81 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
   useEffect(() => { refresh() }, [refresh])
   useEffect(() => {
-    scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: 'smooth' })
+    scroller.current?.scrollTo({ top: scroller.current.scrollHeight })
   }, [turns])
 
-  async function addFiles(list: FileList | File[]) {
-    setUploading(true)
+  function fail(e: unknown) {
+    alert(e instanceof Error ? e.message : 'failed')
+  }
+
+  async function ingest(label: string, work: (t: string) => Promise<unknown>) {
+    setUploading(label)
     try {
-      for (const file of Array.from(list)) {
-        await withToken((t) => uploadBinaryFile(t, file))
-      }
+      await withToken(work)
+      setForm(null)
+      setFormTitle('')
+      setFormText('')
       refresh()
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'upload failed')
+      fail(e)
     } finally {
-      setUploading(false)
+      setUploading(null)
     }
   }
 
-  async function addPasted() {
-    if (!pasteText.trim()) return
-    setUploading(true)
-    try {
-      const name = (pasteTitle.trim() || 'Pasted text').replace(/[^\w.\- ]+/g, '').slice(0, 80) || 'Pasted text'
-      await withToken((t) => uploadTextFile(t, name.endsWith('.md') ? name : `${name}.md`, pasteText))
-      setPasteOpen(false)
-      setPasteTitle('')
-      setPasteText('')
-      refresh()
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'upload failed')
-    } finally {
-      setUploading(false)
-    }
-  }
+  const addFiles = (list: FileList | File[]) =>
+    ingest('Uploading…', async (t) => {
+      for (const file of Array.from(list)) await uploadBinaryFile(t, file)
+    })
+
+  const addPdfs = (list: FileList) =>
+    ingest('Extracting PDF…', async (t) => {
+      const pdfjs = await import('pdfjs-dist')
+      const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
+      pdfjs.GlobalWorkerOptions.workerSrc = worker.default
+      for (const file of Array.from(list)) {
+        const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise
+        const pages: string[] = []
+        for (let p = 1; p <= doc.numPages; p += 1) {
+          const content = await (await doc.getPage(p)).getTextContent()
+          pages.push(content.items.map((i) => ('str' in i ? i.str : '')).join(' '))
+        }
+        const text = pages.join('\n\n').replace(/[ \t]+/g, ' ').trim()
+        if (!text) throw new Error(`${file.name}: no extractable text`)
+        await uploadTextFile(t, file.name.replace(/\.pdf$/i, '.txt'), text)
+      }
+    })
 
   async function ask() {
     const q = question.trim()
     if (!q || busy) return
+    const grounded = (files ?? []).length > 0
     setQuestion('')
     setBusy(true)
-    setTurns((ts) => [...ts, { role: 'user', content: q }])
+    const history = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }))
+    setTurns((ts) => [...ts, { role: 'user', content: q, grounded }, { role: 'assistant', content: '', grounded }])
     try {
-      const history = turns.map(({ role, content }) => ({ role, content }))
-      const res = await withToken((t) => groundedChat(t, [...history, { role: 'user', content: q }]))
-      setTurns((ts) => [...ts, { role: 'assistant', content: res.answer, citations: res.citations, seconds: res.seconds }])
+      const token = await getToken()
+      if (!token) throw new Error('sign in required')
+      for await (const event of streamChat(token, [...history, { role: 'user', content: q }], grounded)) {
+        setTurns((ts) => {
+          const next = [...ts]
+          const last = { ...next[next.length - 1] }
+          if (event.kind === 'token') last.content += event.text
+          else last.citations = event.citations
+          next[next.length - 1] = last
+          return next
+        })
+      }
     } catch (e) {
-      setTurns((ts) => [...ts, { role: 'assistant', content: e instanceof Error ? e.message : 'request failed', error: true }])
+      setTurns((ts) => {
+        const next = [...ts]
+        next[next.length - 1] = {
+          role: 'assistant', grounded: false, error: true,
+          content: e instanceof Error ? e.message : 'request failed',
+        }
+        return next
+      })
     } finally {
       setBusy(false)
     }
@@ -104,46 +154,42 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const passages = (files ?? []).reduce((n, f) => n + f.chunk_count, 0)
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(260px,340px)_1fr] lg:items-start">
+    <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
-      <div className="rounded-2xl border border-border bg-card">
+      <div className="flex shrink-0 flex-col rounded-2xl border border-border bg-card lg:w-[320px]">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">Knowledge</span>
-          <div className="flex gap-1">
-            <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => setPasteOpen(true)}>
-              <Plus className="size-3.5" /> Paste
-            </Button>
-            <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => fileInput.current?.click()}>
-              <Upload className="size-3.5" /> Upload
-            </Button>
-          </div>
+          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => { setPicker(true); setForm(null) }}>
+            <Plus className="size-3.5" /> Add source
+          </Button>
         </div>
 
-        <input
-          ref={fileInput}
-          type="file"
-          multiple
-          accept=".txt,.md,.markdown,.json,.html,.htm,.csv"
-          className="hidden"
-          onChange={(e) => e.target.files && addFiles(e.target.files)}
-        />
+        <input ref={fileInput} type="file" multiple accept=".txt,.md,.markdown,.json,.html,.htm,.csv" className="hidden"
+          onChange={(e) => e.target.files?.length && addFiles(e.target.files)} />
+        <input ref={pdfInput} type="file" multiple accept=".pdf" className="hidden"
+          onChange={(e) => e.target.files?.length && addPdfs(e.target.files)} />
 
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files) }}
-          className={cn('px-2 py-2 transition-colors', dragOver && 'bg-secondary/60')}
+          onDrop={(e) => {
+            e.preventDefault(); setDragOver(false)
+            const dropped = Array.from(e.dataTransfer.files)
+            const pdfs = dropped.filter((f) => f.name.toLowerCase().endsWith('.pdf'))
+            const rest = dropped.filter((f) => !f.name.toLowerCase().endsWith('.pdf'))
+            if (pdfs.length) { const dt = new DataTransfer(); pdfs.forEach((f) => dt.items.add(f)); addPdfs(dt.files) }
+            if (rest.length) addFiles(rest)
+          }}
+          className={cn('flex-1 overflow-y-auto px-2 py-2 transition-colors', dragOver && 'bg-secondary/60')}
         >
-          {files === null && (
-            <div className="px-2 py-6 text-center text-xs text-muted-foreground">Loading…</div>
-          )}
-          {files?.length === 0 && !pasteOpen && (
+          {files === null && <div className="px-2 py-6 text-center text-xs text-muted-foreground">Loading…</div>}
+          {files?.length === 0 && (
             <button
-              onClick={() => fileInput.current?.click()}
+              onClick={() => setPicker(true)}
               className="w-full rounded-xl border border-dashed border-border px-4 py-8 text-center text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
             >
-              Drop documents here, or click to choose.
-              <div className="mt-1 font-mono text-[10px] opacity-70">txt · md · json · html — 1 MB max</div>
+              Drop documents here, or add a source.
+              <div className="mt-1 font-mono text-[10px] opacity-70">files · pdf · web · zendesk</div>
             </button>
           )}
           {files?.map((f) => (
@@ -158,7 +204,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 </div>
               </div>
               <button
-                onClick={() => withToken((t) => deleteFile(t, f.id)).then(refresh)}
+                onClick={() => withToken((t) => deleteFile(t, f.id)).then(refresh).catch(fail)}
                 className="hidden size-6 shrink-0 items-center justify-center rounded text-muted-foreground group-hover:flex hover:text-destructive"
                 aria-label={`Delete ${f.filename}`}
               >
@@ -168,62 +214,31 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           ))}
           {uploading && (
             <div className="flex items-center gap-2 px-2 py-2 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" /> Processing…
+              <Loader2 className="size-3.5 animate-spin" /> {uploading}
             </div>
           )}
         </div>
 
-        {pasteOpen && (
-          <div className="border-t border-border p-3">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">Paste text</span>
-              <button onClick={() => setPasteOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
-            </div>
-            <Input
-              value={pasteTitle}
-              onChange={(e) => setPasteTitle(e.target.value)}
-              placeholder="Title (optional)"
-              className="mb-2 h-8 bg-background text-xs"
-            />
-            <textarea
-              value={pasteText}
-              onChange={(e) => setPasteText(e.target.value)}
-              rows={6}
-              placeholder="Drop in a policy, an email thread, a snippet of notes…"
-              className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
-            />
-            <Button
-              size="sm"
-              onClick={addPasted}
-              disabled={!pasteText.trim() || uploading}
-              className="mt-2 h-7 w-full text-xs text-white"
-              style={{ background: ACCENT }}
-            >
-              Add source
-            </Button>
-          </div>
-        )}
-
-        {ready && (
-          <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
-            {files!.length} {files!.length === 1 ? 'source' : 'sources'} · {passages} passages in scope
-          </div>
-        )}
+        <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
+          {ready
+            ? `${files!.length} ${files!.length === 1 ? 'source' : 'sources'} · ${passages} passages in scope`
+            : 'No sources yet — chat works without them too'}
+        </div>
       </div>
 
       {/* ---- Chat ---- */}
-      <div className="flex min-h-[540px] flex-col rounded-2xl border border-border bg-card">
-        <div ref={scroller} className="flex-1 overflow-y-auto px-4 py-5 sm:px-6" style={{ maxHeight: '62vh' }}>
+      <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-card">
+        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.length === 0 && (
-            <div className="mx-auto max-w-md pt-10 text-center">
-              <div className="mx-auto mb-4 flex size-10 items-center justify-center rounded-xl bg-foreground text-background text-lg font-bold">C</div>
+            <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center text-center">
+              <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-foreground text-lg font-bold text-background">C</div>
               <h2 className="font-serif text-[26px] leading-tight font-semibold tracking-tight">
                 The model that trusts your data.
               </h2>
               <p className="mt-3 text-sm text-muted-foreground">
                 {ready
                   ? `${files!.length} ${files!.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
-                  : 'Add a document on the left, then ask about it. Canonn answers from what you upload — and says so when the answer is not there.'}
+                  : 'Ask anything, or add a source on the left to see grounded answers with citations.'}
               </p>
             </div>
           )}
@@ -236,30 +251,25 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             ) : (
               <div key={i} className="mb-6">
                 <div className="mb-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
-                  Canonn R1{turn.citations?.length ? ` · grounded in ${turn.citations.length} ${turn.citations.length === 1 ? 'passage' : 'passages'}` : ''}
-                  {turn.seconds != null ? ` · ${turn.seconds}s` : ''}
+                  Canonn R1
+                  {turn.citations?.length
+                    ? ` · grounded in ${turn.citations.length} ${turn.citations.length === 1 ? 'passage' : 'passages'}`
+                    : (!turn.grounded && !turn.error ? ' · no sources in scope' : '')}
                 </div>
-                <div className={cn('text-[14.5px] leading-relaxed whitespace-pre-wrap', turn.error && 'text-destructive')}>
-                  {turn.content}
-                </div>
+                {turn.content === '' && busy && i === turns.length - 1 ? (
+                  <div className="flex gap-1 pt-1">
+                    {[0, 1, 2].map((d) => (
+                      <span key={d} className="size-1.5 animate-pulse rounded-full bg-muted-foreground/60" style={{ animationDelay: `${d * 200}ms` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={cn('text-[14.5px] leading-relaxed whitespace-pre-wrap', turn.error && 'text-destructive')}>
+                    {turn.content}
+                  </div>
+                )}
                 {!!turn.citations?.length && <Citations citations={turn.citations} />}
               </div>
             ),
-          )}
-
-          {busy && (
-            <div className="mb-6">
-              <div className="mb-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</div>
-              <div className="flex gap-1 pt-1">
-                {[0, 1, 2].map((d) => (
-                  <span
-                    key={d}
-                    className="size-1.5 animate-pulse rounded-full bg-muted-foreground/60"
-                    style={{ animationDelay: `${d * 200}ms` }}
-                  />
-                ))}
-              </div>
-            </div>
           )}
         </div>
 
@@ -269,13 +279,13 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
-              placeholder={ready ? `Ask about your ${files!.length === 1 ? 'source' : `${files!.length} sources`}…` : 'Add a source first…'}
-              disabled={!ready || busy}
+              placeholder={ready ? `Ask about your ${files!.length === 1 ? 'source' : `${files!.length} sources`}…` : 'Ask anything…'}
+              disabled={busy}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-60"
             />
             <button
               onClick={ask}
-              disabled={!ready || busy || !question.trim()}
+              disabled={busy || !question.trim()}
               className="flex size-8 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-30"
               style={{ background: ACCENT }}
               aria-label="Send"
@@ -285,19 +295,110 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           </div>
         </div>
       </div>
+
+      {/* ---- Source catalog ---- */}
+      {picker && (
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPicker(false)}>
+          <div
+            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-serif text-lg font-semibold">New source</span>
+              <button onClick={() => setPicker(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
+            </div>
+
+            {!form && (
+              <>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {LOADERS.map(({ id, name, blurb, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        if (id === 'upload') { setPicker(false); fileInput.current?.click() }
+                        else if (id === 'pdf') { setPicker(false); pdfInput.current?.click() }
+                        else setForm(id)
+                      }}
+                      className="rounded-xl border border-border bg-background p-3 text-left transition-colors hover:border-foreground/30"
+                    >
+                      <Icon className="mb-2 size-4" style={{ color: ACCENT }} />
+                      <div className="text-[13px] font-medium">{name}</div>
+                      <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">{blurb}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-4 mb-2 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+                  In the app · coming to the API
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {COMING.map((name) => (
+                    <span key={name} className="rounded-full border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground">
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {form && (
+              <div>
+                <button onClick={() => setForm(null)} className="mb-3 text-xs text-muted-foreground hover:text-foreground">← All sources</button>
+                {form === 'paste' && (
+                  <>
+                    <Input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="Title (optional)" className="mb-2 h-9 bg-background text-sm" />
+                    <textarea
+                      value={formText}
+                      onChange={(e) => setFormText(e.target.value)}
+                      rows={8}
+                      placeholder="Paste the text to answer from…"
+                      className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
+                    />
+                  </>
+                )}
+                {(form === 'web' || form === 'crawl') && (
+                  <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="https://example.com/help" className="mb-1 h-9 bg-background font-mono text-xs" />
+                )}
+                {form === 'crawl' && (
+                  <p className="mb-1 text-[11.5px] text-muted-foreground">Follows same-site links from this page, up to 8 pages.</p>
+                )}
+                {form === 'zendesk' && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="support.yourcompany.com or subdomain" className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-[11.5px] text-muted-foreground">Public help centers only — every article via the Zendesk API.</p>
+                  </>
+                )}
+                <Button
+                  onClick={() => {
+                    if (form === 'paste') {
+                      const name = (formTitle.trim() || 'Pasted text').slice(0, 80)
+                      ingest('Adding…', (t) => uploadTextFile(t, name.endsWith('.md') ? name : `${name}.md`, formText))
+                    } else if (form === 'web') ingest('Fetching page…', (t) => uploadFromUrl(t, formText.trim(), false))
+                    else if (form === 'crawl') ingest('Crawling…', (t) => uploadFromUrl(t, formText.trim(), true))
+                    else if (form === 'zendesk') ingest('Importing articles…', (t) => uploadFromZendesk(t, formText.trim()))
+                    setPicker(false)
+                  }}
+                  disabled={!formText.trim() || !!uploading}
+                  className="mt-2 h-9 w-full text-sm text-white"
+                  style={{ background: ACCENT }}
+                >
+                  Add source
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 function Citations({ citations }: { citations: GroundedCitation[] }) {
   const [open, setOpen] = useState<number | null>(null)
-  const scored = citations.filter((c) => c.score > 0)
-  const support = citations.length - scored.length
+  const sources = new Set(citations.map((c) => c.file_id)).size
   return (
     <div className="mt-3">
       <div className="mb-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
-        Answered from {new Set(citations.map((c) => c.file_id)).size} {new Set(citations.map((c) => c.file_id)).size === 1 ? 'source' : 'sources'}
-        {support > 0 ? ` · ${support} supporting` : ''}
+        Answered from {sources} {sources === 1 ? 'source' : 'sources'}
       </div>
       <div className="space-y-1.5">
         {citations.slice(0, 6).map((c, i) => (

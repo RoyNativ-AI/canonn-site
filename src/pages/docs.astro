@@ -17,6 +17,8 @@ const bodyHtml = `
     <div class="sgroup">
       <div class="slabel">Endpoints</div>
       <a href="#chat"><span class="verb post">POST</span>chat/completions</a>
+      <a href="#files"><span class="verb post">POST</span>files</a>
+      <a href="#grounding"><span class="verb post">POST</span>grounded answers</a>
       <a href="#streaming"><span class="verb post">POST</span>streaming</a>
       <a href="#models"><span class="verb get">GET</span>models</a>
       <a href="#catalog"><span class="verb get">GET</span>models/catalog</a>
@@ -180,6 +182,69 @@ console.log(answer.choices[<span class="n">0</span>].message.content);</pre>
         <tbody>
           <tr><td>stop</td><td>The model finished its answer.</td></tr>
           <tr><td>length</td><td>Cut off by <code>max_tokens</code>. Raise it and retry rather than shipping a truncated answer.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="files">
+      <h2>Knowledge files</h2>
+      <div class="route"><span class="m">POST</span>/v1/files</div>
+      <p>Upload documents once and ground any chat completion on them — no need to pack your knowledge base into every request. Files are chunked server-side with the same record-aware rules as the Canonn apps, and retrieval uses the same ranking, so what you test in the app is what the API serves.</p>
+
+      <h3>Upload</h3>
+      <p>OpenAI-compatible multipart, or plain JSON if that is easier from your stack. Supported: plain text, Markdown, JSON (record-aware), HTML. Max 1&nbsp;MB per file, 100 files per account.</p>
+      <div class="code"><div class="codebar"><span class="tab on">curl</span><button class="copy" data-copy='curl https://api.canonn.ai/v1/files -H "Authorization: Bearer canonn-sk-..." -F purpose=assistants -F file=@policy.md'>Copy</button></div>
+<pre>curl https://api.canonn.ai/v1/files \
+  -H <span class="s">"Authorization: Bearer canonn-sk-..."</span> \
+  -F <span class="k">purpose</span>=assistants \
+  -F <span class="k">file</span>=@policy.md</pre></div>
+      <div class="code"><div class="codebar"><span class="tab on">Response</span><button class="copy">Copy</button></div>
+<pre>{
+  <span class="k">"id"</span>: <span class="s">"file-8e2295c3225b6abf"</span>,
+  <span class="k">"object"</span>: <span class="s">"file"</span>,
+  <span class="k">"filename"</span>: <span class="s">"policy.md"</span>,
+  <span class="k">"status"</span>: <span class="s">"processed"</span>,
+  <span class="k">"chunk_count"</span>: 12
+}</pre></div>
+
+      <h3>Manage</h3>
+      <table>
+        <thead><tr><th>Route</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>GET /v1/files</code></td><td>List your files.</td></tr>
+          <tr><td><code>GET /v1/files/{id}</code></td><td>File metadata.</td></tr>
+          <tr><td><code>GET /v1/files/{id}/content</code></td><td>The extracted text, reconstructed.</td></tr>
+          <tr><td><code>DELETE /v1/files/{id}</code></td><td>Removes the file and every passage extracted from it, immediately.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="grounding">
+      <h2>Grounded answers</h2>
+      <div class="route"><span class="m">POST</span>/v1/chat/completions</div>
+      <p>Set <code>"files"</code> on a chat completion and the server retrieves the most relevant passages, builds the grounded prompt, and answers from them. <code>true</code> searches everything you uploaded; an array of file ids narrows the scope.</p>
+      <div class="code"><div class="codebar"><span class="tab on">Request</span><button class="copy">Copy</button></div>
+<pre>{
+  <span class="k">"model"</span>: <span class="s">"canonn-r1"</span>,
+  <span class="k">"files"</span>: <span class="s">true</span>,
+  <span class="k">"messages"</span>: [
+    { <span class="k">"role"</span>: <span class="s">"user"</span>, <span class="k">"content"</span>: <span class="s">"What does HarborPay charge per card transaction?"</span> }
+  ]
+}</pre></div>
+      <p>Non-streamed responses carry the receipts — which passages of which files stood in front of the model, in rank order:</p>
+      <div class="code"><div class="codebar"><span class="tab on">Response extra</span><button class="copy">Copy</button></div>
+<pre><span class="k">"canonn"</span>: {
+  <span class="k">"files"</span>: [<span class="s">"file-8e2295c3225b6abf"</span>],
+  <span class="k">"citations"</span>: [
+    { <span class="k">"file_id"</span>: <span class="s">"file-8e2295c3225b6abf"</span>, <span class="k">"filename"</span>: <span class="s">"policy.md"</span>, <span class="k">"ordinal"</span>: 3, <span class="k">"score"</span>: 1 }
+  ]
+}</pre></div>
+      <h3>Retrieval tuning</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>retrieval.top_k</td><td>integer</td><td>Passages the ranker may select. Default <code>8</code>, max <code>40</code>.</td></tr>
+          <tr><td>retrieval.budget</td><td>integer</td><td>Max characters of retrieved data placed in front of the model. Default <code>12000</code>, max <code>60000</code>.</td></tr>
         </tbody>
       </table>
     </section>

@@ -112,6 +112,15 @@ export function Shell() {
 
           <div className="relative flex shrink-0 items-center gap-3">
             <a
+              href="https://canonn.ai/docs/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              API docs
+            </a>
+            <a
               href="#"
               onClick={(e) => { e.preventDefault(); alert('Coming soon to the App Store and Google Play') }}
               className="hidden items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground sm:flex"

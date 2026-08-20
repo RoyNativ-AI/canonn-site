@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
   uploadFromZendesk, uploadTextFile,
@@ -88,7 +89,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   }, [turns])
 
   function fail(e: unknown) {
-    alert(e instanceof Error ? e.message : 'failed')
+    toast.error(e instanceof Error ? e.message : 'Something went wrong')
   }
 
   async function ingest(label: string, work: (t: string) => Promise<unknown>) {
@@ -172,9 +173,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   return (
     <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
-      <div className="flex shrink-0 flex-col rounded-2xl border border-border bg-card lg:w-[320px]">
+      <div className="flex shrink-0 flex-col rounded-xl border border-border bg-card lg:w-[320px]">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">Knowledge</span>
+          <span className="text-xs font-medium text-muted-foreground">Knowledge</span>
           <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => { setPicker(true); setForm(null) }}>
             <Plus className="size-3.5" /> Add source
           </Button>
@@ -246,7 +247,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       </div>
 
       {/* ---- Chat ---- */}
-      <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-card">
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.length === 0 && (
             <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center text-center">
@@ -265,11 +266,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="mb-4 flex justify-end">
-                <div className="max-w-[85%] rounded-2xl bg-secondary px-4 py-2.5 text-[14px]">{turn.content}</div>
+                <div className="max-w-[85%] rounded-xl bg-secondary px-4 py-2.5 text-[14px]">{turn.content}</div>
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
-                <div className="mb-1.5 flex items-center gap-2 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>
                   Canonn R1
                   {turn.citations?.length
@@ -351,7 +352,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       {picker && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPicker(false)}>
           <div
-            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-xl"
+            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -378,7 +379,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     </button>
                   ))}
                 </div>
-                <div className="mt-4 mb-2 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+                <div className="mt-4 mb-2 text-xs font-medium text-muted-foreground">
                   In the app · coming to the API
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -513,7 +514,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
   const sources = new Set(citations.map((c) => c.file_id)).size
   return (
     <div className="mt-3">
-      <div className="mb-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+      <div className="mb-1.5 text-xs font-medium text-muted-foreground">
         Answered from {sources} {sources === 1 ? 'source' : 'sources'}
       </div>
       <div className="space-y-1.5">

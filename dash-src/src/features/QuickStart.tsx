@@ -80,7 +80,7 @@ export function QuickStart() {
     <div className="grid items-stretch gap-4 lg:grid-cols-2">
       <div className="space-y-4">
         <div>
-          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             Data example
           </label>
           <textarea
@@ -92,7 +92,7 @@ export function QuickStart() {
           />
         </div>
         <div>
-          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             API key <span className="normal-case tracking-normal text-[#c96442]">(required, runs on your key)</span>
           </label>
           <Input
@@ -103,7 +103,7 @@ export function QuickStart() {
           />
         </div>
         <div>
-          <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             Question
           </label>
           <Input

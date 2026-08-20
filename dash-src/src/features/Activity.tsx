@@ -18,7 +18,7 @@ const RANGES = [
 const PRICE_IN = 1.2
 const PRICE_OUT = 6
 
-const LABEL = 'font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase'
+const LABEL = 'text-xs font-medium text-muted-foreground'
 
 /** A headline number with its change against the previous, equal-length
  *  window - the context that makes a metric mean something. */
@@ -170,12 +170,12 @@ export function Activity({
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">From</label>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">From</label>
                       <Input type="date" value={range.from} max={range.to || undefined}
                              onChange={(e) => setRange({ ...range, from: e.target.value })} className="font-mono text-xs" />
                     </div>
                     <div>
-                      <label className="mb-1.5 block font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">To</label>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">To</label>
                       <Input type="date" value={range.to} min={range.from || undefined}
                              onChange={(e) => setRange({ ...range, to: e.target.value })} className="font-mono text-xs" />
                     </div>

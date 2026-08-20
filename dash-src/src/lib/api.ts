@@ -249,6 +249,10 @@ export async function* streamChat(
     body: JSON.stringify({
       model: 'canonn-r1',
       stream: true,
+      // Grounded extraction wants determinism; vLLM's default is 1.0 and it
+      // showed - fabricated SLA numbers and flipped verdicts were sampling
+      // noise, not model regressions (2026-08-20 evidence dossier).
+      temperature: 0.2,
       ...(fileIds && fileIds.length ? { files: fileIds } : {}),
       messages,
     }),

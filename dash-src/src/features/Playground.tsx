@@ -4,6 +4,7 @@ import {
   Loader2, Network, Plus, Trash2, Upload, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import {
@@ -54,6 +55,18 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [formTitle, setFormTitle] = useState('')
   const [formText, setFormText] = useState('')
   const [dragOver, setDragOver] = useState(false)
+  // Scope: which sources answer questions. Off is remembered locally so a
+  // toggled-out source stays out across visits (the server has no flag).
+  const [disabled, setDisabled] = useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('pg.scope.off') ?? '[]')) } catch { return new Set() }
+  })
+  const toggleScope = (id: string) => setDisabled((prev) => {
+    const next = new Set(prev)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    localStorage.setItem('pg.scope.off', JSON.stringify([...next]))
+    return next
+  })
   const fileInput = useRef<HTMLInputElement>(null)
   const pdfInput = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
@@ -118,7 +131,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   async function ask() {
     const q = question.trim()
     if (!q || busy) return
-    const grounded = (files ?? []).length > 0
+    const scope = (files ?? []).filter((f) => !disabled.has(f.id)).map((f) => f.id)
+    const grounded = scope.length > 0
     setQuestion('')
     setBusy(true)
     const history = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }))
@@ -126,7 +140,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     try {
       const token = await getToken()
       if (!token) throw new Error('sign in required')
-      for await (const event of streamChat(token, [...history, { role: 'user', content: q }], grounded)) {
+      for await (const event of streamChat(token, [...history, { role: 'user', content: q }], grounded ? scope : null)) {
         setTurns((ts) => {
           const next = [...ts]
           const last = { ...next[next.length - 1] }
@@ -151,7 +165,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   }
 
   const ready = (files ?? []).length > 0
-  const passages = (files ?? []).reduce((n, f) => n + f.chunk_count, 0)
+  const inScope = (files ?? []).filter((f) => !disabled.has(f.id))
+  const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
   return (
     <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] flex-col gap-4 lg:flex-row lg:items-stretch">
@@ -197,12 +212,18 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-background">
                 <FileText className="size-3.5 text-muted-foreground" />
               </span>
-              <div className="min-w-0 flex-1">
+              <div className={cn('min-w-0 flex-1 transition-opacity', disabled.has(f.id) && 'opacity-45')}>
                 <div className="truncate text-[13px] font-medium">{f.filename}</div>
                 <div className="font-mono text-[10.5px] text-muted-foreground">
-                  {f.chunk_count} passages · {(f.bytes / 1024).toFixed(1)} KB
+                  {f.chunk_count} passages · {(f.bytes / 1024).toFixed(1)} KB{disabled.has(f.id) ? ' · out of scope' : ''}
                 </div>
               </div>
+              <Switch
+                checked={!disabled.has(f.id)}
+                onCheckedChange={() => toggleScope(f.id)}
+                className="shrink-0 data-[state=checked]:bg-[#c96442]"
+                aria-label={`Include ${f.filename} in answers`}
+              />
               <button
                 onClick={() => withToken((t) => deleteFile(t, f.id)).then(refresh).catch(fail)}
                 className="hidden size-6 shrink-0 items-center justify-center rounded text-muted-foreground group-hover:flex hover:text-destructive"
@@ -221,7 +242,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
         <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
           {ready
-            ? `${files!.length} ${files!.length === 1 ? 'source' : 'sources'} · ${passages} passages in scope`
+            ? `${inScope.length} of ${files!.length} ${files!.length === 1 ? 'source' : 'sources'} · ${scopePassages} passages in scope`
             : 'No sources yet — chat works without them too'}
         </div>
       </div>
@@ -236,8 +257,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 The model that trusts your data.
               </h2>
               <p className="mt-3 text-sm text-muted-foreground">
-                {ready
-                  ? `${files!.length} ${files!.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
+                {inScope.length
+                  ? `${inScope.length} ${inScope.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
                   : 'Ask anything, or add a source on the left to see grounded answers with citations.'}
               </p>
             </div>
@@ -279,7 +300,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
-              placeholder={ready ? `Ask about your ${files!.length === 1 ? 'source' : `${files!.length} sources`}…` : 'Ask anything…'}
+              placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
               disabled={busy}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-60"
             />

@@ -235,12 +235,13 @@ export type StreamEvent =
   | { kind: 'token'; text: string }
   | { kind: 'citations'; citations: GroundedCitation[] }
 
-/** Streamed chat; grounds on the account's files when `useFiles` is set.
- *  Citations arrive as a final `canonn` SSE event the edge injects. */
+/** Streamed chat; grounds on the given file ids (the enabled scope), or
+ *  answers ungrounded when null. Citations arrive as a final `canonn` SSE
+ *  event the edge injects. */
 export async function* streamChat(
   token: string,
   messages: { role: string; content: string }[],
-  useFiles: boolean,
+  fileIds: string[] | null,
 ): AsyncGenerator<StreamEvent> {
   const r = await fetch(`${API}/chat/completions`, {
     method: 'POST',
@@ -248,7 +249,7 @@ export async function* streamChat(
     body: JSON.stringify({
       model: 'canonn-r1',
       stream: true,
-      ...(useFiles ? { files: true } : {}),
+      ...(fileIds && fileIds.length ? { files: fileIds } : {}),
       messages,
     }),
   })

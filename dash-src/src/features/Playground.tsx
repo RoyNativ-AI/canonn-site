@@ -67,6 +67,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     localStorage.setItem('pg.scope.off', JSON.stringify([...next]))
     return next
   })
+  const [ctxMenu, setCtxMenu] = useState<{ id: string; name: string; x: number; y: number } | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const pdfInput = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
@@ -208,7 +209,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             </button>
           )}
           {files?.map((f) => (
-            <div key={f.id} className="group flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-secondary/50">
+            <div
+              key={f.id}
+              onContextMenu={(e) => { e.preventDefault(); setCtxMenu({ id: f.id, name: f.filename, x: e.clientX, y: e.clientY }) }}
+              className="group flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-secondary/50"
+            >
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-background">
                 <FileText className="size-3.5 text-muted-foreground" />
               </span>
@@ -224,13 +229,6 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 className="shrink-0 data-[state=checked]:bg-[#c96442]"
                 aria-label={`Include ${f.filename} in answers`}
               />
-              <button
-                onClick={() => withToken((t) => deleteFile(t, f.id)).then(refresh).catch(fail)}
-                className="hidden size-6 shrink-0 items-center justify-center rounded text-muted-foreground group-hover:flex hover:text-destructive"
-                aria-label={`Delete ${f.filename}`}
-              >
-                <Trash2 className="size-3.5" />
-              </button>
             </div>
           ))}
           {uploading && (
@@ -321,6 +319,33 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           </div>
         </div>
       </div>
+
+      {ctxMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setCtxMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCtxMenu(null) }} />
+          <div
+            className="fixed z-50 w-48 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
+            style={{ left: Math.min(ctxMenu.x, window.innerWidth - 200), top: Math.min(ctxMenu.y, window.innerHeight - 100) }}
+          >
+            <button
+              onClick={() => { toggleScope(ctxMenu.id); setCtxMenu(null) }}
+              className="w-full px-3.5 py-2 text-left text-[13px] transition-colors hover:bg-secondary"
+            >
+              {disabled.has(ctxMenu.id) ? 'Include in answers' : 'Exclude from answers'}
+            </button>
+            <button
+              onClick={() => {
+                const { id } = ctxMenu
+                setCtxMenu(null)
+                withToken((t) => deleteFile(t, id)).then(refresh).catch(fail)
+              }}
+              className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-[13px] text-destructive transition-colors hover:bg-secondary"
+            >
+              <Trash2 className="size-3.5" /> Delete source
+            </button>
+          </div>
+        </>
+      )}
 
       {/* ---- Source catalog ---- */}
       {picker && (

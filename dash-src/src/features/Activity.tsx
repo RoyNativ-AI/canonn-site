@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { ArrowDownRight, ArrowUpRight, CalendarRange, Terminal } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { fmt, type Me } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -23,7 +24,7 @@ const LABEL = 'text-xs font-medium text-muted-foreground'
 /** A headline number with its change against the previous, equal-length
  *  window - the context that makes a metric mean something. */
 function Kpi({
-  label, value, prev, current, invert, suffix,
+  label, value, prev, current, invert, suffix, loading,
 }: {
   label: string
   value: string
@@ -31,11 +32,23 @@ function Kpi({
   current?: number
   invert?: boolean
   suffix?: string
+  loading?: boolean
 }) {
   const hasDelta = prev !== undefined && current !== undefined && prev > 0
   const pct = hasDelta ? ((current! - prev!) / prev!) * 100 : 0
   const up = pct >= 0
   const good = invert ? !up : up
+  if (loading) {
+    return (
+      <Card className="gap-2 py-5">
+        <CardHeader className="px-5"><CardTitle className={LABEL}>{label}</CardTitle></CardHeader>
+        <CardContent className="px-5">
+          <Skeleton className="h-[30px] w-24" />
+          <Skeleton className="mt-2 h-[11px] w-32" />
+        </CardContent>
+      </Card>
+    )
+  }
   return (
     <Card className="gap-2 py-5">
       <CardHeader className="px-5"><CardTitle className={LABEL}>{label}</CardTitle></CardHeader>
@@ -105,6 +118,7 @@ export function Activity({
   const maxCost = Math.max(0.000001, ...buckets.map(cost))
   const maxReq = Math.max(1, ...buckets.map((d) => me!.by_day[d].requests))
   const maxTok = Math.max(1, ...buckets.map((d) => me!.by_day[d].pt + me!.by_day[d].ct))
+  const loading = me === null
   const hasTraffic = (me?.requests ?? 0) > 0
   const prev = me?.previous
   const errorRate = me && me.requests ? (me.truncated / me.requests) * 100 : 0
@@ -209,29 +223,35 @@ export function Activity({
           API operational
         </span>
         <span className="font-mono text-xs text-muted-foreground">
-          balance <span className="text-foreground">${balance.toFixed(2)}</span>
-          {runway !== null && runway < 400 && <> · ~{runway}d at this rate</>}
+          balance {loading
+            ? <Skeleton className="inline-block h-3 w-12 align-[-2px]" />
+            : <span className="text-foreground">${balance.toFixed(2)}</span>}
+          {!loading && runway !== null && runway < 400 && <> · ~{runway}d at this rate</>}
         </span>
         <span className="font-mono text-xs text-muted-foreground">
-          median <span className="text-foreground">{me?.p50_ms ? `${me.p50_ms} ms` : '·'}</span>
+          median {loading
+            ? <Skeleton className="inline-block h-3 w-10 align-[-2px]" />
+            : <span className="text-foreground">{me?.p50_ms ? `${me.p50_ms} ms` : '·'}</span>}
         </span>
         <span className="font-mono text-xs text-muted-foreground">
-          truncated <span className={cn(errorRate > 2 ? 'text-destructive' : 'text-foreground')}>{errorRate.toFixed(1)}%</span>
+          truncated {loading
+            ? <Skeleton className="inline-block h-3 w-8 align-[-2px]" />
+            : <span className={cn(errorRate > 2 ? 'text-destructive' : 'text-foreground')}>{errorRate.toFixed(1)}%</span>}
         </span>
         <span className="font-mono text-[10.5px] text-muted-foreground sm:ml-auto">updates live</span>
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi label="Spend" value={`$${(me?.spend_usd ?? 0).toFixed(2)}`} prev={prev?.spend_usd} current={me?.spend_usd} invert />
-        <Kpi label="Requests" value={fmt(me?.requests ?? 0)} prev={prev?.requests} current={me?.requests} />
-        <Kpi label="Tokens" value={fmt(me ? me.input_tokens + me.output_tokens : 0)}
+        <Kpi label="Spend" loading={loading} value={`$${(me?.spend_usd ?? 0).toFixed(2)}`} prev={prev?.spend_usd} current={me?.spend_usd} invert />
+        <Kpi label="Requests" loading={loading} value={fmt(me?.requests ?? 0)} prev={prev?.requests} current={me?.requests} />
+        <Kpi label="Tokens" loading={loading} value={fmt(me ? me.input_tokens + me.output_tokens : 0)}
              prev={prev ? prev.input_tokens + prev.output_tokens : undefined}
              current={me ? me.input_tokens + me.output_tokens : undefined} />
-        <Kpi label="Median latency" value={me?.p50_ms ? String(me.p50_ms) : '·'} suffix={me?.p50_ms ? 'ms' : ''}
+        <Kpi label="Median latency" loading={loading} value={me?.p50_ms ? String(me.p50_ms) : '·'} suffix={me?.p50_ms ? 'ms' : ''}
              prev={prev?.p50_ms} current={me?.p50_ms} invert />
       </div>
 
-      {!hasTraffic && <div className="mb-6"><GettingStarted /></div>}
+      {!loading && !hasTraffic && <div className="mb-6"><GettingStarted /></div>}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
         <div className="space-y-6">
@@ -277,7 +297,9 @@ export function Activity({
                       </span>
                     </div>
                   ))}
-                  {buckets.length === 0 && <p className="font-mono text-xs text-muted-foreground">No traffic in this window.</p>}
+                  {buckets.length === 0 && Array.from({ length: 14 }, (_, i) => (
+                    <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 31) % 27)}%` }} />
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -301,6 +323,9 @@ export function Activity({
                       </div>
                     )
                   })}
+                  {buckets.length === 0 && Array.from({ length: 14 }, (_, i) => (
+                    <div key={i} className="flex-1 rounded-t bg-foreground/[0.06]" style={{ height: `${8 + ((i * 43) % 27)}%` }} />
+                  ))}
                 </div>
                 <div className="mt-2.5 flex items-center gap-4 font-mono text-[10px] text-muted-foreground">
                   <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#b3a894]/55" /> input</span>
@@ -315,9 +340,13 @@ export function Activity({
           <Card className="gap-2 py-5">
             <CardHeader className="px-5"><CardTitle className={LABEL}>Tokens in / out</CardTitle></CardHeader>
             <CardContent className="px-5">
-              <div className="font-display text-[26px] leading-none font-semibold tracking-tight tabular-nums">
-                {(me ? me.input_tokens + me.output_tokens : 0).toLocaleString()}
-              </div>
+              {loading
+                ? <Skeleton className="h-[26px] w-28" />
+                : (
+                  <div className="font-display text-[26px] leading-none font-semibold tracking-tight tabular-nums">
+                    {(me.input_tokens + me.output_tokens).toLocaleString()}
+                  </div>
+                )}
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
                 <div className="h-full rounded-full bg-[#b3a894]/65"
                      style={{ width: `${me && me.input_tokens + me.output_tokens ? (me.input_tokens / (me.input_tokens + me.output_tokens)) * 100 : 0}%` }} />
@@ -352,8 +381,21 @@ export function Activity({
           <Card className="gap-2 py-5">
             <CardHeader className="px-5"><CardTitle className={LABEL}>Traffic by key</CardTitle></CardHeader>
             <CardContent className="px-5">
-              {Object.keys(me?.by_key ?? {}).length === 0 && (
-                <p className="font-mono text-xs text-muted-foreground">No usage yet.</p>
+              {loading && (
+                <div className="space-y-4">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i}>
+                      <div className="mb-1.5 flex items-baseline justify-between">
+                        <Skeleton className="h-3.5 w-24" />
+                        <Skeleton className="h-3 w-14" />
+                      </div>
+                      <Skeleton className="h-1.5 w-full rounded" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!loading && Object.keys(me.by_key ?? {}).length === 0 && (
+                <p className="font-mono text-xs text-muted-foreground">No traffic from any key yet.</p>
               )}
               <div className="space-y-2.5">
                 {Object.entries(me?.by_key ?? {})

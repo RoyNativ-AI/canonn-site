@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import { createKey, renameKey, revokeKey, type Me } from '@/lib/api'
 import { QuickStart } from '@/features/QuickStart'
 
@@ -137,11 +138,22 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
             </TableRow>
           </TableHeader>
           <TableBody>
-            {keys.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="py-12 text-center">
-                  <KeyRound className="mx-auto mb-2 size-6 text-muted-foreground/50" />
-                  <span className="text-muted-foreground">No keys yet. Create your first above.</span>
+            {me === null && [0, 1].map((i) => (
+              <TableRow key={`s${i}`} className="hover:bg-transparent">
+                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-40" /></TableCell>
+                <TableCell />
+              </TableRow>
+            ))}
+            {me !== null && keys.length === 0 && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={4} className="py-14 text-center">
+                  <KeyRound className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
+                  <p className="text-sm font-medium">No keys yet</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Create one above — you will see it here, and its traffic under Usage and Logs.
+                  </p>
                 </TableCell>
               </TableRow>
             )}

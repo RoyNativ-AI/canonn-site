@@ -9,6 +9,18 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+/* Tab switches settle in rather than snap. Short enough to feel instant. */
+@keyframes screen-in {
+    from { opacity: 0; transform: translateY(3px); }
+    to { opacity: 1; transform: none; }
+}
+.screen-enter {
+    animation: screen-in 0.16s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .screen-enter { animation: none; }
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;

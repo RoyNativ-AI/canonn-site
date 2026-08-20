@@ -9,7 +9,6 @@ import { Playground } from '@/features/Playground'
 import { Moon, Sun } from 'lucide-react'
 import { applyTheme, readTheme, type Theme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
 
 const SCREENS = [
   { id: 'playground', label: 'Playground' },
@@ -34,6 +33,16 @@ export function Shell() {
   useEffect(() => {
     window.history.replaceState(null, '', `#${screen}`)
   }, [screen])
+  // In-page links (#keys from an empty state) and the back button both
+  // navigate; the tab bar is not the only door.
+  useEffect(() => {
+    const onHash = () => {
+      const h = window.location.hash.slice(1)
+      if (SCREENS.some((s) => s.id === h)) setScreen(h as ScreenId)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
   const [days, setDays] = useState(30)
   const [keyFilter, setKeyFilter] = useState('')
   const [me, setMe] = useState<Me | null>(null)
@@ -123,14 +132,6 @@ export function Shell() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               API docs
             </a>
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); toast('The mobile app is in TestFlight - ask us for an invite.') }}
-              className="hidden items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground sm:flex"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-              Get the app
-            </a>
             <button
               onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -191,22 +192,33 @@ export function Shell() {
             {error}
           </div>
         )}
-        {screen === 'playground' && (
-          <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
-        )}
-        {screen === 'activity' && (
-          <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />
-        )}
-        {screen === 'logs' && (
-          <Logs
-            me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter}
-            getToken={() => (session ? session.getToken() : Promise.resolve(null))}
-            onIoChanged={refresh}
-          />
-        )}
-        {screen === 'keys' && <Keys me={me} onChanged={refresh} />}
-        {screen === 'billing' && <Billing me={me} />}
+        {/* Keyed on the screen so switching tabs settles in with a short
+            fade instead of snapping. */}
+        <div key={screen} className="screen-enter">
+          {screen === 'playground' && (
+            <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
+          )}
+          {screen === 'activity' && (
+            <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />
+          )}
+          {screen === 'logs' && (
+            <Logs
+              me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter}
+              getToken={() => (session ? session.getToken() : Promise.resolve(null))}
+              onIoChanged={refresh}
+            />
+          )}
+          {screen === 'keys' && <Keys me={me} onChanged={refresh} />}
+          {screen === 'billing' && <Billing me={me} />}
+        </div>
       </main>
+
+      <footer className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center gap-x-5 gap-y-1.5 px-6 pt-2 pb-8 font-mono text-[10.5px] text-muted-foreground md:px-10">
+        <span>© 2026 Canonn</span>
+        <a href="https://canonn.ai/docs/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
+        <a href="https://canonn.ai/legal/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
+        <span className="ml-auto">api.canonn.ai · canonn-r1</span>
+      </footer>
     </div>
   )
 }

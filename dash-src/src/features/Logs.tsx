@@ -5,6 +5,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useEffect, useState } from 'react'
 import type { IoRow, LogRow } from '@/lib/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ScrollText } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -116,10 +118,31 @@ export function Logs({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={9} className="py-10 text-center text-muted-foreground">
-                  No requests yet. Create a key and make your first call.
+            {me === null && Array.from({ length: 8 }, (_, i) => (
+              <TableRow key={`s${i}`} className="hover:bg-transparent">
+                <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-10" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-12" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-14" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-10" /></TableCell>
+                <TableCell><Skeleton className="ml-auto h-3.5 w-24" /></TableCell>
+              </TableRow>
+            ))}
+            {me !== null && rows.length === 0 && (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={9} className="py-16 text-center">
+                  <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
+                  <p className="text-sm font-medium">No requests in this window</p>
+                  <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
+                    Every call to the API shows up here within seconds, with tokens, latency, and cost.
+                  </p>
+                  <div className="mt-4 flex items-center justify-center gap-2">
+                    <Button size="sm" asChild><a href="#keys">Create a key</a></Button>
+                    <Button size="sm" variant="outline" asChild><a href="#playground">Try the Playground</a></Button>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -248,7 +271,10 @@ export function Logs({
                   </div>
                 )}
                 {me?.io_logging && ioState === 'loading' && (
-                  <p className="font-mono text-xs text-muted-foreground">Loading logged bodies…</p>
+                  <div className="space-y-3">
+                    <Skeleton className="h-24 w-full rounded-xl" />
+                    <Skeleton className="h-16 w-full rounded-xl" />
+                  </div>
                 )}
                 {me?.io_logging && ioState === 'missing' && (
                   <p className="font-mono text-xs text-muted-foreground">

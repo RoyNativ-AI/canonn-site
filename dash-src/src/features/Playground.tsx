@@ -4,6 +4,7 @@ import {
   Link2, Loader2, Network, Plus, Trash2, Upload, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -199,7 +200,15 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           }}
           className={cn('flex-1 overflow-y-auto px-2 py-2 transition-colors', dragOver && 'bg-secondary/60')}
         >
-          {files === null && <div className="px-2 py-6 text-center text-xs text-muted-foreground">Loading…</div>}
+          {files === null && [0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-2.5 rounded-lg px-2 py-2">
+              <Skeleton className="size-7 shrink-0 rounded-md" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-3/5" />
+                <Skeleton className="h-2.5 w-2/5" />
+              </div>
+            </div>
+          ))}
           {files?.length === 0 && (
             <button
               onClick={() => setPicker(true)}
@@ -240,9 +249,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         </div>
 
         <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
-          {ready
-            ? `${inScope.length} of ${files!.length} ${files!.length === 1 ? 'source' : 'sources'} · ${scopePassages} passages in scope`
-            : 'No sources yet — chat works without them too'}
+          {files === null
+            ? <Skeleton className="h-3 w-44" />
+            : ready
+              ? `${inScope.length} of ${files.length} ${files.length === 1 ? 'source' : 'sources'} · ${scopePassages} passages in scope`
+              : 'No sources yet — chat works without them too'}
         </div>
       </div>
 

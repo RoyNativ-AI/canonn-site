@@ -19,7 +19,7 @@ import {
 
 // The Element renders in an iframe: nothing inherits, so fonts and colors
 // are stated explicitly or the fields fall back to browser serif.
-const ELEMENT_FONTS = [{ cssSrc: 'https://canonn.ai/assets/fonts/stripe-fonts.css' }]
+const ELEMENT_FONTS = [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..700&display=swap' }]
 
 const ELEMENT_APPEARANCE = {
   theme: 'stripe' as const,
@@ -29,7 +29,7 @@ const ELEMENT_APPEARANCE = {
     colorTextSecondary: '#6f6b66',
     colorBackground: '#ffffff',
     borderRadius: '10px',
-    fontFamily: "'Geist Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    fontFamily: "'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
     fontSizeBase: '14px',
   },
 }

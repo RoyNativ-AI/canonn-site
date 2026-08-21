@@ -38,6 +38,13 @@ const LOADERS: { id: LoaderId; name: string; blurb: string; icon: typeof Globe }
 const COMING = ['Notion', 'Google Drive', 'Slack', 'GitHub', 'Confluence', 'Jira',
   'Intercom', 'HubSpot', 'Salesforce', 'Dropbox', 'Linear', 'Airtable']
 
+// Same starter prompts as the app's empty chat screen.
+const SUGGESTIONS = [
+  'What does our refund policy say?',
+  'Summarise the key obligations in this contract.',
+  'Which clauses mention data retention?',
+]
+
 interface Turn {
   role: 'user' | 'assistant'
   content: string
@@ -279,16 +286,32 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         </div>
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.length === 0 && (
-            <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center text-center">
-              <div className="mb-4 flex size-10 items-center justify-center rounded-xl bg-foreground text-lg font-bold text-background">C</div>
-              <h2 className="font-serif text-[26px] leading-tight font-semibold tracking-tight">
+            <div className="mx-auto flex h-full max-w-md flex-col justify-center">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
+                <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
+              </div>
+              <h2 className="font-display text-[30px] leading-[1.12] font-semibold tracking-tight sm:text-[34px]">
                 The model that trusts your data.
               </h2>
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 {inScope.length
                   ? `${inScope.length} ${inScope.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
-                  : 'Ask anything, or add a source to see grounded answers with citations.'}
+                  : 'Add a website or a document under Knowledge, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
               </p>
+              {inScope.length > 0 && (
+                <div className="mt-4">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setQuestion(s)}
+                      className="block w-full border-b border-border py-2.5 text-left text-sm text-foreground/75 transition-colors first:border-t hover:text-foreground"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -299,7 +322,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <div className="mb-1.5 flex items-center gap-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
                   <span>
                   Canonn R1
                   {turn.citations?.length
@@ -340,8 +363,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             <button
               onClick={ask}
               disabled={busy || !question.trim()}
-              className="flex size-8 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-30"
-              style={{ background: ACCENT }}
+              className="flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
               aria-label="Send"
             >
               <ArrowUp className="size-4" />
@@ -379,13 +401,15 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
       {/* ---- Source catalog ---- */}
       {picker && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPicker(false)}>
+        // z-[70]: above the mobile sources sheet (z-50) and its scrim, so the
+        // catalog never opens underneath the Knowledge panel.
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPicker(false)}>
           <div
             className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-serif text-lg font-semibold">New source</span>
+              <span className="font-display text-lg font-semibold tracking-tight">New source</span>
               <button onClick={() => setPicker(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
             </div>
 
@@ -543,30 +567,32 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
   const sources = new Set(citations.map((c) => c.file_id)).size
   return (
     <div className="mt-3">
-      <div className="mb-1.5 text-xs font-medium text-muted-foreground">
+      <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
         Answered from {sources} {sources === 1 ? 'source' : 'sources'}
       </div>
-      {/* Evidence is not another card: a terracotta hairline marks anything
-          the model can point to in the user's own data. */}
-      <div className="space-y-1">
+      {/* Evidence as quote cards, matching the app: collapsed shows the line
+          the answer drew on, tapping opens the full passage in place. */}
+      <div className="space-y-2">
         {citations.slice(0, 6).map((c, i) => (
           <button
             key={`${c.file_id}-${c.ordinal}`}
             onClick={() => setOpen(open === i ? null : i)}
-            className="block w-full rounded-r-lg border-l-2 py-2 pr-2 pl-3.5 text-left transition-colors hover:bg-secondary/50"
-            style={{ borderLeftColor: open === i ? ACCENT : `${ACCENT}66` }}
+            className="block w-full rounded-xl border border-border bg-secondary/60 px-3.5 py-3 text-left transition-colors hover:bg-secondary"
           >
+            {c.excerpt && (
+              <div className={cn(
+                'mb-2 text-[13.5px] leading-relaxed whitespace-pre-wrap',
+                open !== i && 'line-clamp-3',
+              )}>
+                {open === i ? c.excerpt : `“${c.excerpt.trim()}”`}
+              </div>
+            )}
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] font-semibold" style={{ color: ACCENT }}>{i + 1}</span>
-              <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium">{c.filename}</span>
+              <span className="font-mono text-[10.5px] font-semibold" style={{ color: ACCENT }}>{i + 1}</span>
+              <span className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-muted-foreground">{c.filename}</span>
               <span className="font-mono text-[10px] text-muted-foreground">§{c.ordinal + 1}</span>
               <ChevronDown className={cn('size-3.5 text-muted-foreground transition-transform', open === i && 'rotate-180')} />
             </div>
-            {open === i && c.excerpt && (
-              <div className="mt-2 font-serif text-[14px] leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                {c.excerpt}
-              </div>
-            )}
           </button>
         ))}
       </div>

@@ -6,7 +6,7 @@ import Footer from '../components/Footer.astro';
 const bodyHtml = `
 
 <header><div class="wrap">
-  <div class="eyebrow">Benchmark Report · v2 · Canonn R1 (v13)</div>
+  <div class="eyebrow">Benchmark Report · v3 · Canonn R1 (v25) · updated 21 Aug 2026</div>
   <h1>How faithfully does each model obey your data?</h1>
   <p class="sub">A reproducible, apples-to-apples evaluation of Canonn R1 against frontier models on context-faithfulness, the ability to answer from provided data instead of parametric memory.</p>
   <div class="meta-strip">
@@ -44,15 +44,15 @@ const bodyHtml = `
     <table>
       <thead><tr><th>Model</th><th>Params</th><th>Document only</th><th>With rules</th><th>Enterprise prompt</th><th>Price / 1M (in / out)</th></tr></thead>
       <tbody>
-        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.4%</td><td class="n win">91.9%</td><td class="n win">$1.20 / $6</td></tr>
-        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.6%</td><td class="n mid">65.5%</td><td class="n mid">60.2%</td><td class="n low">$5 / $30</td></tr>
-        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">37.8%</td><td class="n mid">87.5%</td><td class="n mid">73.8%</td><td class="n low">$5 / $25</td></tr>
-        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">53.0%</td><td class="n mid">68.4%</td><td class="n mid">61.9%</td><td class="n low">$1.50 / $7.50</td></tr>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td>9B</td><td class="n win">89.8%</td><td class="n win">91.4%</td><td class="n win">92.9%</td><td class="n win">$1.20 / $6</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td>frontier</td><td class="n low">40.8%</td><td class="n mid">64.9%</td><td class="n mid">61.1%</td><td class="n low">$5 / $30</td></tr>
+        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td>frontier</td><td class="n low">31.8%</td><td class="n mid">89.7%</td><td class="n mid">69.4%</td><td class="n low">$5 / $25</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td>frontier</td><td class="n low">52.8%</td><td class="n mid">68.7%</td><td class="n mid">61.8%</td><td class="n low">$1.50 / $7.50</td></tr>
         <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemma 3 12B</td><td>open</td><td class="n mid">60.2%</td><td class="n mid">71.0%</td><td class="n mid">67.3%</td><td class="n">self-host</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="foot-note">FaithEval-counterfactual, 216 items, contamination-audited · identical prompt per regime · free-form generation scored by one shared scorer · self-host price estimate for Canonn (9B on one GPU) vs. published API pricing for frontier models.</p>
+  <p class="foot-note">FaithEval-counterfactual, 216 items, contamination-audited · identical prompt per regime · free-form generation scored by one shared scorer · self-host price estimate for Canonn (9B on one GPU) vs. published API pricing for frontier models. Frontier rows and Canonn's row re-measured 21 August 2026 through each vendor's live API (Canonn through api.canonn.ai — the number a customer actually receives). Gemma 3 12B row from the 7 August run.</p>
 
   <div class="regimes">
     <div class="regime">
@@ -61,11 +61,11 @@ const bodyHtml = `
     </div>
     <div class="regime">
       <div class="rt">Column 2, “With rules”</div>
-      <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 37.8% to 87.5%, within a few points of Canonn's 91.3%. Reported because it is the fairest column to them.</p>
+      <p>Every model gets the identical explicit instruction to follow the context. This is the test of <b>raw capability when intent is spelled out</b>, and it is the frontier models' best showing: Opus 5 climbs from 31.8% to 89.7%, within two points of Canonn's 91.4%. Reported because it is the fairest column to them.</p>
     </div>
     <div class="regime">
       <div class="rt">Column 3, “Enterprise prompt”</div>
-      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed, only surrounded. Opus 5 falls from 87.5% to 73.8% and GPT-5.6 from 65.5% to 60.2%, while Canonn rises to 91.9%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
+      <p>The same rule, now one of twelve in a 552-word support prompt. Nothing was removed, only surrounded. Opus 5 falls from 89.7% to 69.4% and GPT-5.6 from 64.9% to 61.1%, while Canonn rises to 92.9%. <b>This is the condition production runs in</b>, and it is where a trained-in behaviour separates from a prompted one.</p>
     </div>
   </div>
   <p>We show <b>all three regimes deliberately.</b> Reporting only "document only" would understate frontier models; reporting only "with rules" would hide the effect that matters commercially, that an instruction competing with eleven others is a much weaker instruction, and Canonn does not depend on it.</p>
@@ -78,10 +78,10 @@ const bodyHtml = `
     <table>
       <thead><tr><th>Model</th><th>Counterfactual</th><th>NQ-Swap</th><th>Inconsistent</th><th>Unanswerable</th></tr></thead>
       <tbody>
-        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">91.9%</td><td class="n mid">70.8%</td><td class="n win">48.0%</td><td class="n mid">75.4%</td></tr>
-        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n mid">73.8%</td><td class="n mid">70.8%</td><td class="n low">12.6%</td><td class="n mid">71.6%</td></tr>
-        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">60.2%</td><td class="n mid">66.4%</td><td class="n low">8.8%</td><td class="n mid">65.3%</td></tr>
-        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">61.9%</td><td class="n mid">63.2%</td><td class="n low">10.8%</td><td class="n win">84.0%</td></tr>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n win">92.9%</td><td class="n mid">70.8%</td><td class="n win">55.2%</td><td class="n mid">75.4%</td></tr>
+        <tr><td class="model"><img src="/assets/anthropic.svg" alt="">Claude Opus 5</td><td class="n mid">69.4%</td><td class="n mid">70.8%</td><td class="n low">12.7%</td><td class="n mid">71.6%</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-5.6</td><td class="n mid">61.1%</td><td class="n mid">66.4%</td><td class="n low">9.8%</td><td class="n mid">65.3%</td></tr>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini 3.6</td><td class="n mid">61.8%</td><td class="n mid">63.2%</td><td class="n low">12.0%</td><td class="n win">84.0%</td></tr>
         <tr><td class="model"><img src="/assets/moonshotai.svg" alt="">Kimi K3</td><td class="n low">51.8%</td><td class="n mid">59.8%</td><td class="n low">12.2%</td><td class="n mid">64.1%</td></tr>
         <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Pro</td><td class="n low">59.0%</td><td class="n mid">67.0%</td><td class="n low">12.2%</td><td class="n mid">76.5%</td></tr>
         <tr><td class="model"><img src="/assets/deepseek.svg" alt="">DeepSeek V4-Flash</td><td class="n low">54.2%</td><td class="n low">50.4%</td><td class="n low">11.2%</td><td class="n win">80.2%</td></tr>
@@ -90,18 +90,38 @@ const bodyHtml = `
       </tbody>
     </table>
   </div>
-  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's, <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 and DeepSeek lead clearly and we do not. Canonn's row was measured through the public API at api.canonn.ai on 7 August 2026, not against a local checkpoint, so it is the number a customer actually receives.</p>
+  <p class="foot-note">Clean-subset accuracy, 95% bootstrap confidence intervals over 2,000 resamples. Canonn's interval is separated from every competitor's on counterfactual and inconsistent. On NQ-Swap it overlaps Claude Opus 5's, <b>that cell is a tie, not a win</b>. On unanswerable, Gemini 3.6 and DeepSeek lead clearly and we do not. Counterfactual and inconsistent columns for Canonn, Opus 5, GPT-5.6 and Gemini 3.6 re-measured 21 August 2026; remaining cells from the 7 August run. Canonn's row is measured through the public API at api.canonn.ai, not against a local checkpoint, so it is the number a customer actually receives.</p>
 
   <div class="regimes">
     <div class="regime">
       <div class="rt">Where the gap is largest</div>
-      <p><b>Inconsistent, 48.0% against Opus 5's 12.6%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
+      <p><b>Inconsistent, 55.2% against Opus 5's 12.7%.</b> These are passages edited so the supported answer changed: the internal document that was amended last quarter, the policy page with a corrected figure. Frontier models answer from the version they remember. This is the single result we would put in front of a customer, and the one hardest to explain any other way.</p>
     </div>
     <div class="regime">
       <div class="rt">Where we do not lead</div>
       <p><b>Abstention.</b> When the answer is genuinely absent, Gemini 3.6 declines correctly 84.0% of the time, DeepSeek V4-Flash 80.2%, and Canonn 75.4%. With no instruction at all, every model is poor and Canonn manages only 25.7%. Declining is a distinct skill from grounding, and we have not solved it.</p>
     </div>
   </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Hallucination under summarization: Vectara's public suite</h2>
+  <p>A different lab, a different task, a different judge. Vectara's hallucination leaderboard feeds each model 1,006 short documents, asks for a strictly factual summary, and scores every summary with their hallucination-evaluation model. We ran Canonn R1 through the identical documents and prompt, at temperature 0, scored with HHEM-2.1-Open — the open variant of their judge.</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Model</th><th>Hallucination rate</th><th>Answer rate</th></tr></thead>
+      <tbody>
+        <tr><td class="model"><img src="/assets/gemini.svg" alt="">Gemini-2.0-Flash</td><td class="n win">0.7%</td><td class="n">100.0%</td></tr>
+        <tr><td class="model">Vectara Mockingbird-2-Echo</td><td class="n win">0.9%</td><td class="n">100.0%</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-4o</td><td class="n mid">1.5%</td><td class="n">100.0%</td></tr>
+        <tr><td class="model"><img src="/assets/openai.svg" alt="">GPT-4.1</td><td class="n mid">2.0%</td><td class="n">100.0%</td></tr>
+        <tr><td class="model">Grok-3-Beta</td><td class="n mid">2.1%</td><td class="n">100.0%</td></tr>
+        <tr class="ours"><td class="model"><img src="/assets/canon-logo.png" alt="">Canonn R1 <span class="badge">OURS</span></td><td class="n mid">2.5%</td><td class="n">99.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="foot-note">Reference rows are the leaderboard's own published figures; Canonn's row is our run of the same 1,006 documents with the same prompt, scored with HHEM-2.1-Open (the leaderboard now scores with the commercial HHEM-2.3, so the comparison is approximate and we say so). We are not the leader on this suite — models a fraction of a point apart at the top include systems with a dedicated post-generation correction pass. For a 9-billion-parameter model with no correction stage, 2.5% sits in the same band as GPT-4.1 and Grok-3, above most self-hostable models on the board.</p>
+  <p class="foot-note"><b>And one benchmark where frontier models beat us today:</b> Google's FACTS Grounding measures long-document synthesis — summarize, rewrite, and answer over documents up to 32k tokens. Our early runs put us near Gemini Flash under a shared strict judge and clearly behind the frontier's best. Long-document tasks are not what Canonn is tuned for; they are the next training target, and this page will report the number either way when the measurement is complete.</p>
 </div></section>
 
 <section><div class="wrap">

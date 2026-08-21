@@ -9,8 +9,8 @@
 :root{
   /* fonts — the values that were drifting per-page and caused the bugs */
   --sans:'Schibsted Grotesk',system-ui,-apple-system,sans-serif;
-  --display:'Bricolage Grotesque','Schibsted Grotesk',system-ui,sans-serif;
-  --serif:'Instrument Serif',Georgia,serif;
+  --display:'Schibsted Grotesk',system-ui,-apple-system,sans-serif;
+  --serif:Georgia,serif;
   --mono:'JetBrains Mono',ui-monospace,monospace;
 
   /* core palette shared by all pages (pages may add/override their own) */
@@ -21,6 +21,12 @@
   --dark:#171412; --dark2:#211d1a;
   --dark-line:rgba(247,244,238,.09); --dark-line2:rgba(247,244,238,.16);
   --dark-ink:#f3efe8; --dark-mute:#9a938a;
+
+  /* Canonn system — a compact scale shared by product and marketing. */
+  --evidence:#236b57; --evidence-soft:#dfece6;
+  --warning:#98672d; --unsupported:#a44736;
+  --text-xs:11px; --text-sm:13px; --text-body:15px; --text-lede:18px;
+  --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
 }
 
 *{margin:0;padding:0;box-sizing:border-box}

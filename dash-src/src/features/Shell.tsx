@@ -265,11 +265,15 @@ export function Shell() {
           </div>
         </main>
 
-        {screen !== 'playground' && <footer className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-5 gap-y-1.5 px-5 pt-2 pb-8 font-mono text-[10.5px] text-muted-foreground sm:px-8">
-          <span>© 2026 Canonn</span>
-          <a href="https://canonn.ai/docs/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
-          <a href="https://canonn.ai/legal/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
-          <span className="ml-auto">api.canonn.ai · canonn-r1</span>
+        {/* One row on desktop, two deliberate lines on a phone - free wrapping
+            left the right-aligned meta stranded on its own ragged line. */}
+        {screen !== 'playground' && <footer className="mx-auto flex w-full max-w-[1100px] flex-col gap-y-1.5 px-5 pt-2 pb-8 font-mono text-[10.5px] text-muted-foreground sm:flex-row sm:items-center sm:px-8">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+            <span>© 2026 Canonn</span>
+            <a href="https://canonn.ai/docs/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
+            <a href="https://canonn.ai/legal/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
+          </div>
+          <span className="sm:ml-auto">api.canonn.ai · canonn-r1</span>
         </footer>}
       </div>
     </div>

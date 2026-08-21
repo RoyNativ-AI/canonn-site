@@ -9,7 +9,7 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Canonn">
 <meta property="og:title" content="Canonn — the model that trusts your data">
-<meta property="og:description" content="Canonn R1 is a 9B context-faithful LLM that answers from the data you give it. 89.8–91.8% on FaithEval-counterfactual vs 38–74% for frontier models, at $1.20/$6 per 1M tokens. OpenAI-compatible API or self-hosted.">
+<meta property="og:description" content="Canonn R1 is a 9B context-faithful LLM that answers from the data you give it. 89.8–91.8% on FaithEval-counterfactual vs 38–74% for frontier models, at $1.20/$6 per 1M tokens. OpenAI-compatible API.">
 <meta property="og:url" content="https://canonn.ai/">
 <meta property="og:image" content="https://canonn.ai/assets/canon-logo.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -30,7 +30,7 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
       "applicationSubCategory": "Large Language Model",
       "operatingSystem": "Cloud API, On-premise (Linux)",
       "url": "https://canonn.ai/",
-      "description": "Canonn R1 is a 9B open-weights, context-faithful large language model that answers strictly from the data you provide instead of its training priors. It scores 89.8-91.8% on FaithEval-counterfactual versus 38-74% for frontier models. Served through an OpenAI-compatible API or self-hosted on a single GPU.",
+      "description": "Canonn R1 is a 9B context-faithful large language model that answers strictly from the data you provide instead of its training priors. It scores 89.8-92.9% on FaithEval-counterfactual versus 32-69% for frontier models under production prompts. Served through an OpenAI-compatible API.",
       "softwareVersion": "R1",
       "featureList": [
         "Context-faithful: answers grounded in your documents, verbatim",
@@ -38,7 +38,7 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
         "Cites the exact source passage it answered from",
         "OpenAI-compatible API (base URL https://api.canonn.ai/v1, model canonn-r1)",
         "16,384-token context window",
-        "Open weights, licensable for on-premise zero-trust deployment on a single GPU",
+        "Private on-premise deployment available under license for zero-trust environments",
         "Prompts not used for training; EU (Finland) inference",
         "Built for RAG, customer support, and document Q&A in finance, healthcare, and legal"
       ],
@@ -509,7 +509,7 @@ const bodyHtml = `<header class="hero">
       <div class="pcard reveal"><div class="n">9B</div><h3>Small enough to own</h3><p>A single-GPU model. If your data can never leave your network, the weights fit on one card - no cluster required.</p></div>
       <div class="pcard reveal"><div class="n">⛓</div><h3>On-prem, zero-trust</h3><p>Runs inside your network. Sensitive data never leaves, opening regulated markets that closed cloud APIs can't serve.</p></div>
       <div class="pcard reveal"><div class="n">◇</div><h3>No prompt engineering</h3><p>Faithfulness is in the weights. No 300-token rulebook on every call, no attention diluted by instructions.</p></div>
-      <div class="pcard reveal"><div class="n">⚡</div><h3>Open weights</h3><p>You own the model. No vendor lock-in, no per-seat surprise, no deprecation of the endpoint you built on.</p></div>
+      <div class="pcard reveal"><div class="n">⚡</div><h3>Private deployment</h3><p>For zero-trust environments: a licensed on-premise deployment that runs on a single GPU, inside your network, with nothing leaving it.</p></div>
     </div>
   </div>
 </section>

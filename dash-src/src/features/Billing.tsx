@@ -395,7 +395,7 @@ export function Billing({ me }: { me: Me | null }) {
       </Dialog>
 
       <Dialog open={cardsOpen} onOpenChange={setCardsOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Payment methods</DialogTitle>
             <DialogDescription>Add cards, choose which one is charged, remove the ones you no longer use.</DialogDescription>

@@ -287,7 +287,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               <p className="mt-3 text-sm text-muted-foreground">
                 {inScope.length
                   ? `${inScope.length} ${inScope.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
-                  : 'Ask anything, or add a source on the left to see grounded answers with citations.'}
+                  : 'Ask anything, or add a source to see grounded answers with citations.'}
               </p>
             </div>
           )}

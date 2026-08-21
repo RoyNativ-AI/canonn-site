@@ -114,13 +114,13 @@ export function Logs({
               ))}
             </SelectContent>
           </Select>
-          <div className="flex flex-wrap rounded-lg border border-input bg-card p-0.5">
+          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
             {RANGES.map((r) => (
               <button
                 key={r.days}
                 onClick={() => setDays(r.days)}
                 className={cn(
-                  'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
+                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
                   days === r.days ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >

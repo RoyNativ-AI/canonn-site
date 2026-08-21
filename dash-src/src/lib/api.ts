@@ -112,7 +112,7 @@ export interface BillingMe {
   spend_this_month_usd: number
   price_in_per_1m: number
   price_out_per_1m: number
-  transactions: { ts: number; amount_usd: number; kind: string; receipt_url: string | null }[]
+  transactions: { iid: number; ts: number; amount_usd: number; kind: string; receipt_url: string | null }[]
 }
 export const billingConfig = () =>
   fetch('https://api.canonn.ai/v1/billing/config').then(async (r) => {
@@ -286,3 +286,9 @@ export async function* streamChat(
 
 export const fmt = (n: number) =>
   n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n)
+
+export const fetchInvoiceHtml = async (token: string, iid: number) => {
+  const r = await fetch(`${API}/me/billing/invoice/${iid}`, { headers: { Authorization: `Bearer ${token}` } })
+  if (!r.ok) throw new Error('could not load the invoice')
+  return r.text()
+}

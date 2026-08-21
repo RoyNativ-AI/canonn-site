@@ -14,6 +14,7 @@ import {
   billingAutoRecharge, billingCharge, billingConfig, billingListPms, billingMe,
   billingRemovePm, billingSavePm, billingSetupIntent, fmt,
   type BillingMe, type Me, type SavedCard,
+  fetchInvoiceHtml,
 } from '@/lib/api'
 
 // The Element renders in an iframe: nothing inherits, so fonts and colors
@@ -101,6 +102,19 @@ export function Billing({ me }: { me: Me | null }) {
       setReaches((v) => (v === '5' ? String(p.auto_threshold_usd || 5) : v))
       setTopTo((v) => (v === '30' ? String((p.auto_threshold_usd || 5) + (p.auto_amount_usd || 25)) : v))
     } catch { /* summary is optional */ }
+  }, [token])
+
+  const openInvoice = useCallback(async (iid: number) => {
+    const t = await token()
+    if (!t) return
+    try {
+      const html = await fetchInvoiceHtml(t, iid)
+      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not open the invoice.')
+    }
   }, [token])
 
   const refreshCards = useCallback(async () => {
@@ -283,6 +297,7 @@ export function Billing({ me }: { me: Me | null }) {
                   <TableHead>Type</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead className="text-right">Receipt</TableHead>
+                  <TableHead className="text-right">Invoice</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -300,6 +315,12 @@ export function Billing({ me }: { me: Me | null }) {
                           <Receipt className="size-3" /> Receipt
                         </a>
                       ) : <span className="font-mono text-xs text-muted-foreground">·</span>}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <button onClick={() => openInvoice(t.iid)}
+                        className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline">
+                        <FileText className="size-3" /> Invoice
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}

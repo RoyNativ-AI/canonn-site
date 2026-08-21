@@ -142,24 +142,24 @@ export function Activity({
         <h1 className="font-display text-[22px] font-semibold tracking-tight">Usage</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-8 w-full min-w-[140px] text-xs sm:w-[150px]">
+            <SelectTrigger className="h-9 w-full min-w-[150px] bg-card font-mono text-xs sm:w-[170px]">
               <SelectValue placeholder="All keys" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-xs">All keys</SelectItem>
+              <SelectItem value="all" className="font-mono text-xs">All keys</SelectItem>
               {(me?.keys ?? []).map((k) => (
-                <SelectItem key={k.name} value={k.name} className="text-xs">{k.name}</SelectItem>
+                <SelectItem key={k.name} value={k.name} className="font-mono text-xs">{k.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <div className="flex flex-wrap rounded-lg border border-input p-0.5">
+          <div className="flex flex-wrap rounded-lg border border-input bg-card p-0.5">
             {RANGES.map((r) => (
               <button
                 key={r.days}
                 onClick={() => { setRange({ from: '', to: '' }); setDays(r.days) }}
                 className={cn(
-                  'rounded-md px-2.5 py-1 text-xs transition-colors',
+                  'rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
                   !range.from && !range.to && days === r.days
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
@@ -172,7 +172,7 @@ export function Activity({
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors',
+                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs transition-colors',
                     range.from || range.to || !RANGES.some((r) => r.days === days)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground',

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ArrowUp, Check, ChevronDown, ClipboardType, Copy, FileText, Globe, Headset,
-  Link2, Loader2, Network, Plus, Trash2, Upload, X,
+  Database, Link2, Loader2, Network, Plus, Trash2, Upload, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -53,6 +53,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState<string | null>(null)
   const [picker, setPicker] = useState(false)
+  const [srcOpen, setSrcOpen] = useState(false)
   const [form, setForm] = useState<LoaderId | null>(null)
   const [formTitle, setFormTitle] = useState('')
   const [formText, setFormText] = useState('')
@@ -172,14 +173,23 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
   return (
-    <div className="flex h-[calc(100vh-8.5rem)] min-h-[480px] lg:h-[calc(100vh-9.5rem)] flex-col gap-4 lg:flex-row lg:items-stretch">
+    <div className="flex h-[calc(100dvh-7.5rem)] min-h-[480px] lg:h-[calc(100vh-9.5rem)] flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
-      <div className="flex shrink-0 flex-col rounded-xl border border-border bg-card lg:w-[320px]">
+      {srcOpen && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setSrcOpen(false)} />}
+      <div className={cn(
+        'shrink-0 flex-col rounded-xl border border-border bg-card lg:flex lg:w-[320px]',
+        srcOpen ? 'fixed inset-x-3 top-20 bottom-6 z-50 flex shadow-2xl lg:static lg:inset-auto lg:shadow-none' : 'hidden lg:flex',
+      )}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-xs font-medium text-muted-foreground">Knowledge</span>
-          <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => { setPicker(true); setForm(null) }}>
-            <Plus className="size-3.5" /> Add source
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => { setPicker(true); setForm(null) }}>
+              <Plus className="size-3.5" /> Add source
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 px-2 lg:hidden" onClick={() => setSrcOpen(false)} aria-label="Close sources">
+              <X className="size-4" />
+            </Button>
+          </div>
         </div>
 
         <input ref={fileInput} type="file" multiple accept=".txt,.md,.markdown,.json,.html,.htm,.csv" className="hidden"
@@ -259,6 +269,14 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
       {/* ---- Chat ---- */}
       <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-3 py-2 lg:hidden">
+          <button onClick={() => setSrcOpen(true)}
+            className="flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-xs text-muted-foreground active:bg-secondary">
+            <Database className="size-3.5" />
+            {(files ?? []).length ? `Sources · ${inScope.length} in scope` : 'Add sources'}
+          </button>
+          {scopePassages > 0 && <span className="font-mono text-[10px] text-muted-foreground">{scopePassages} passages</span>}
+        </div>
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.length === 0 && (
             <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center text-center">
@@ -309,7 +327,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           )}
         </div>
 
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center gap-2 rounded-full border border-input bg-background py-1.5 pr-1.5 pl-4">
             <input
               value={question}
@@ -317,7 +335,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
               placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
               disabled={busy}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-60"
+              className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-sm"
             />
             <button
               onClick={ask}

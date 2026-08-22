@@ -123,6 +123,7 @@ export interface ShareRow {
   slug: string | null
   vanity_url: string | null
   hide_branding: boolean
+  custom_domain: string | null
 }
 export const listShares = (token: string) =>
   request<{ data: ShareRow[] }>('/me/shares', token)
@@ -144,6 +145,25 @@ export const updateShare = (token: string, id: string, patch: { name?: string; i
     method: 'POST',
     body: JSON.stringify({ id, ...patch }),
   })
+export interface DomainStatus {
+  domain: string
+  status: string
+  ssl_status: string
+  target: string
+}
+export const setShareDomain = (token: string, id: string, domain: string) =>
+  request<DomainStatus>('/me/shares/domain', token, {
+    method: 'POST',
+    body: JSON.stringify({ id, domain }),
+  })
+export const shareDomainStatus = (token: string, id: string) =>
+  request<DomainStatus>(`/me/shares/domain/status?id=${encodeURIComponent(id)}`, token)
+export const removeShareDomain = (token: string, id: string) =>
+  request<{ id: string; removed: boolean }>('/me/shares/domain/remove', token, {
+    method: 'POST',
+    body: JSON.stringify({ id }),
+  })
+
 export const deleteShare = (token: string, id: string) =>
   request<{ id: string; deleted: boolean }>('/me/shares/delete', token, {
     method: 'POST',

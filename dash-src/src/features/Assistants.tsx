@@ -10,8 +10,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import {
-  createShare, deleteShare, fmt, listFiles, listShares, revokeShare, updateShare,
-  type KnowledgeFile, type Me, type ShareRow,
+  createShare, deleteShare, fmt, listFiles, listShares, removeShareDomain,
+  revokeShare, setShareDomain, shareDomainStatus, updateShare,
+  type DomainStatus, type KnowledgeFile, type Me, type ShareRow,
 } from '@/lib/api'
 
 // Shared assistants: a business pre-scopes sources and instructions, then
@@ -42,6 +43,9 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
   const [editCap, setEditCap] = useState('500')
   const [editSlug, setEditSlug] = useState('')
   const [editHideBranding, setEditHideBranding] = useState(false)
+  const [domainInput, setDomainInput] = useState('')
+  const [domainInfo, setDomainInfo] = useState<DomainStatus | null>(null)
+  const [domainBusy, setDomainBusy] = useState(false)
   const [armedDelete, setArmedDelete] = useState<string | null>(null)
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
@@ -122,6 +126,8 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
     setEditCap(String(s.daily_cap))
     setEditSlug(s.slug ?? '')
     setEditHideBranding(s.hide_branding)
+    setDomainInput('')
+    setDomainInfo(null)
   }
 
   const saveEdit = async () => {
@@ -144,6 +150,51 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
       setSaving(false)
     }
   }
+
+  const connectDomain = async () => {
+    if (!editing || !domainInput.trim() || domainBusy) return
+    setDomainBusy(true)
+    try {
+      const st = await withToken((t) => setShareDomain(t, editing.id, domainInput.trim()))
+      setDomainInfo(st)
+      setEditing({ ...editing, custom_domain: st.domain })
+      refresh()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not connect the domain.')
+    } finally {
+      setDomainBusy(false)
+    }
+  }
+
+  const disconnectDomain = async () => {
+    if (!editing || domainBusy) return
+    setDomainBusy(true)
+    try {
+      await withToken((t) => removeShareDomain(t, editing.id))
+      setDomainInfo(null)
+      setEditing({ ...editing, custom_domain: null })
+      refresh()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not remove the domain.')
+    } finally {
+      setDomainBusy(false)
+    }
+  }
+
+  // While the edit dialog shows a connecting domain, poll until the
+  // certificate goes active - the customer sees it flip green by itself.
+  useEffect(() => {
+    if (!editing?.custom_domain) return
+    let alive = true
+    const tick = () => {
+      withToken((t) => shareDomainStatus(t, editing.id))
+        .then((st) => { if (alive) setDomainInfo(st) })
+        .catch(() => { /* poll again */ })
+    }
+    tick()
+    const iv = setInterval(tick, 8000)
+    return () => { alive = false; clearInterval(iv) }
+  }, [editing?.custom_domain, editing?.id, withToken])
 
   const removeShare = async (s: ShareRow) => {
     if (armedDelete !== s.id) {
@@ -275,9 +326,8 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                 <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
                 <Switch checked={editHideBranding} disabled={!paid} onCheckedChange={setEditHideBranding} className="data-[state=checked]:bg-foreground" />
               </label>
-              <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-border pt-3">
-                <span className="text-[13px] text-muted-foreground">Your own domain &mdash; chat.yourcompany.com</span>
-                <a href="mailto:hello@canonn.ai?subject=Custom%20domain%20for%20my%20assistant" className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">Enterprise &middot; talk to us</a>
+              <div className="mt-3.5 border-t border-border pt-3 text-[13px] text-muted-foreground">
+                Your own domain (chat.yourcompany.com) &mdash; connect it right after creating, under Edit.
               </div>
             </div>
             <div>
@@ -357,9 +407,44 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                 <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
                 <Switch checked={hideBranding} disabled={!paid} onCheckedChange={setHideBranding} className="data-[state=checked]:bg-foreground" />
               </label>
-              <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-border pt-3">
-                <span className="text-[13px] text-muted-foreground">Your own domain &mdash; chat.yourcompany.com</span>
-                <a href="mailto:hello@canonn.ai?subject=Custom%20domain%20for%20my%20assistant" className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">Enterprise &middot; talk to us</a>
+              <div className="mt-3.5 border-t border-border pt-3">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Your own domain</label>
+                {!editing?.custom_domain && (
+                  <div className="flex items-center gap-1.5">
+                    <Input value={domainInput} onChange={(e) => setDomainInput(e.target.value.toLowerCase())} placeholder="chat.yourcompany.com" disabled={!paid} className="h-9 font-mono text-xs" />
+                    <Button size="sm" variant="outline" className="h-9 shrink-0 text-xs" disabled={!paid || !domainInput.trim() || domainBusy} onClick={connectDomain}>
+                      {domainBusy ? 'Connecting…' : 'Connect'}
+                    </Button>
+                  </div>
+                )}
+                {editing?.custom_domain && (
+                  <div className="rounded-lg bg-secondary/50 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="min-w-0 truncate font-mono text-xs font-medium">{editing.custom_domain}</span>
+                      {domainInfo?.ssl_status === 'active' ? (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[10.5px] text-[#3f7d54]">
+                          <span className="size-1.5 rounded-full bg-current" /> Connected
+                        </span>
+                      ) : (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
+                          <span className="size-1.5 animate-pulse rounded-full bg-current" /> Verifying…
+                        </span>
+                      )}
+                    </div>
+                    {domainInfo?.ssl_status !== 'active' && (
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        Add one CNAME record at your DNS provider:{' '}
+                        <code className="rounded bg-background px-1 py-0.5 font-mono text-[10.5px]">{editing.custom_domain}</code>
+                        {' '}&rarr;{' '}
+                        <code className="rounded bg-background px-1 py-0.5 font-mono text-[10.5px]">{domainInfo?.target ?? 'fallback.canonn.ai'}</code>
+                        . We verify and issue the certificate automatically - this card turns green by itself.
+                      </p>
+                    )}
+                    <button onClick={disconnectDomain} className="mt-2 text-xs text-muted-foreground underline underline-offset-2 hover:text-destructive">
+                      Disconnect
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

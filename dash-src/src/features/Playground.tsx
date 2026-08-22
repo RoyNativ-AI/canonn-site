@@ -915,13 +915,12 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           <div className="mx-auto w-[min(100%,max(60%,680px))]">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
-              <div key={i} className="group/user mb-5 flex flex-col items-end">
+              <div key={i} className="group/turn mb-5 flex flex-col items-end">
                 <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px] break-words whitespace-pre-wrap">{turn.content}</div>
-                {turn.ts && (
-                  <div className="mt-1 pr-1 font-mono text-[10.5px] text-muted-foreground opacity-0 transition-opacity group-hover/user:opacity-100">
-                    {fmtTime(turn.ts)}
-                  </div>
-                )}
+                <div className="mt-1 flex items-center gap-1.5 pr-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100">
+                  <CopyAnswer text={turn.content} />
+                  {turn.ts && <span className="font-mono text-[10.5px] text-muted-foreground">{fmtTime(turn.ts)}</span>}
+                </div>
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">

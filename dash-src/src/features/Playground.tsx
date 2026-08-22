@@ -16,6 +16,10 @@ import {
   siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
 } from 'simple-icons'
 
+// Simple Icons still carries Intercom's old cyan; the brand has been black
+// since their rebrand. Near-black marks follow the theme via BrandIcon.
+const INTERCOM = { ...siIntercom, hex: '000000' }
+
 // The familiar faces under the empty composer - full-color marks drifting in
 // a slow marquee, the way the landing page runs its model strip. Clicking
 // any of them opens the catalog.
@@ -29,7 +33,7 @@ const BRAND_STRIP = [
   { name: 'Dropbox', brand: siDropbox },
   { name: 'Zendesk', brand: siZendesk },
   { name: 'Salesforce', brand: siSalesforce },
-  { name: 'Intercom', brand: siIntercom },
+  { name: 'Intercom', brand: INTERCOM },
   { name: 'Confluence', brand: siConfluence },
   { name: 'HubSpot', brand: siHubspot },
   { name: 'Airtable', brand: siAirtable },

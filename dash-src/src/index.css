@@ -100,6 +100,19 @@
 .font-serif { font-family: var(--font-serif); }
 .font-mono { font-family: var(--font-mono); }
 
+/* One breathing dot while the first token is in flight - a heartbeat, not
+   the dated three-dot ellipsis. */
+@keyframes thinking-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(0.6); opacity: 0.3; }
+}
+.thinking-dot {
+    animation: thinking-pulse 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .thinking-dot { animation: none; }
+}
+
 /* Screen switches settle in rather than snap. Short enough to feel instant. */
 @keyframes screen-in {
     from { opacity: 0; transform: translateY(3px); }

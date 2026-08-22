@@ -128,7 +128,7 @@ export function Shell() {
   )
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       {/* ---- Sidebar (desktop) ---- */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border lg:flex">
         <a href="/" className="flex items-center gap-2.5 px-5 pt-5 font-display text-[16px] font-semibold">

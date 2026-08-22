@@ -5,10 +5,15 @@ export interface LogRow {
   ts: number
   key: string
   model?: string
+  /** What kind of call this was: grounded | balanced | extraction | playground | demo. */
+  mode?: string
   pt: number
   ct: number
   ms: number
   ip?: string
+  adapter?: string
+  /** Origin HTTP status; >= 400 means the request failed. */
+  status?: number
   finish?: string
   stream?: boolean
   req_id?: string

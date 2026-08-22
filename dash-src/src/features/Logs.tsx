@@ -20,12 +20,21 @@ const RANGES = [
 ]
 
 // One glanceable status per row instead of raw finish flags. A healthy row
-// stays quiet; only trouble gets color.
+// stays quiet; only trouble gets color. The origin HTTP status is the truth
+// when the API sends it; the finish/tokens heuristic covers older rows.
 function rowStatus(r: LogRow): 'ok' | 'truncated' | 'failed' {
+  if (r.status && r.status >= 400) return 'failed'
   if (r.finish === 'length') return 'truncated'
   if (!r.finish && !r.ct) return 'failed'
   return 'ok'
 }
+
+const STATUS_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'ok', label: 'Succeeded' },
+  { id: 'failed', label: 'Failed' },
+] as const
+type StatusFilter = typeof STATUS_FILTERS[number]['id']
 
 function StatusCell({ status }: { status: 'ok' | 'truncated' | 'failed' }) {
   if (status === 'ok') {
@@ -60,7 +69,11 @@ export function Logs({
   getToken: () => Promise<string | null>
   onIoChanged: () => void
 }) {
-  const rows = me?.recent ?? []
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const allRows = me?.recent ?? []
+  const rows = statusFilter === 'all'
+    ? allRows
+    : allRows.filter((r) => (statusFilter === 'failed' ? rowStatus(r) === 'failed' : rowStatus(r) !== 'failed'))
   const [detail, setDetail] = useState<LogRow | null>(null)
   const [io, setIo] = useState<IoRow | null>(null)
   const [ioState, setIoState] = useState<'idle' | 'loading' | 'missing'>('idle')
@@ -115,6 +128,20 @@ export function Logs({
             </SelectContent>
           </Select>
           <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={cn(
+                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
+                  statusFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
             {RANGES.map((r) => (
               <button
                 key={r.days}
@@ -137,6 +164,7 @@ export function Logs({
             <TableRow>
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead className="text-right">Latency</TableHead>
               <TableHead className="text-right">Speed</TableHead>
@@ -150,6 +178,7 @@ export function Logs({
               <TableRow key={`s${i}`} className="hover:bg-transparent">
                 <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-16" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-10" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-12" /></TableCell>
@@ -160,9 +189,11 @@ export function Logs({
             ))}
             {me !== null && rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={8} className="py-16 text-center">
+                <TableCell colSpan={9} className="py-16 text-center">
                   <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
-                  <p className="text-sm font-medium">No requests in this window</p>
+                  <p className="text-sm font-medium">
+                    {statusFilter === 'all' ? 'No requests in this window' : `No ${statusFilter === 'failed' ? 'failed' : 'successful'} requests in this window`}
+                  </p>
                   <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
                     Every call to the API shows up here within seconds, with tokens, latency, and cost.
                   </p>
@@ -185,6 +216,7 @@ export function Logs({
                     {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell className="max-w-[130px] truncate text-[13px] text-muted-foreground">{r.key}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{r.mode || '·'}</TableCell>
                   <TableCell className="text-right font-mono text-xs whitespace-nowrap">
                     {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
                   </TableCell>
@@ -221,7 +253,9 @@ export function Logs({
         </div>
         {rows.length > 0 && (
           <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
-            Showing the {rows.length} most recent requests in this window
+            {statusFilter === 'all'
+              ? `Showing the ${rows.length} most recent requests in this window`
+              : `${rows.length} of the ${allRows.length} most recent requests match this filter`}
           </div>
         )}
       </Card>
@@ -266,6 +300,8 @@ export function Logs({
                 <dl className="space-y-2 text-sm">
                   {[
                     ['Model ID', 'canonn-r1'],
+                    ['Type', detail.mode || '·'],
+                    ['HTTP status', detail.status ? String(detail.status) : '·'],
                     ['Finish reason', detail.finish ?? 'stop'],
                     ['Streaming', String(detail.stream ?? false)],
                     ['Data policy', 'No training on your data'],

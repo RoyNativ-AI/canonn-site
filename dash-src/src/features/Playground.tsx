@@ -335,10 +335,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   {!turn.error && turn.content && !(busy && i === turns.length - 1) && <CopyAnswer text={turn.content} />}
                 </div>
                 {turn.content === '' && busy && i === turns.length - 1 ? (
-                  <div className="flex gap-1 pt-1">
-                    {[0, 1, 2].map((d) => (
-                      <span key={d} className="size-1.5 animate-pulse rounded-full bg-muted-foreground/60" style={{ animationDelay: `${d * 200}ms` }} />
-                    ))}
+                  <div className="pt-1">
+                    <span className="thinking-dot block size-2.5 rounded-full bg-foreground/80" />
                   </div>
                 ) : (
                   turn.error ? (

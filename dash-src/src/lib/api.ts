@@ -348,7 +348,12 @@ export async function* streamChat(
       // showed - fabricated SLA numbers and flipped verdicts were sampling
       // noise, not model regressions (2026-08-20 evidence dossier).
       temperature: 0.2,
-      ...(fileIds && fileIds.length ? { files: fileIds } : {}),
+      // Always sent, even empty: the playground is a grounded surface, and
+      // omitting `files` turns the request into bare chat - a data question
+      // with zero sources enabled came back as a sourceless parametric
+      // essay (2026-08-22). Empty array tells the edge "grounding intended,
+      // nothing in scope", which answers honestly instead of improvising.
+      files: fileIds ?? [],
       messages,
     }),
   })

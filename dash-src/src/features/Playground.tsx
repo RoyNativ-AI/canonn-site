@@ -382,7 +382,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!srcOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
+          'fixed inset-y-0 left-0 z-50 flex w-[300px] max-w-[85vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
           srcOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -497,7 +497,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!histOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
+          'fixed inset-y-0 left-0 z-50 flex w-[300px] max-w-[85vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
           histOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >

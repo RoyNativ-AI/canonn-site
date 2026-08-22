@@ -178,6 +178,12 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [formTitle, setFormTitle] = useState('')
   const [formText, setFormText] = useState('')
   const [dragOver, setDragOver] = useState(false)
+  // @-mentions: typing '@' opens a picker over the composer; picked sources
+  // narrow retrieval for that one question, Cursor-style.
+  const [mention, setMention] = useState<{ query: string } | null>(null)
+  const [mentionSel, setMentionSel] = useState(0)
+  const [tagged, setTagged] = useState<{ id: string; name: string }[]>([])
+  const taRef = useRef<HTMLTextAreaElement>(null)
   // Scope: which sources answer questions. Off is remembered locally so a
   // toggled-out source stays out across visits (the server has no flag).
   const [disabled, setDisabled] = useState<Set<string>>(() => {
@@ -314,8 +320,15 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   async function ask() {
     const q = question.trim()
     if (!q || busy) return
-    const scope = (files ?? []).filter((f) => !disabled.has(f.id)).map((f) => f.id)
+    // @-mentions narrow the scope for this one question: if the text still
+    // carries tags picked from the @ menu, only those sources answer it.
+    const mentioned = tagged.filter((m) => q.includes(`@${m.name}`)).map((m) => m.id)
+    const scope = mentioned.length
+      ? mentioned
+      : (files ?? []).filter((f) => !disabled.has(f.id)).map((f) => f.id)
     const grounded = scope.length > 0
+    setTagged([])
+    setMention(null)
     setQuestion('')
     setBusy(true)
     const history = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }))
@@ -357,13 +370,73 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   // borderless toolbar underneath, and a radius that suits a tall box -
   // not a pill wrapped around one cramped line.
   const composerTool = 'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground'
+
+  const mentionMatches = mention === null ? [] : (files ?? [])
+    .filter((f) => f.filename.toLowerCase().includes(mention.query.trim().toLowerCase()))
+    .slice(0, 6)
+
+  function syncMention(value: string, caret: number) {
+    const m = value.slice(0, caret).match(/(?:^|\s)@([^@\n]*)$/)
+    if (m && ready) {
+      setMention({ query: m[1] })
+      setMentionSel(0)
+    } else {
+      setMention(null)
+    }
+  }
+
+  function pickMention(f: KnowledgeFile) {
+    const ta = taRef.current
+    const caret = ta ? ta.selectionStart : question.length
+    const before = question.slice(0, caret).replace(/@[^@\n]*$/, `@${f.filename} `)
+    setQuestion(before + question.slice(caret))
+    setTagged((t) => (t.some((x) => x.id === f.id) ? t : [...t, { id: f.id, name: f.filename }]))
+    setMention(null)
+    requestAnimationFrame(() => {
+      ta?.focus()
+      ta?.setSelectionRange(before.length, before.length)
+    })
+  }
+
   const composer = (
-    <div className="rounded-[20px] border border-input bg-card shadow-sm transition-colors focus-within:border-foreground/40">
+    <div className="relative rounded-[20px] border border-input bg-card shadow-sm transition-colors focus-within:border-foreground/40">
+      {mention !== null && mentionMatches.length > 0 && (
+        <div className="absolute bottom-full left-4 z-30 mb-2 w-80 max-w-[calc(100%-2rem)] overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg">
+          <div className="px-3 py-1.5 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Tag a source</div>
+          {mentionMatches.map((f, i) => (
+            <button
+              key={f.id}
+              onMouseDown={(e) => { e.preventDefault(); pickMention(f) }}
+              onMouseEnter={() => setMentionSel(i)}
+              className={cn('flex w-full items-center gap-2.5 px-3 py-2 text-left', i === mentionSel && 'bg-secondary/60')}
+            >
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md border border-border bg-background">
+                <SourceGlyph filename={f.filename} className="size-3" />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[13px]">{f.filename}</span>
+              <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{f.chunk_count} passages</span>
+            </button>
+          ))}
+        </div>
+      )}
       <textarea
+        ref={taRef}
         value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() } }}
-        placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
+        onChange={(e) => {
+          setQuestion(e.target.value)
+          syncMention(e.target.value, e.target.selectionStart)
+        }}
+        onKeyDown={(e) => {
+          if (mention && mentionMatches.length) {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setMentionSel((s) => (s + 1) % mentionMatches.length); return }
+            if (e.key === 'ArrowUp') { e.preventDefault(); setMentionSel((s) => (s - 1 + mentionMatches.length) % mentionMatches.length); return }
+            if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pickMention(mentionMatches[mentionSel]); return }
+            if (e.key === 'Escape') { e.preventDefault(); setMention(null); return }
+          }
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() }
+        }}
+        onBlur={() => setMention(null)}
+        placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`} — @ targets one…` : 'Ask anything…'}
         disabled={busy}
         rows={2}
         className="max-h-40 w-full resize-none bg-transparent px-5 pt-4 text-base leading-relaxed outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"

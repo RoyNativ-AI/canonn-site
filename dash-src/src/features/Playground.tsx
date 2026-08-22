@@ -374,7 +374,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
            canvas belongs to the conversation; knowledge slides in on demand. ---- */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none',
+          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none lg:left-[224px] lg:z-10',
           srcOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={() => setSrcOpen(false)}
@@ -382,8 +382,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!srcOpen}
         className={cn(
-          'fixed inset-y-0 right-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
-          srcOpen ? 'translate-x-0' : 'translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
+          srcOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -489,7 +489,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
            in this browser only - localStorage, per signed-in user. ---- */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none',
+          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none lg:left-[224px] lg:z-10',
           histOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={() => setHistOpen(false)}
@@ -497,8 +497,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!histOpen}
         className={cn(
-          'fixed inset-y-0 right-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
-          histOpen ? 'translate-x-0' : 'translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 ease-out motion-reduce:transition-none lg:left-[224px] lg:z-20',
+          histOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">

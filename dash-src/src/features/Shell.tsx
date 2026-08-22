@@ -130,7 +130,7 @@ export function Shell() {
   return (
     <div className={cn('flex min-h-dvh flex-col', screen === 'playground' && 'h-dvh')}>
       {/* ---- Sidebar (desktop) ---- */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border bg-background lg:flex">
         <a href="/" className="flex items-center gap-2.5 px-5 pt-5 font-display text-[16px] font-semibold">
           <img src="/assets/canon-logo.png" alt="" className="size-6 rounded-sm object-cover" />
           Canonn

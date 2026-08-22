@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import {
   siAirtable, siAmazons3, siBox, siConfluence, siDropbox, siGithub, siGitlab,
-  siGooglebigquery, siGoogledocs, siGoogledrive, siHelpscout, siHubspot,
+  siGooglebigquery, siGoogledocs, siGoogledrive, siGooglesheets, siHelpscout, siHubspot,
   siIntercom, siJira, siLinear, siMicrosoftonedrive, siMongodb, siMysql,
   siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
 } from 'simple-icons'
@@ -27,8 +27,9 @@ import {
   type GroundedCitation, type KnowledgeFile,
 } from '@/lib/api'
 import {
-  driveConfigured, driveDisconnect, driveDownload, driveKind, driveRecentFiles, driveToken,
-  type DriveFile,
+  googleConfigured, googleDisconnect, driveDownload, driveKind, driveRecentFiles, driveToken,
+  youtubeOwnVideos, youtubeToken, youtubeTranscript,
+  type DriveFile, type DriveFilter, type YouTubeVideo,
 } from '@/lib/google'
 
 // The dashboard twin of the app's Chat + Knowledge screens, running entirely
@@ -41,7 +42,11 @@ import {
 // backed by your data".
 const ACCENT = '#c96442'
 
-type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive'
+type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube'
+
+// Google loaders light up only once the dashboard has a client ID.
+const google = (id: LoaderId): LoaderId | undefined => (googleConfigured() ? id : undefined)
+const DRIVE_FILTERS: Partial<Record<LoaderId, DriveFilter>> = { gdrive: 'all', gdocs: 'docs', gsheets: 'sheets' }
 
 // The app's loader catalog (LoaderCatalog.swift), mirrored: the same
 // categories, names, and summaries. Loaders with an `action` run on the API
@@ -75,7 +80,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages.', icon: Network, action: 'crawl' },
     { name: 'Sitemap', blurb: 'Ingest every URL listed in a sitemap.xml.', icon: List },
     { name: 'RSS / Atom feed', blurb: 'Pull articles from a syndication feed.', icon: Rss },
-    { name: 'YouTube transcript', blurb: 'Import the transcript of a video or playlist.', icon: Play, brand: siYoutube },
+    { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
   ] },
   { category: 'Files', items: [
     { name: 'PDF', blurb: 'Contracts, reports, policies — text extracted page by page.', icon: FileText, action: 'pdf' },
@@ -89,7 +94,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
   ] },
   { category: 'Cloud storage', items: [
-    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive, action: driveConfigured() ? 'gdrive' : undefined },
+    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
     { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package, brand: siDropbox },
     { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive, brand: siMicrosoftonedrive },
     { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive, brand: siBox },
@@ -99,7 +104,8 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote, brand: siNotion },
     { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen, brand: siConfluence },
     { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash, brand: siSlack },
-    { name: 'Google Docs', blurb: 'Docs, Sheets and Slides straight from your Drive.', icon: FileText, brand: siGoogledocs, action: driveConfigured() ? 'gdrive' : undefined },
+    { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
+    { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
     { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check, brand: siJira },
     { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight, brand: siLinear },
     { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table, brand: siAirtable },
@@ -188,6 +194,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [formText, setFormText] = useState('')
   const [driveFiles, setDriveFiles] = useState<DriveFile[] | null>(null)
   const [driveSel, setDriveSel] = useState<Set<string>>(new Set())
+  const [ytVideos, setYtVideos] = useState<YouTubeVideo[] | null>(null)
+  const [ytSel, setYtSel] = useState<Set<string>>(new Set())
   const [dragOver, setDragOver] = useState(false)
   // @-mentions: typing '@' opens a picker over the composer; picked sources
   // narrow retrieval for that one question, Cursor-style.
@@ -334,18 +342,46 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
   // Google Drive: consent and listing happen in this tab; each picked file is
   // fetched from Google here and pushed to /v1/files like a local upload.
-  async function openDrive() {
-    setForm('gdrive')
+  async function openDrive(id: LoaderId) {
+    setForm(id)
     setDriveFiles(null)
     setDriveSel(new Set())
     try {
       const token = await driveToken()
-      setDriveFiles(await driveRecentFiles(token))
+      setDriveFiles(await driveRecentFiles(token, DRIVE_FILTERS[id] ?? 'all'))
     } catch (e) {
       setForm(null)
       fail(e)
     }
   }
+
+  // YouTube: the Data API only releases captions to the video's owner, so
+  // the list is the signed-in channel's uploads.
+  async function openYouTube() {
+    setForm('youtube')
+    setYtVideos(null)
+    setYtSel(new Set())
+    try {
+      const token = await youtubeToken()
+      setYtVideos(await youtubeOwnVideos(token))
+    } catch (e) {
+      setForm(null)
+      fail(e)
+    }
+  }
+
+  const importYouTube = () =>
+    ingest('Importing transcripts…', async (t) => {
+      const token = await youtubeToken()
+      const chosen = (ytVideos ?? []).filter((v) => ytSel.has(v.id))
+      const missing: string[] = []
+      for (const video of chosen) {
+        const text = await youtubeTranscript(token, video.id)
+        if (!text) { missing.push(video.title); continue }
+        await uploadTextFile(t, `${video.title.slice(0, 120)}.txt`, `# ${video.title}\nhttps://www.youtube.com/watch?v=${video.id}\n\n${text}`)
+      }
+      if (missing.length) toast.warning(`No captions yet: ${missing.join(', ')}`)
+    })
 
   const importDrive = () =>
     ingest('Importing from Drive…', async (t) => {
@@ -893,7 +929,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         if (!action) return
                         if (action === 'upload') { setPicker(false); fileInput.current?.click() }
                         else if (action === 'pdf') { setPicker(false); pdfInput.current?.click() }
-                        else if (action === 'gdrive') void openDrive()
+                        else if (action in DRIVE_FILTERS) void openDrive(action)
+                        else if (action === 'youtube') void openYouTube()
                         else setForm(action)
                       }}
                       className={cn(
@@ -950,9 +987,56 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     <p className="mb-1 text-xs text-muted-foreground">Public help centers only — every article via the Zendesk API.</p>
                   </>
                 )}
-                {form === 'gdrive' && (
+                {form === 'youtube' && (
                   <>
-                    <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Recent documents</div>
+                    <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Your uploads</div>
+                    {ytVideos === null && (
+                      <div className="flex items-center gap-2 py-6 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Waiting for Google…</div>
+                    )}
+                    {ytVideos?.length === 0 && (
+                      <p className="py-6 text-xs text-muted-foreground">This Google account has no videos on its channel.</p>
+                    )}
+                    {ytVideos && ytVideos.length > 0 && (
+                      <div className="max-h-[45vh] overflow-y-auto rounded-lg border border-border">
+                        {ytVideos.map((v) => {
+                          const on = ytSel.has(v.id)
+                          return (
+                            <label key={v.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
+                              <input
+                                type="checkbox"
+                                checked={on}
+                                onChange={() => setYtSel((s) => { const n = new Set(s); if (on) n.delete(v.id); else n.add(v.id); return n })}
+                                className="size-3.5 accent-foreground"
+                              />
+                              <span className="min-w-0 flex-1 truncate text-[13px]">{v.title}</span>
+                              <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{v.publishedAt.slice(0, 10)}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      YouTube releases captions only to a video's owner, so this lists your channel. Transcripts come to this browser and are added as sources.
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        onClick={() => { void importYouTube(); setPicker(false) }}
+                        disabled={ytSel.size === 0 || !!uploading}
+                        className="h-9 flex-1 text-sm"
+                      >
+                        Import {ytSel.size} {ytSel.size === 1 ? 'transcript' : 'transcripts'}
+                      </Button>
+                      <Button variant="outline" onClick={() => { void googleDisconnect(); setForm(null) }} className="h-9 text-sm">
+                        Disconnect
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {form && form in DRIVE_FILTERS && (
+                  <>
+                    <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
+                      {form === 'gsheets' ? 'Recent spreadsheets' : 'Recent documents'}
+                    </div>
                     {driveFiles === null && (
                       <div className="flex items-center gap-2 py-6 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Waiting for Google…</div>
                     )}
@@ -991,7 +1075,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => { void driveDisconnect(); setForm(null) }}
+                        onClick={() => { void googleDisconnect(); setForm(null) }}
                         className="h-9 text-sm"
                       >
                         Disconnect
@@ -999,7 +1083,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     </div>
                   </>
                 )}
-                {form !== 'gdrive' && <Button
+                {!(form in DRIVE_FILTERS) && form !== 'youtube' && <Button
                   onClick={() => {
                     if (form === 'paste') {
                       const name = (formTitle.trim() || 'Pasted text').slice(0, 80)

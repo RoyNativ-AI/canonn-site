@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { fetchIo, fmt, setIoLogging, type Me } from '@/lib/api'
+import { fetchIo, fetchLogs, fmt, setIoLogging, type Me } from '@/lib/api'
 import { JsonView } from '@/components/JsonView'
 
 const RANGES = [
@@ -70,11 +70,62 @@ export function Logs({
   onIoChanged: () => void
 }) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const allRows = me?.recent ?? []
+  // The log walks the whole window through /v1/me/logs pages, not just the
+  // recency cap /v1/me carries for its summary cards.
+  const [logRows, setLogRows] = useState<LogRow[] | null>(null)
+  const [nextBefore, setNextBefore] = useState<number | null>(null)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const allRows = logRows ?? []
   const rows = statusFilter === 'all'
     ? allRows
     : allRows.filter((r) => (statusFilter === 'failed' ? rowStatus(r) === 'failed' : rowStatus(r) !== 'failed'))
   const [detail, setDetail] = useState<LogRow | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    setLogRows(null)
+    setNextBefore(null)
+    getToken().then((t) => (t ? fetchLogs(t, days, keyFilter) : Promise.reject(new Error('no session'))))
+      .then((p) => { if (alive) { setLogRows(p.data); setNextBefore(p.next_before) } })
+      .catch(() => { if (alive) setLogRows([]) })
+    return () => { alive = false }
+  }, [days, keyFilter, getToken])
+
+  // Stay live the way the rest of the console does: refresh the newest page
+  // and merge by row id, so loaded history is kept while new calls appear.
+  useEffect(() => {
+    const tick = async () => {
+      if (document.visibilityState !== 'visible') return
+      const t = await getToken()
+      if (!t) return
+      try {
+        const p = await fetchLogs(t, days, keyFilter)
+        setLogRows((cur) => {
+          if (cur === null) return cur
+          const fresh = new Set(p.data.map((r) => r.id))
+          return [...p.data, ...cur.filter((r) => !fresh.has(r.id))]
+        })
+      } catch { /* a quiet tick; the next one retries */ }
+    }
+    const iv = setInterval(tick, 12000)
+    return () => clearInterval(iv)
+  }, [days, keyFilter, getToken])
+
+  const loadMore = async () => {
+    if (!nextBefore || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const t = await getToken()
+      if (!t) return
+      const p = await fetchLogs(t, days, keyFilter, '', '', nextBefore)
+      setLogRows((cur) => [...(cur ?? []), ...p.data])
+      setNextBefore(p.next_before)
+    } catch {
+      toast.error('Could not load older requests.')
+    } finally {
+      setLoadingMore(false)
+    }
+  }
   const [io, setIo] = useState<IoRow | null>(null)
   const [ioState, setIoState] = useState<'idle' | 'loading' | 'missing'>('idle')
 
@@ -174,7 +225,7 @@ export function Logs({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {me === null && Array.from({ length: 8 }, (_, i) => (
+            {logRows === null && Array.from({ length: 8 }, (_, i) => (
               <TableRow key={`s${i}`} className="hover:bg-transparent">
                 <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
@@ -187,7 +238,7 @@ export function Logs({
                 <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
               </TableRow>
             ))}
-            {me !== null && rows.length === 0 && (
+            {logRows !== null && rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={9} className="py-16 text-center">
                   <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
@@ -208,7 +259,7 @@ export function Logs({
               const status = rowStatus(r)
               return (
                 <TableRow
-                  key={i}
+                  key={r.id ?? `${r.ts}-${i}`}
                   onClick={() => setDetail(r)}
                   className={cn('cursor-pointer', status === 'failed' && 'bg-destructive/[0.04] hover:bg-destructive/[0.07]')}
                 >
@@ -252,10 +303,17 @@ export function Logs({
         </Table>
         </div>
         {rows.length > 0 && (
-          <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
-            {statusFilter === 'all'
-              ? `Showing the ${rows.length} most recent requests in this window`
-              : `${rows.length} of the ${allRows.length} most recent requests match this filter`}
+          <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2 font-mono text-[10.5px] text-muted-foreground">
+            <span>
+              {statusFilter === 'all'
+                ? `${rows.length} ${nextBefore ? 'newest ' : ''}requests in this window${nextBefore ? '' : ' — that is all of them'}`
+                : `${rows.length} of ${allRows.length} loaded requests match this filter`}
+            </span>
+            {nextBefore && (
+              <Button size="sm" variant="ghost" className="h-7 px-2 font-mono text-[10.5px]" onClick={loadMore} disabled={loadingMore}>
+                {loadingMore ? 'Loading…' : 'Load older'}
+              </Button>
+            )}
           </div>
         )}
       </Card>

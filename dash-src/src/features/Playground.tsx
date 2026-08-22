@@ -41,6 +41,17 @@ const LOADERS: { id: LoaderId; name: string; blurb: string; icon: typeof Globe }
 const COMING = ['Notion', 'Google Drive', 'Slack', 'GitHub', 'Confluence', 'Jira',
   'Intercom', 'HubSpot', 'Salesforce', 'Dropbox', 'Linear', 'Airtable']
 
+// Source rows carry the loader's face, like the app's LoaderIcon. The API
+// only returns a filename, so the kind is read off it: help-center imports
+// carry "help center" in their title, web pages have no extension, and
+// uploads keep theirs.
+function sourceIcon(filename: string): typeof Globe {
+  if (/help center/i.test(filename)) return Headset
+  if (/\.(csv|json)$/i.test(filename)) return Database
+  if (/\.[a-z0-9]{2,5}$/i.test(filename)) return FileText
+  return Globe
+}
+
 // Same starter prompts as the app's empty chat screen.
 const SUGGESTIONS = [
   'What does our refund policy say?',
@@ -185,19 +196,19 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   // One composer, two homes: centered on the empty screen, pinned to the
   // bottom once a conversation is running.
   const composer = (
-    <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-1.5 pr-1.5 pl-4">
+    <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-2 pr-2 pl-5 shadow-sm transition-colors focus-within:border-foreground/40">
       <input
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
         placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
         disabled={busy}
-        className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-sm"
+        className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
       />
       <button
         onClick={ask}
         disabled={busy || !question.trim()}
-        className="flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
+        className="flex size-9 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
         aria-label="Send"
       >
         <ArrowUp className="size-4" />
@@ -268,7 +279,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               className="group flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-secondary/50"
             >
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-background">
-                <FileText className="size-3.5 text-muted-foreground" />
+                {(() => { const Icon = sourceIcon(f.filename); return <Icon className="size-3.5 text-muted-foreground" /> })()}
               </span>
               <div className={cn('min-w-0 flex-1 transition-opacity', disabled.has(f.id) && 'opacity-45')}>
                 <div className="truncate text-[13px] font-medium">{f.filename}</div>
@@ -347,11 +358,14 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         )}
 
         {turns.length > 0 && (
-        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
+        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+          {/* One reading column, like the app and every serious chat: turns
+              hold a comfortable measure instead of stretching pane-wide. */}
+          <div className="mx-auto w-full max-w-[760px]">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
-              <div key={i} className="mb-4 flex justify-end">
-                <div className="max-w-[85%] rounded-xl bg-secondary px-4 py-2.5 text-sm">{turn.content}</div>
+              <div key={i} className="mb-5 flex justify-end">
+                <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px]">{turn.content}</div>
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
@@ -379,12 +393,13 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               </div>
             ),
           )}
+          </div>
         </div>
         )}
 
         {turns.length > 0 && (
           <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            {composer}
+            <div className="mx-auto w-full max-w-[760px]">{composer}</div>
           </div>
         )}
       </div>
@@ -552,7 +567,7 @@ function Inline({ text }: { text: string }) {
 function Answer({ text }: { text: string }) {
   const blocks = text.split(/\n/)
   return (
-    <div className="space-y-1 text-sm leading-relaxed">
+    <div className="space-y-1 text-[15px] leading-[1.7]">
       {blocks.map((line, i) => {
         const heading = line.match(/^(#{1,6})\s+(.*)$/)
         if (heading) {

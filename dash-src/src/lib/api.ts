@@ -2,6 +2,8 @@ const API = 'https://api.canonn.ai/v1'
 
 export interface UsageDay { requests: number; pt: number; ct: number }
 export interface LogRow {
+  /** D1 row id - the pagination cursor. Present on /v1/me/logs rows. */
+  id?: number
   ts: number
   key: string
   model?: string
@@ -77,6 +79,20 @@ export const fetchMe = (token: string, days = 30, key = '', from = '', to = '') 
       (key ? `&key=${encodeURIComponent(key)}` : '') +
       (from ? `&from=${from}` : '') +
       (to ? `&to=${to}` : ''),
+    token,
+  )
+
+/** One page of the full request log, newest first. Pass the previous page's
+ *  next_before to keep walking back through the window. */
+export const fetchLogs = (
+  token: string, days = 30, key = '', from = '', to = '', before = 0,
+) =>
+  request<{ data: LogRow[]; next_before: number | null }>(
+    `/me/logs?days=${days}&limit=200` +
+      (key ? `&key=${encodeURIComponent(key)}` : '') +
+      (from ? `&from=${from}` : '') +
+      (to ? `&to=${to}` : '') +
+      (before ? `&before=${before}` : ''),
     token,
   )
 

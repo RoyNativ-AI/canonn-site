@@ -128,7 +128,7 @@ export function Shell() {
   )
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* ---- Sidebar (desktop) ---- */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border lg:flex">
         <a href="/" className="flex items-center gap-2.5 px-5 pt-5 font-display text-[16px] font-semibold">
@@ -237,8 +237,10 @@ export function Shell() {
         </nav>
       </header>
 
-      <div className="lg:pl-[224px]">
-        <main className="mx-auto w-full max-w-[1100px] px-5 py-8 sm:px-8 lg:py-10">
+      {/* Sticky footer: the content column fills the viewport and main takes
+          the slack, so a short screen still pins the footer to the bottom. */}
+      <div className="flex flex-1 flex-col lg:pl-[224px]">
+        <main className="mx-auto w-full max-w-[1100px] flex-1 px-5 py-8 sm:px-8 lg:py-10">
           {error && (
             <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 font-mono text-xs text-destructive">
               {error}

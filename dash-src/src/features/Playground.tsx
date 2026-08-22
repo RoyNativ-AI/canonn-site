@@ -26,6 +26,10 @@ import {
   uploadFromZendesk, uploadTextFile,
   type GroundedCitation, type KnowledgeFile,
 } from '@/lib/api'
+import {
+  driveConfigured, driveDisconnect, driveDownload, driveKind, driveRecentFiles, driveToken,
+  type DriveFile,
+} from '@/lib/google'
 
 // The dashboard twin of the app's Chat + Knowledge screens, running entirely
 // on the public API: /v1/files for ingestion, streamed grounded completions
@@ -37,7 +41,7 @@ import {
 // backed by your data".
 const ACCENT = '#c96442'
 
-type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk'
+type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive'
 
 // The app's loader catalog (LoaderCatalog.swift), mirrored: the same
 // categories, names, and summaries. Loaders with an `action` run on the API
@@ -85,7 +89,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
   ] },
   { category: 'Cloud storage', items: [
-    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive },
+    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive, action: driveConfigured() ? 'gdrive' : undefined },
     { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package, brand: siDropbox },
     { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive, brand: siMicrosoftonedrive },
     { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive, brand: siBox },
@@ -95,7 +99,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote, brand: siNotion },
     { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen, brand: siConfluence },
     { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash, brand: siSlack },
-    { name: 'Google Docs', blurb: 'Individual documents by link.', icon: FileText, brand: siGoogledocs },
+    { name: 'Google Docs', blurb: 'Docs, Sheets and Slides straight from your Drive.', icon: FileText, brand: siGoogledocs, action: driveConfigured() ? 'gdrive' : undefined },
     { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check, brand: siJira },
     { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight, brand: siLinear },
     { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table, brand: siAirtable },
@@ -182,6 +186,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [form, setForm] = useState<LoaderId | null>(null)
   const [formTitle, setFormTitle] = useState('')
   const [formText, setFormText] = useState('')
+  const [driveFiles, setDriveFiles] = useState<DriveFile[] | null>(null)
+  const [driveSel, setDriveSel] = useState<Set<string>>(new Set())
   const [dragOver, setDragOver] = useState(false)
   // @-mentions: typing '@' opens a picker over the composer; picked sources
   // narrow retrieval for that one question, Cursor-style.
@@ -304,21 +310,57 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       for (const file of Array.from(list)) await uploadBinaryFile(t, file)
     })
 
+  async function extractPdf(file: File): Promise<string> {
+    const pdfjs = await import('pdfjs-dist')
+    const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
+    pdfjs.GlobalWorkerOptions.workerSrc = worker.default
+    const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise
+    const pages: string[] = []
+    for (let p = 1; p <= doc.numPages; p += 1) {
+      const content = await (await doc.getPage(p)).getTextContent()
+      pages.push(content.items.map((i) => ('str' in i ? i.str : '')).join(' '))
+    }
+    const text = pages.join('\n\n').replace(/[ \t]+/g, ' ').trim()
+    if (!text) throw new Error(`${file.name}: no extractable text`)
+    return text
+  }
+
   const addPdfs = (list: FileList) =>
     ingest('Extracting PDF…', async (t) => {
-      const pdfjs = await import('pdfjs-dist')
-      const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url')
-      pdfjs.GlobalWorkerOptions.workerSrc = worker.default
       for (const file of Array.from(list)) {
-        const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise
-        const pages: string[] = []
-        for (let p = 1; p <= doc.numPages; p += 1) {
-          const content = await (await doc.getPage(p)).getTextContent()
-          pages.push(content.items.map((i) => ('str' in i ? i.str : '')).join(' '))
+        await uploadTextFile(t, file.name.replace(/\.pdf$/i, '.txt'), await extractPdf(file))
+      }
+    })
+
+  // Google Drive: consent and listing happen in this tab; each picked file is
+  // fetched from Google here and pushed to /v1/files like a local upload.
+  async function openDrive() {
+    setForm('gdrive')
+    setDriveFiles(null)
+    setDriveSel(new Set())
+    try {
+      const token = await driveToken()
+      setDriveFiles(await driveRecentFiles(token))
+    } catch (e) {
+      setForm(null)
+      fail(e)
+    }
+  }
+
+  const importDrive = () =>
+    ingest('Importing from Drive…', async (t) => {
+      const token = await driveToken()
+      const chosen = (driveFiles ?? []).filter((f) => driveSel.has(f.id))
+      for (const file of chosen) {
+        const got = await driveDownload(token, file)
+        if ('text' in got) {
+          const name = /\.(txt|md|csv|json|xml|html?)$/i.test(file.name) ? file.name : `${file.name}.txt`
+          await uploadTextFile(t, name, got.text)
+        } else if (file.mimeType === 'application/pdf') {
+          await uploadTextFile(t, file.name.replace(/\.pdf$/i, '.txt'), await extractPdf(got.blob))
+        } else {
+          await uploadBinaryFile(t, got.blob)
         }
-        const text = pages.join('\n\n').replace(/[ \t]+/g, ' ').trim()
-        if (!text) throw new Error(`${file.name}: no extractable text`)
-        await uploadTextFile(t, file.name.replace(/\.pdf$/i, '.txt'), text)
       }
     })
 
@@ -743,7 +785,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
           {/* One reading column, like the app and every serious chat: turns
               hold a comfortable measure instead of stretching pane-wide. */}
-          <div className="mx-auto w-full max-w-[800px]">
+          <div className="mx-auto w-full max-w-[1040px]">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="group/user mb-5 flex flex-col items-end">
@@ -791,7 +833,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
         {turns.length > 0 && (
           <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <div className="mx-auto w-full max-w-[800px]">{composer}</div>
+            <div className="mx-auto w-full max-w-[1040px]">{composer}</div>
           </div>
         )}
       </div>
@@ -851,6 +893,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         if (!action) return
                         if (action === 'upload') { setPicker(false); fileInput.current?.click() }
                         else if (action === 'pdf') { setPicker(false); pdfInput.current?.click() }
+                        else if (action === 'gdrive') void openDrive()
                         else setForm(action)
                       }}
                       className={cn(
@@ -907,7 +950,56 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     <p className="mb-1 text-xs text-muted-foreground">Public help centers only — every article via the Zendesk API.</p>
                   </>
                 )}
-                <Button
+                {form === 'gdrive' && (
+                  <>
+                    <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Recent documents</div>
+                    {driveFiles === null && (
+                      <div className="flex items-center gap-2 py-6 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Waiting for Google…</div>
+                    )}
+                    {driveFiles?.length === 0 && (
+                      <p className="py-6 text-xs text-muted-foreground">No readable documents found in this Drive.</p>
+                    )}
+                    {driveFiles && driveFiles.length > 0 && (
+                      <div className="max-h-[45vh] overflow-y-auto rounded-lg border border-border">
+                        {driveFiles.map((f) => {
+                          const on = driveSel.has(f.id)
+                          return (
+                            <label key={f.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
+                              <input
+                                type="checkbox"
+                                checked={on}
+                                onChange={() => setDriveSel((s) => { const n = new Set(s); if (on) n.delete(f.id); else n.add(f.id); return n })}
+                                className="size-3.5 accent-foreground"
+                              />
+                              <span className="min-w-0 flex-1 truncate text-[13px]">{f.name}</span>
+                              <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{driveKind(f.mimeType)}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Read-only. Files are fetched from Google to this browser and added as sources — Canonn never holds your Google credentials.
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        onClick={() => { void importDrive(); setPicker(false) }}
+                        disabled={driveSel.size === 0 || !!uploading}
+                        className="h-9 flex-1 text-sm"
+                      >
+                        Import {driveSel.size} {driveSel.size === 1 ? 'file' : 'files'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => { void driveDisconnect(); setForm(null) }}
+                        className="h-9 text-sm"
+                      >
+                        Disconnect
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {form !== 'gdrive' && <Button
                   onClick={() => {
                     if (form === 'paste') {
                       const name = (formTitle.trim() || 'Pasted text').slice(0, 80)
@@ -921,7 +1013,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   className="mt-2 h-9 w-full text-sm"
                 >
                   Add source
-                </Button>
+                </Button>}
               </div>
             )}
           </div>

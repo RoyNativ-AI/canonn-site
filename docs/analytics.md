@@ -40,8 +40,17 @@ carry the tag `dashboard`.
   `unsafeMetadata.attribution` and stays with the account, so API usage on the
   backend can be joined to acquisition source by Clerk user id.
 
-## Next layer (backend)
+## Backend join (canonn-lab, edge worker)
 
-API usage itself is not tracked here. The source of truth for tokens, latency,
-cost and retention is the request log in the API's database; join it to Clerk
-`unsafeMetadata.attribution` for "source -> usage" reporting (Metabase).
+API usage itself is not tracked by Umami. The source of truth is the
+`canonn_usage` request log in D1. The console also calls
+`POST /v1/me/attribution` once per browser session, which creates the
+account's row in `canonn_accounts` (first_seen + first-touch source, written
+once). `GET /v1/admin/metrics?weeks=8` (ADMIN_KEY) joins the two and returns:
+
+- `weekly` - active accounts, requests, tokens, spend per week (growth chart)
+- `cohorts` - per signup week: signups, activated, activation rate, median
+  hours to first call, retained w1-w4, spend
+- `by_source` - signups, activated, spend per utm_source / referrer / direct
+
+Those three objects are the weekly one-pager and the deck.

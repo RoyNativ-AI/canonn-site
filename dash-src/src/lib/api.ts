@@ -180,6 +180,13 @@ export const runDemo = (data: string, question: string) =>
     if (!r.ok) throw new Error(b.error ?? 'demo failed')
     return b as { answer: string; seconds: number }
   })
+/** Register this account on the edge and, once, where it came from. */
+export const postAttribution = (token: string, attribution: object | null) =>
+  request<{ uid: string; first_seen: number; attributed: boolean }>('/me/attribution', token, {
+    method: 'POST',
+    body: JSON.stringify({ attribution: attribution ?? {} }),
+  })
+
 export const createKey = (token: string, name: string) =>
   request<{ key: string; name: string }>('/me/keys', token, {
     method: 'POST',

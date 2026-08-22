@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { useUser } from '@clerk/clerk-react'
+import { useSession, useUser } from '@clerk/clerk-react'
 import { identify, readAttribution, track, type Attribution } from '@/lib/analytics'
+import { postAttribution } from '@/lib/api'
 
 /**
  * Runs once per signed-in session. Three jobs:
@@ -8,13 +9,15 @@ import { identify, readAttribution, track, type Attribution } from '@/lib/analyt
  *  2. On a brand-new account, fire `signup_completed` exactly once.
  *  3. Copy the site's first-touch attribution cookie onto the Clerk user
  *     (unsafeMetadata.attribution), so the source a developer came from is
- *     stored with the account forever and joinable against API usage on the
- *     backend, long after the cookie is gone.
+ *     stored with the account forever, long after the cookie is gone.
+ *  4. Report the account to the edge (POST /v1/me/attribution) once per
+ *     browser session, which is where it gets joined to API usage.
  *
  * Renders nothing. Mount it inside <SignedIn>.
  */
 export function Identify() {
   const { user, isLoaded } = useUser()
+  const { session } = useSession()
 
   useEffect(() => {
     if (!isLoaded || !user) return
@@ -48,7 +51,19 @@ export function Identify() {
       user.update({ unsafeMetadata: { ...user.unsafeMetadata, attribution } })
         .catch(() => { /* attribution is best-effort; never block the console */ })
     }
-  }, [isLoaded, user])
+
+    // The edge keeps its own account row; one call per browser session is
+    // enough because the worker only ever writes the source once.
+    const reported = `cn_edge_${user.id}`
+    let done = false
+    try { done = sessionStorage.getItem(reported) === '1' } catch { /* storage blocked */ }
+    if (!done && session) {
+      session.getToken()
+        .then((t) => (t ? postAttribution(t, source ?? null) : null))
+        .then(() => { try { sessionStorage.setItem(reported, '1') } catch { /* storage blocked */ } })
+        .catch(() => { /* the edge may predate this route; retry next session */ })
+    }
+  }, [isLoaded, user, session])
 
   return null
 }

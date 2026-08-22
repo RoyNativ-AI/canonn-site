@@ -51,9 +51,14 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  mobileSheet = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  /** On a phone, render as a full-height sheet instead of a centred dialog.
+   *  Expects three children - header, body, footer - which become a fixed
+   *  header, a scrolling body and a pinned footer. */
+  mobileSheet?: boolean
 }) {
   return (
     <DialogPortal>
@@ -61,7 +66,15 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // --app-vh tracks the visual viewport (see Shell), so a dialog is
+          // never taller than what the on-screen keyboard leaves visible.
+          "fixed top-1/2 left-1/2 z-50 grid max-h-[calc(var(--app-vh,100dvh)-2rem)] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // The native phone pattern: the panel owns the screen, only its body
+          // scrolls, and the primary action stays pinned above the keyboard.
+          mobileSheet &&
+            // sm:w-, not sm:max-w-, keeps the viewport gutter even when the
+            // caller sets its own sm:max-w-* - the two do not collide.
+            "top-0 left-0 h-[var(--app-vh,100dvh)] max-h-[var(--app-vh,100dvh)] max-w-none translate-x-0 translate-y-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-none p-0 sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[calc(var(--app-vh,100dvh)-2rem)] sm:w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",
           className
         )}
         {...props}
@@ -71,7 +84,10 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              className={cn(
+                "absolute top-2 right-2",
+                mobileSheet && "top-2.5 right-2.5 size-9 sm:top-2 sm:right-2 sm:size-7"
+              )}
               size="icon-sm"
             >
               <XIcon

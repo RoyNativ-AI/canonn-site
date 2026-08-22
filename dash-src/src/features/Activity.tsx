@@ -140,9 +140,9 @@ export function Activity({
     <div>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-[22px] font-semibold tracking-tight">Usage</h1>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-9 w-full min-w-[150px] bg-card font-mono text-xs sm:w-[170px]">
+            <SelectTrigger className="h-11 w-full min-w-[150px] bg-card font-mono text-xs sm:h-9 sm:w-[170px]">
               <SelectValue placeholder="All keys" />
             </SelectTrigger>
             <SelectContent>
@@ -159,7 +159,7 @@ export function Activity({
                 key={r.days}
                 onClick={() => { setRange({ from: '', to: '' }); setDays(r.days) }}
                 className={cn(
-                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
+                  'flex-1 rounded-md px-3 py-2.5 text-center font-mono text-xs transition-colors sm:flex-initial sm:py-1.5',
                   !range.from && !range.to && days === r.days
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
@@ -172,7 +172,7 @@ export function Activity({
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs transition-colors sm:flex-initial',
+                    'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2.5 font-mono text-xs transition-colors sm:flex-initial sm:py-1.5',
                     range.from || range.to || !RANGES.some((r) => r.days === days)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground',
@@ -192,22 +192,22 @@ export function Activity({
                     <div>
                       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">From</label>
                       <Input type="date" value={range.from} max={range.to || undefined}
-                             onChange={(e) => setRange({ ...range, from: e.target.value })} className="font-mono text-xs" />
+                             onChange={(e) => setRange({ ...range, from: e.target.value })} className="h-11 font-mono text-xs sm:h-8" />
                     </div>
                     <div>
                       <label className="mb-1.5 block text-xs font-medium text-muted-foreground">To</label>
                       <Input type="date" value={range.to} min={range.from || undefined}
-                             onChange={(e) => setRange({ ...range, to: e.target.value })} className="font-mono text-xs" />
+                             onChange={(e) => setRange({ ...range, to: e.target.value })} className="h-11 font-mono text-xs sm:h-8" />
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {[14, 60, 90].map((d) => (
-                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-7 text-xs">
+                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-9 text-xs sm:h-7">
                         Last {d}d
                       </Button>
                     ))}
                     {(range.from || range.to) && (
-                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-7 text-xs text-destructive">
+                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-9 text-xs text-destructive sm:h-7">
                         Clear
                       </Button>
                     )}

@@ -22,6 +22,17 @@ import {
 /** The Playground drops file ids here before jumping to this screen. */
 export const SHARE_PREFILL_KEY = 'assistants.prefill'
 
+// The three zones of a dialog that is a sheet on a phone. On a narrow screen
+// they read as a sticky header, a scrolling body and a pinned footer; from sm:
+// up the padding adds back up to the p-4/gap-4 dialog this console has always
+// used, so nothing changes on a desktop.
+const SHEET_HEAD = 'border-b border-border px-4 py-3.5 pr-12 sm:border-b-0 sm:pt-4 sm:pr-10 sm:pb-0'
+const SHEET_BODY = 'space-y-4 overflow-y-auto px-4 py-4 sm:pt-4 sm:pb-0'
+const SHEET_FOOT = 'border-t border-border px-4 py-3 sm:border-t-0 sm:pt-4 sm:pb-4'
+// Comfortable on a thumb, unchanged on a mouse.
+const FIELD = 'h-11 sm:h-9'
+const ACTION = 'h-11 w-full sm:h-8'
+
 export function Assistants({ getToken, me }: { getToken: () => Promise<string | null>; me: Me | null }) {
   const paid = (me?.credit_usd ?? 0) > 0
   const [shares, setShares] = useState<ShareRow[] | null>(null)
@@ -221,7 +232,7 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
             Pre-scoped chat links your customers can use - grounded in the sources you pick, on your account.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)} className="gap-1.5">
+        <Button onClick={() => setOpen(true)} className="h-10 gap-1.5 sm:h-8">
           <Share2 className="size-4" /> New assistant
         </Button>
       </div>
@@ -239,7 +250,7 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
           <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
             Pick sources, add instructions, get a link. Anyone who opens it chats with your data - with citations, without an account.
           </p>
-          <Button size="sm" className="mt-4" onClick={() => setOpen(true)}>Create your first</Button>
+          <Button size="sm" className="mt-4 h-9 sm:h-7" onClick={() => setOpen(true)}>Create your first</Button>
         </Card>
       )}
 
@@ -272,24 +283,24 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                 </div>
               )}
             </div>
-            <div className="flex shrink-0 items-center gap-1.5">
-              <Button size="sm" variant="outline" className="h-8 gap-1.5 font-mono text-xs" onClick={() => copyLink(s)}>
+            <div className="flex flex-wrap items-center gap-1.5 sm:shrink-0 sm:flex-nowrap">
+              <Button size="sm" variant="outline" className="h-9 gap-1.5 font-mono text-xs sm:h-8" onClick={() => copyLink(s)}>
                 {copied === s.id ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
                 {copied === s.id ? 'Copied' : 'Copy link'}
               </Button>
-              <Button size="sm" variant="ghost" className="h-8 px-2" asChild>
+              <Button size="sm" variant="ghost" className="h-9 px-2.5 sm:h-8 sm:px-2" asChild>
                 <a href={s.vanity_url || s.url} target="_blank" rel="noreferrer" aria-label="Open assistant"><ExternalLink className="size-3.5" /></a>
               </Button>
-              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => openEdit(s)}>
+              <Button size="sm" variant="ghost" className="h-9 text-xs sm:h-8" onClick={() => openEdit(s)}>
                 Edit
               </Button>
-              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => toggleRevoke(s)}>
+              <Button size="sm" variant="ghost" className="h-9 text-xs sm:h-8" onClick={() => toggleRevoke(s)}>
                 {s.revoked ? 'Re-enable' : 'Revoke'}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className={cn('h-8 text-xs text-destructive', armedDelete === s.id && 'bg-destructive/10 font-medium')}
+                className={cn('h-9 text-xs text-destructive sm:h-8', armedDelete === s.id && 'bg-destructive/10 font-medium')}
                 onClick={() => removeShare(s)}
               >
                 {armedDelete === s.id ? 'Confirm?' : 'Delete'}
@@ -300,15 +311,15 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
       </div>
 
       <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent mobileSheet className="sm:max-w-md">
+          <DialogHeader className={SHEET_HEAD}>
             <DialogTitle className="font-display">Edit assistant</DialogTitle>
             <DialogDescription>The link stays the same; changes apply to the next message.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className={SHEET_BODY}>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name</label>
-              <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-9" maxLength={80} />
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} className={FIELD} maxLength={80} />
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Instructions</label>
@@ -329,10 +340,10 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
               </div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Branded link</label>
               <div className="flex items-center gap-1.5">
-                <Input value={editSlug} onChange={(e) => setEditSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className="h-9 font-mono text-xs" maxLength={31} />
+                <Input value={editSlug} onChange={(e) => setEditSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className={cn(FIELD, 'font-mono text-xs')} maxLength={31} />
                 <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
               </div>
-              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3">
+              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3 py-1.5 sm:py-0">
                 <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
                 <Switch checked={editHideBranding} disabled={!paid} onCheckedChange={setEditHideBranding} className="data-[state=checked]:bg-foreground" />
               </label>
@@ -342,9 +353,11 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Daily message cap</label>
-              <Input value={editCap} onChange={(e) => setEditCap(e.target.value)} inputMode="numeric" className="h-9 w-28 font-mono text-xs" />
+              <Input value={editCap} onChange={(e) => setEditCap(e.target.value)} inputMode="numeric" className={cn(FIELD, 'w-28 font-mono text-xs')} />
             </div>
-            <Button onClick={saveEdit} disabled={saving || !editName.trim()} className="w-full">
+          </div>
+          <div className={SHEET_FOOT}>
+            <Button onClick={saveEdit} disabled={saving || !editName.trim()} className={ACTION}>
               {saving ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
@@ -352,18 +365,18 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
       </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
+        <DialogContent mobileSheet className="sm:max-w-lg">
+          <DialogHeader className={SHEET_HEAD}>
             <DialogTitle className="font-display">New assistant</DialogTitle>
             <DialogDescription>
               Customers who open the link chat with these sources only. Requests count on your account.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className={SHEET_BODY}>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name (shown to your customers)</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Support" className="h-9" maxLength={80} />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Support" className={FIELD} maxLength={80} />
             </div>
 
             <div>
@@ -373,14 +386,16 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                   No sources yet - add some in the Playground first.
                 </p>
               )}
-              <div className="max-h-44 space-y-1 overflow-y-auto">
+              {/* A phone scrolls the sheet, not a box inside it - nested
+                  scrollers are the thing touch users cannot aim at. */}
+              <div className="space-y-1 sm:max-h-44 sm:overflow-y-auto">
                 {files.map((f) => (
-                  <label key={f.id} className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-secondary/50">
+                  <label key={f.id} className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2.5 hover:bg-secondary/50 sm:py-1.5">
                     <input
                       type="checkbox"
                       checked={picked.has(f.id)}
                       onChange={() => togglePick(f.id)}
-                      className="size-3.5 accent-[var(--foreground)]"
+                      className="size-4 accent-[var(--foreground)] sm:size-3.5"
                     />
                     <span className="min-w-0 flex-1 truncate text-[13px]">{f.filename}</span>
                     <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{f.chunk_count} passages</span>
@@ -410,10 +425,10 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
               </div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Branded link</label>
               <div className="flex items-center gap-1.5">
-                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className="h-9 font-mono text-xs" maxLength={31} />
+                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className={cn(FIELD, 'font-mono text-xs')} maxLength={31} />
                 <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
               </div>
-              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3">
+              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3 py-1.5 sm:py-0">
                 <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
                 <Switch checked={hideBranding} disabled={!paid} onCheckedChange={setHideBranding} className="data-[state=checked]:bg-foreground" />
               </label>
@@ -421,8 +436,8 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Your own domain</label>
                 {!editing?.custom_domain && (
                   <div className="flex items-center gap-1.5">
-                    <Input value={domainInput} onChange={(e) => setDomainInput(e.target.value.toLowerCase())} placeholder="chat.yourcompany.com" disabled={!paid} className="h-9 font-mono text-xs" />
-                    <Button size="sm" variant="outline" className="h-9 shrink-0 text-xs" disabled={!paid || !domainInput.trim() || domainBusy} onClick={connectDomain}>
+                    <Input value={domainInput} onChange={(e) => setDomainInput(e.target.value.toLowerCase())} placeholder="chat.yourcompany.com" disabled={!paid} className={cn(FIELD, 'font-mono text-xs')} />
+                    <Button size="sm" variant="outline" className={cn(FIELD, 'shrink-0 text-xs')} disabled={!paid || !domainInput.trim() || domainBusy} onClick={connectDomain}>
                       {domainBusy ? 'Connecting…' : 'Connect'}
                     </Button>
                   </div>
@@ -460,10 +475,12 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Daily message cap</label>
-              <Input value={cap} onChange={(e) => setCap(e.target.value)} inputMode="numeric" className="h-9 w-28 font-mono text-xs" />
+              <Input value={cap} onChange={(e) => setCap(e.target.value)} inputMode="numeric" className={cn(FIELD, 'w-28 font-mono text-xs')} />
             </div>
+          </div>
 
-            <Button onClick={save} disabled={!name.trim() || picked.size === 0 || saving} className="w-full">
+          <div className={SHEET_FOOT}>
+            <Button onClick={save} disabled={!name.trim() || picked.size === 0 || saving} className={ACTION}>
               {saving ? 'Creating…' : 'Create and copy link'}
             </Button>
           </div>

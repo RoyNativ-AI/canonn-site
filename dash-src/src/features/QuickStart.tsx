@@ -100,7 +100,7 @@ export function QuickStart() {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="canonn-sk-…"
-            className="bg-card font-mono text-xs"
+            className="h-11 bg-card font-mono text-xs sm:h-8"
           />
         </div>
         <div>
@@ -112,7 +112,7 @@ export function QuickStart() {
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleRun()}
             placeholder="Ask about the data…"
-            className="bg-card font-mono text-xs"
+            className="h-11 bg-card font-mono text-xs sm:h-8"
           />
         </div>
       </div>
@@ -126,7 +126,7 @@ export function QuickStart() {
             size="sm"
             variant="ghost"
             onClick={copyCurl}
-            className="ml-auto h-6.5 shrink-0 gap-1 px-2 font-mono text-[10.5px] text-white/60 hover:bg-white/10 hover:text-white"
+            className="ml-auto h-8 shrink-0 gap-1 px-2 font-mono text-[10.5px] text-white/60 hover:bg-white/10 hover:text-white sm:h-6.5"
           >
             {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
             {copied ? 'Copied' : 'Copy'}
@@ -135,7 +135,7 @@ export function QuickStart() {
             size="sm"
             onClick={handleRun}
             disabled={running || !data.trim() || !question.trim() || !apiKey.trim()}
-            className="h-6.5 shrink-0 gap-1 px-2.5 font-mono text-[10.5px] whitespace-nowrap"
+            className="h-8 shrink-0 gap-1 px-2.5 font-mono text-[10.5px] whitespace-nowrap sm:h-6.5"
           >
             <Play className="size-3" />
             {running ? 'Running…' : 'Run it now'}

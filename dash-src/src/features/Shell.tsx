@@ -71,6 +71,19 @@ export function Shell() {
     applyTheme(theme)
   }, [theme])
 
+  // A phone's on-screen keyboard shrinks the visual viewport but not the
+  // layout viewport, so a fixed full-height panel would hide its own footer
+  // behind the keyboard. Mirroring the visible height into --app-vh lets
+  // dialogs and sheets size themselves to what the user can actually see.
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const sync = () => document.documentElement.style.setProperty('--app-vh', `${vv.height}px`)
+    sync()
+    vv.addEventListener('resize', sync)
+    return () => vv.removeEventListener('resize', sync)
+  }, [])
+
   const refresh = useCallback(async () => {
     if (!session) return
     const token = await session.getToken()
@@ -239,7 +252,7 @@ export function Shell() {
           <div className="flex-1" />
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             aria-label="Toggle theme"
           >
             {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -247,7 +260,7 @@ export function Shell() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex size-8 items-center justify-center rounded-full bg-foreground text-[13px] font-semibold text-background"
+              className="flex size-9 items-center justify-center rounded-full bg-foreground text-[13px] font-semibold text-background"
               aria-label="Account menu"
             >
               {(email[0] ?? '?').toUpperCase()}

@@ -58,7 +58,7 @@ function SaveCardForm({ onSaved }: { onSaved: (pm: string) => void }) {
   return (
     <div className="space-y-4">
       <PaymentElement />
-      <Button onClick={save} disabled={busy || !stripe} className="w-full">
+      <Button onClick={save} disabled={busy || !stripe} className="h-11 w-full sm:h-8">
         {busy ? 'Saving…' : 'Save card'}
       </Button>
     </div>
@@ -240,7 +240,7 @@ export function Billing({ me }: { me: Me | null }) {
             without credits: {fmt(plan?.free_tier_calls ?? 1000)} free calls / month
           </p>
         </div>
-        <Button size="lg" className="w-full sm:w-auto" onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>
+        <Button size="lg" className="h-11 w-full sm:h-9 sm:w-auto" onClick={() => (hasCard ? setBuyOpen(true) : openCardModal())}>
           Buy credits
         </Button>
       </div>
@@ -261,7 +261,7 @@ export function Billing({ me }: { me: Me | null }) {
                 : 'Automatically add credits when your balance runs low.'}
             </p>
           </div>
-          <Button variant="outline" className="w-full sm:w-auto" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
+          <Button variant="outline" className="h-11 w-full sm:h-8 sm:w-auto" onClick={() => setAutoOpen(true)}>Manage auto-reload</Button>
         </div>
       </Card>
 
@@ -345,7 +345,7 @@ export function Billing({ me }: { me: Me | null }) {
                 <Input
                   value={buyAmount}
                   onChange={(e) => setBuyAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                  className="border-0 px-0 font-mono text-base shadow-none focus-visible:ring-0"
+                  className="h-11 border-0 px-0 font-mono text-base shadow-none focus-visible:ring-0 sm:h-8"
                 />
               </div>
               <p className="mt-1 font-mono text-[10.5px] text-muted-foreground">Enter an amount between $5 and $2000</p>
@@ -358,8 +358,8 @@ export function Billing({ me }: { me: Me | null }) {
               </button>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setBuyOpen(false)}>Cancel</Button>
-              <Button onClick={confirmBuy} disabled={charging || !validBuy}>
+              <Button variant="outline" className="h-11 flex-1 sm:h-8 sm:flex-initial" onClick={() => setBuyOpen(false)}>Cancel</Button>
+              <Button onClick={confirmBuy} disabled={charging || !validBuy} className="h-11 flex-1 sm:h-8 sm:flex-initial">
                 {charging ? 'Charging…' : 'Continue'}
               </Button>
             </div>
@@ -389,10 +389,10 @@ export function Billing({ me }: { me: Me | null }) {
               ].map(({ label, value, set }) => (
                 <div key={label} className="flex items-center justify-between gap-4">
                   <span className="text-sm">{label}</span>
-                  <div className="flex w-32 items-center gap-1.5 rounded-xl border border-input px-3">
+                  <div className="flex w-32 shrink-0 items-center gap-1.5 rounded-xl border border-input px-3">
                     <span className="text-muted-foreground">$</span>
                     <Input value={value} onChange={(e) => set(e.target.value.replace(/[^0-9.]/g, ''))}
-                           className="border-0 px-0 font-mono text-sm shadow-none focus-visible:ring-0" />
+                           className="h-11 border-0 px-0 font-mono text-sm shadow-none focus-visible:ring-0 sm:h-8" />
                   </div>
                 </div>
               ))}
@@ -409,8 +409,8 @@ export function Billing({ me }: { me: Me | null }) {
               </div>
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setAutoOpen(false)}>Cancel</Button>
-              <Button onClick={saveAuto} disabled={autoOn && !validAuto}>Save</Button>
+              <Button variant="outline" className="h-11 flex-1 sm:h-8 sm:flex-initial" onClick={() => setAutoOpen(false)}>Cancel</Button>
+              <Button onClick={saveAuto} disabled={autoOn && !validAuto} className="h-11 flex-1 sm:h-8 sm:flex-initial">Save</Button>
             </div>
           </div>
         </DialogContent>
@@ -428,7 +428,9 @@ export function Billing({ me }: { me: Me | null }) {
             )}
             {cards.map((c) => (
               <div key={c.id} className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-                <span className="min-w-0 flex-1 truncate">
+                {/* Wraps rather than truncates: on a phone the last four
+                    digits are the only way to tell two cards apart. */}
+                <span className="min-w-0 flex-1">
                   <span className="text-sm font-semibold capitalize">{c.brand}</span>
                   <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">•••• {c.last4}</span>
                   <span className="ml-2 font-mono text-xs whitespace-nowrap text-muted-foreground">{c.exp}</span>
@@ -440,20 +442,20 @@ export function Billing({ me }: { me: Me | null }) {
                     </span>
                   )
                   : (
-                    <Button variant="ghost" size="sm" className="shrink-0 font-mono text-xs whitespace-nowrap" onClick={() => makeDefault(c.id)}>
+                    <Button variant="ghost" size="sm" className="h-9 shrink-0 font-mono text-xs whitespace-nowrap sm:h-7" onClick={() => makeDefault(c.id)}>
                       Make primary
                     </Button>
                   )}
                 <button
                   onClick={() => removeCard(c.id)}
-                  className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-destructive sm:size-auto"
                   aria-label="Remove card"
                 >
                   <Trash2 className="size-4" />
                 </button>
               </div>
             ))}
-            <Button variant="outline" className="w-full" onClick={() => { setCardsOpen(false); openCardModal() }}>
+            <Button variant="outline" className="h-11 w-full sm:h-8" onClick={() => { setCardsOpen(false); openCardModal() }}>
               <Plus className="size-4" /> Add a card
             </Button>
           </div>

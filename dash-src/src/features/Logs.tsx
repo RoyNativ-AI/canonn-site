@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import type { IoRow, LogRow } from '@/lib/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollText } from 'lucide-react'
+import { ScrollText, SlidersHorizontal } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -61,6 +61,31 @@ const ORIGIN_FILTERS = [
 ] as const
 type OriginFilter = typeof ORIGIN_FILTERS[number]['id']
 
+type FilterOption = { id: string; label: string }
+
+/** One filter control, compact in the desktop row and full width in the phone
+ *  sheet - the same control described once, sized by where it lands. */
+function FilterSelect({ value, options, placeholder, onChange, className }: {
+  value: string
+  options: readonly FilterOption[]
+  placeholder?: string
+  onChange: (v: string) => void
+  className?: string
+}) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={cn('h-9 bg-card font-mono text-xs', className)}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.id} value={o.id} className="font-mono text-xs">{o.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 function StatusCell({ status }: { status: 'ok' | 'truncated' | 'failed' }) {
   if (status === 'ok') {
     return (
@@ -96,6 +121,9 @@ export function Logs({
 }) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [originFilter, setOriginFilter] = useState<OriginFilter>('all')
+  // On a phone the filters live in a bottom sheet: the log is the hero, and
+  // three squeezed selects across 375px are not worth the row they cost.
+  const [filtersOpen, setFiltersOpen] = useState(false)
   // The log walks the whole window through /v1/me/logs pages, not just the
   // recency cap /v1/me carries for its summary cards.
   const [logRows, setLogRows] = useState<LogRow[] | null>(null)
@@ -172,6 +200,26 @@ export function Logs({
     await setIoLogging(t, true)
     onIoChanged()
   }
+
+  const toggleIo = async (v: boolean) => {
+    const t = await getToken()
+    if (!t) return
+    await setIoLogging(t, v)
+    toast.success(v ? 'I/O logging enabled - applies to new requests.' : 'I/O logging disabled.')
+    onIoChanged()
+  }
+
+  const keyOptions: FilterOption[] = [
+    { id: 'all', label: 'All keys' },
+    ...(me?.keys ?? []).map((k) => ({ id: k.name, label: k.name })),
+  ]
+  const activeFilters = (keyFilter ? 1 : 0) + (originFilter === 'all' ? 0 : 1) + (statusFilter === 'all' ? 0 : 1)
+  const clearFilters = () => {
+    setKeyFilter('')
+    setOriginFilter('all')
+    setStatusFilter('all')
+  }
+
   return (
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -179,58 +227,45 @@ export function Logs({
           <h1 className="font-display text-[22px] font-semibold tracking-tight">Logs</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          {/* Phone: one chip carries every secondary control, with a count so
+              an active filter is never invisible. */}
+          <Button
+            variant="outline"
+            className="h-10 gap-1.5 bg-card font-mono text-xs sm:hidden"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="size-3.5" />
+            Filters
+            {activeFilters > 0 && (
+              <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground tabular-nums">
+                {activeFilters}
+              </span>
+            )}
+          </Button>
+
+          <label className="hidden h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground sm:flex">
             I/O logging
-            <Switch
-              checked={Boolean(me?.io_logging)}
-              onCheckedChange={async (v) => {
-                const t = await getToken()
-                if (!t) return
-                await setIoLogging(t, v)
-                toast.success(v ? 'I/O logging enabled - applies to new requests.' : 'I/O logging disabled.')
-                onIoChanged()
-              }}
-            />
+            <Switch checked={Boolean(me?.io_logging)} onCheckedChange={toggleIo} />
           </label>
-          <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-9 bg-card font-mono text-xs">
-              <SelectValue placeholder="All keys" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="font-mono text-xs">All keys</SelectItem>
-              {(me?.keys ?? []).map((k) => (
-                <SelectItem key={k.name} value={k.name} className="font-mono text-xs">{k.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={originFilter} onValueChange={(v) => setOriginFilter(v as OriginFilter)}>
-            <SelectTrigger className="h-9 bg-card font-mono text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ORIGIN_FILTERS.map((f) => (
-                <SelectItem key={f.id} value={f.id} className="font-mono text-xs">{f.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <SelectTrigger className="h-9 bg-card font-mono text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_FILTERS.map((f) => (
-                <SelectItem key={f.id} value={f.id} className="font-mono text-xs">{f.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
+          <div className="hidden sm:contents">
+            <FilterSelect
+              value={keyFilter || 'all'}
+              options={keyOptions}
+              placeholder="All keys"
+              onChange={(v) => setKeyFilter(v === 'all' ? '' : v)}
+            />
+            <FilterSelect value={originFilter} options={ORIGIN_FILTERS} onChange={(v) => setOriginFilter(v as OriginFilter)} />
+            <FilterSelect value={statusFilter} options={STATUS_FILTERS} onChange={(v) => setStatusFilter(v as StatusFilter)} />
+          </div>
+
+          <div className="flex flex-1 rounded-lg border border-input bg-card p-0.5 sm:w-auto sm:flex-initial">
             {RANGES.map((r) => (
               <button
                 key={r.days}
                 onClick={() => setDays(r.days)}
                 className={cn(
-                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
+                  'flex-1 rounded-md px-3 py-2.5 text-center font-mono text-xs transition-colors sm:flex-initial sm:py-1.5',
                   days === r.days ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -240,10 +275,44 @@ export function Logs({
           </div>
         </div>
       </div>
+
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent side="bottom" className="max-h-[85dvh] gap-0 overflow-y-auto rounded-t-xl p-4">
+          <SheetHeader className="p-0">
+            <SheetTitle className="font-display text-lg">Filters</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 space-y-4">
+            {[
+              { label: 'Key', value: keyFilter || 'all', options: keyOptions, onChange: (v: string) => setKeyFilter(v === 'all' ? '' : v) },
+              { label: 'Traffic', value: originFilter, options: ORIGIN_FILTERS, onChange: (v: string) => setOriginFilter(v as OriginFilter) },
+              { label: 'Status', value: statusFilter, options: STATUS_FILTERS, onChange: (v: string) => setStatusFilter(v as StatusFilter) },
+            ].map((f) => (
+              <div key={f.label}>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{f.label}</label>
+                <FilterSelect value={f.value} options={f.options} onChange={f.onChange} className="h-11 w-full" />
+              </div>
+            ))}
+            <label className="flex h-11 items-center justify-between gap-3 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">
+              I/O logging
+              <Switch checked={Boolean(me?.io_logging)} onCheckedChange={toggleIo} />
+            </label>
+          </div>
+          <div className="mt-5 flex gap-2">
+            <Button variant="outline" className="h-11 flex-1" disabled={activeFilters === 0} onClick={clearFilters}>
+              Clear all
+            </Button>
+            <Button className="h-11 flex-1" onClick={() => setFiltersOpen(false)}>
+              Show {fmt(rows.length)} {rows.length === 1 ? 'request' : 'requests'}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
       <Card className="overflow-hidden py-0">
-        <div className="max-h-[620px] overflow-x-auto overflow-y-auto">
-        <Table>
-          <TableHeader className="sticky top-0 z-10 bg-card shadow-[0_1px_0_var(--border)]">
+        {/* One scroll container, not two: the table pans sideways inside its
+            own, and only from sm: up does it get a vertical window as well. On
+            a phone the page scrolls, so a long log is never a scroll trap. */}
+        <Table containerClassName="sm:max-h-[620px]">
+          <TableHeader className="relative bg-card shadow-[0_1px_0_var(--border)] sm:sticky sm:top-0 sm:z-10">
             <TableRow>
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
@@ -272,7 +341,9 @@ export function Logs({
             ))}
             {logRows !== null && rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={9} className="py-16 text-center">
+                {/* The cell inherits whitespace-nowrap from the data rows;
+                    prose in it would push the whole table sideways. */}
+                <TableCell colSpan={9} className="py-16 text-center whitespace-normal">
                   <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
                   <p className="text-sm font-medium">
                     {statusFilter === 'all' ? 'No requests in this window' : `No ${statusFilter === 'failed' ? 'failed' : 'successful'} requests in this window`}
@@ -280,9 +351,9 @@ export function Logs({
                   <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
                     Every call to the API shows up here within seconds, with tokens, latency, and cost.
                   </p>
-                  <div className="mt-4 flex items-center justify-center gap-2">
-                    <Button size="sm" asChild><a href="#keys">Create a key</a></Button>
-                    <Button size="sm" variant="outline" asChild><a href="#playground">Try the Playground</a></Button>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                    <Button size="sm" className="h-9 sm:h-7" asChild><a href="#keys">Create a key</a></Button>
+                    <Button size="sm" variant="outline" className="h-9 sm:h-7" asChild><a href="#playground">Try the Playground</a></Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -293,7 +364,10 @@ export function Logs({
                 <TableRow
                   key={r.id ?? `${r.ts}-${i}`}
                   onClick={() => setDetail(r)}
-                  className={cn('cursor-pointer', status === 'failed' && 'bg-destructive/[0.04] hover:bg-destructive/[0.07]')}
+                  className={cn(
+                    'cursor-pointer [&>td]:py-3 sm:[&>td]:py-2',
+                    status === 'failed' && 'bg-destructive/[0.04] hover:bg-destructive/[0.07]',
+                  )}
                 >
                   <TableCell className="font-mono text-xs whitespace-nowrap">
                     {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -333,7 +407,6 @@ export function Logs({
             })}
           </TableBody>
         </Table>
-        </div>
         {rows.length > 0 && (
           <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2 font-mono text-[10.5px] text-muted-foreground">
             <span>
@@ -342,7 +415,7 @@ export function Logs({
                 : `${rows.length} of ${allRows.length} loaded requests match this filter`}
             </span>
             {nextBefore && (
-              <Button size="sm" variant="ghost" className="h-7 px-2 font-mono text-[10.5px]" onClick={loadMore} disabled={loadingMore}>
+              <Button size="sm" variant="ghost" className="h-9 shrink-0 px-2 font-mono text-[10.5px] sm:h-7" onClick={loadMore} disabled={loadingMore}>
                 {loadingMore ? 'Loading…' : 'Load older'}
               </Button>
             )}
@@ -435,7 +508,7 @@ export function Logs({
                     <p className="mt-1 text-xs text-muted-foreground">
                       Enable I/O logging to view prompt and completion data for your requests. Applies to new requests only.
                     </p>
-                    <Button size="sm" className="mt-3" onClick={enableIo}>Enable I/O logging</Button>
+                    <Button size="sm" className="mt-3 h-9 sm:h-7" onClick={enableIo}>Enable I/O logging</Button>
                   </div>
                 )}
                 {me?.io_logging && ioState === 'loading' && (

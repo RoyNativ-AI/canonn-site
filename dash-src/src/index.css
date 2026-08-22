@@ -96,6 +96,14 @@
     }
 }
 
+/* iOS zooms the whole page when a focused field is under 16px, and it never
+   zooms back - which is how a phone ends up scrolled sideways. Fields are 16px
+   on a phone; the console's compact type returns at the sm breakpoint. This
+   sits outside @layer on purpose, so it beats the utility that set the size. */
+@media (max-width: 639px) {
+    input, textarea, select { font-size: 16px; }
+}
+
 .font-display { font-family: var(--font-display); }
 .font-serif { font-family: var(--font-serif); }
 .font-mono { font-family: var(--font-mono); }

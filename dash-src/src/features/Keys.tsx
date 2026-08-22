@@ -93,11 +93,11 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
 
       <div className="mb-5 flex flex-wrap gap-2">
         {isAdmin && (
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button className="h-10 sm:h-8" onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" /> Create key
           </Button>
         )}
-        <Button variant="outline" onClick={() => setQsOpen(true)}>
+        <Button variant="outline" className="h-10 sm:h-8" onClick={() => setQsOpen(true)}>
           <Terminal className="size-4" /> Quick start
         </Button>
       </div>
@@ -119,9 +119,9 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             placeholder="e.g. production"
-            className="font-mono text-sm"
+            className="h-11 font-mono text-sm sm:h-8"
           />
-          <Button onClick={handleCreate} disabled={creating || !name.trim()} className="w-full">
+          <Button onClick={handleCreate} disabled={creating || !name.trim()} className="h-11 w-full sm:h-8">
             {creating ? 'Creating…' : 'Create key'}
           </Button>
         </DialogContent>
@@ -148,7 +148,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
             ))}
             {me !== null && keys.length === 0 && (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={4} className="py-14 text-center">
+                <TableCell colSpan={4} className="py-14 text-center whitespace-normal">
                   <KeyRound className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
                   <p className="text-sm font-medium">No keys yet</p>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -173,7 +173,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                   {isAdmin && (
                     <Button
                       variant="ghost" size="sm"
-                      className="font-mono text-xs text-muted-foreground hover:text-foreground"
+                      className="h-9 font-mono text-xs text-muted-foreground hover:text-foreground sm:h-7"
                       onClick={() => { setRenameFrom(k.name); setRenameTo(k.name) }}
                     >
                       <Pencil className="size-3" /> rename
@@ -181,7 +181,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
                   )}
                   {isAdmin && <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="font-mono text-xs text-destructive hover:text-destructive">
+                      <Button variant="ghost" size="sm" className="h-9 font-mono text-xs text-destructive hover:text-destructive sm:h-7">
                         revoke
                       </Button>
                     </AlertDialogTrigger>
@@ -207,15 +207,19 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
         </Table>
       </Card>
 
+      {/* Too tall to ever fit a phone as a centred dialog - it gets the sheet
+          treatment: fixed header, the form scrolling under it. */}
       <Dialog open={qsOpen} onOpenChange={setQsOpen}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
+        <DialogContent mobileSheet className="sm:max-w-4xl">
+          <DialogHeader className="border-b border-border px-4 py-3.5 pr-12 sm:border-b-0 sm:pt-4 sm:pr-10 sm:pb-0">
             <DialogTitle className="font-display">Quick start</DialogTitle>
             <DialogDescription>
               Fill in your data and key, run it here, then copy a curl you can paste straight into Postman.
             </DialogDescription>
           </DialogHeader>
-          <QuickStart />
+          <div className="overflow-y-auto px-4 py-4">
+            <QuickStart />
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -233,9 +237,9 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
             onChange={(e) => setRenameTo(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleRename()}
             placeholder="new name"
-            className="font-mono text-sm"
+            className="h-11 font-mono text-sm sm:h-8"
           />
-          <Button onClick={handleRename} disabled={renaming || !renameTo.trim() || renameTo.trim() === renameFrom} className="w-full">
+          <Button onClick={handleRename} disabled={renaming || !renameTo.trim() || renameTo.trim() === renameFrom} className="h-11 w-full sm:h-8">
             {renaming ? 'Renaming…' : 'Rename key'}
           </Button>
         </DialogContent>
@@ -252,7 +256,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
           <div className="rounded-xl border border-[#3f7d54]/30 bg-[#3f7d54]/5 p-4 font-mono text-sm break-all text-[#3f7d54]">
             {freshKey}
           </div>
-          <Button onClick={copyKey} className="w-full">
+          <Button onClick={copyKey} className="h-11 w-full sm:h-8">
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             {copied ? 'Copied' : 'Copy key'}
           </Button>

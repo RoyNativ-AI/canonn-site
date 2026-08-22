@@ -325,11 +325,10 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   async function ask() {
     const q = question.trim()
     if (!q || busy) return
-    // @-mentions narrow the scope for this one question: if the text still
-    // carries tags picked from the @ menu, only those sources answer it.
-    const mentioned = tagged.filter((m) => q.includes(`@${m.name}`)).map((m) => m.id)
-    const scope = mentioned.length
-      ? mentioned
+    // @-tags narrow the scope for this one question: with chips present,
+    // only those sources answer it.
+    const scope = tagged.length
+      ? tagged.map((m) => m.id)
       : (files ?? []).filter((f) => !disabled.has(f.id)).map((f) => f.id)
     const grounded = scope.length > 0
     setTagged([])
@@ -391,10 +390,12 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     }
   }
 
+  // Picking swallows the @query from the text and turns the source into a
+  // chip above the field - a real label, not loose text the user can break.
   function pickMention(f: KnowledgeFile) {
     const ta = taRef.current
     const caret = ta ? ta.selectionStart : question.length
-    const before = question.slice(0, caret).replace(/@[^@\n]*$/, `@${f.filename} `)
+    const before = question.slice(0, caret).replace(/@[^@\n]*$/, '')
     setQuestion(before + question.slice(caret))
     setTagged((t) => (t.some((x) => x.id === f.id) ? t : [...t, { id: f.id, name: f.filename }]))
     setMention(null)
@@ -425,6 +426,23 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           ))}
         </div>
       )}
+      {tagged.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 px-4 pt-3.5">
+          {tagged.map((m) => (
+            <span key={m.id} className="flex max-w-56 items-center gap-1.5 rounded-md border border-border bg-secondary/60 py-1 pr-1 pl-2 text-xs">
+              <SourceGlyph filename={m.name} className="size-3 shrink-0" />
+              <span className="truncate">{m.name}</span>
+              <button
+                onClick={() => setTagged((t) => t.filter((x) => x.id !== m.id))}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={`Remove ${m.name}`}
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <textarea
         ref={taRef}
         value={question}
@@ -439,13 +457,20 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); pickMention(mentionMatches[mentionSel]); return }
             if (e.key === 'Escape') { e.preventDefault(); setMention(null); return }
           }
+          if (e.key === 'Backspace' && question === '' && tagged.length) {
+            setTagged((t) => t.slice(0, -1))
+            return
+          }
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() }
         }}
         onBlur={() => setMention(null)}
         placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`} — @ targets one…` : 'Ask anything…'}
         disabled={busy}
         rows={2}
-        className="max-h-40 w-full resize-none bg-transparent px-5 pt-4 text-base leading-relaxed outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
+        className={cn(
+          'max-h-40 w-full resize-none bg-transparent px-5 pt-4 text-base leading-relaxed outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]',
+          tagged.length > 0 && 'pt-2',
+        )}
       />
       <div className="flex items-center gap-1 px-2.5 pt-0.5 pb-2.5">
         <button onClick={() => setSrcOpen(true)} className={cn(composerTool, 'min-w-0')}>

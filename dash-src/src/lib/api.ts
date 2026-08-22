@@ -375,3 +375,20 @@ export const uploadFromRest = (token: string, url: string, authorization?: strin
     method: 'POST',
     body: JSON.stringify({ rest: { url, ...(authorization ? { authorization } : {}) } }),
   })
+
+// ---- SQL sources: credentials travel once, for that request, and are never stored ----
+
+export type SqlEngine = 'postgres' | 'mysql'
+export interface SqlPreview { columns: string[]; rows: Record<string, unknown>[] }
+
+export const previewSql = (token: string, engine: SqlEngine, connectionString: string, query: string) =>
+  request<SqlPreview>('/files/preview', token, {
+    method: 'POST',
+    body: JSON.stringify({ [engine]: { connection_string: connectionString, query } }),
+  })
+
+export const uploadFromSql = (token: string, engine: SqlEngine, connectionString: string, query: string, name?: string) =>
+  request<KnowledgeFile & { rows: number }>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ [engine]: { connection_string: connectionString, query, ...(name ? { name } : {}) } }),
+  })

@@ -48,8 +48,8 @@ import { toast } from 'sonner'
 import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
   uploadFromZendesk, uploadTextFile, uploadFromSitemap, uploadFromFeed, uploadFromHelpCenter,
-  uploadFromGithub, uploadFromRest,
-  type GroundedCitation, type KnowledgeFile,
+  uploadFromGithub, uploadFromRest, previewSql, uploadFromSql,
+  type GroundedCitation, type KnowledgeFile, type SqlPreview,
 } from '@/lib/api'
 import { officeToText, imageToText } from '@/lib/office'
 import {
@@ -70,7 +70,7 @@ const ACCENT = '#c96442'
 
 type LoaderId =
   | 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'office' | 'ocr' | 'sitemap' | 'feed'
-  | 'zendesk' | 'intercom' | 'helpscout' | 'hubspot' | 'github' | 'rest'
+  | 'zendesk' | 'intercom' | 'helpscout' | 'hubspot' | 'github' | 'rest' | 'postgres' | 'mysql'
   | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal'
 
 // Google loaders light up only once the dashboard has a client ID.
@@ -159,8 +159,8 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Help Scout', blurb: 'Public Docs articles, fetched without a login.', icon: MessageCircle, brand: siHelpscout, action: 'helpscout' },
   ] },
   { category: 'Databases & APIs', items: [
-    { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database, brand: siPostgresql },
-    { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database, brand: siMysql },
+    { name: 'PostgreSQL', blurb: 'A SELECT, one record per row. Read-only, nothing stored.', icon: Database, brand: siPostgresql, action: 'postgres' },
+    { name: 'MySQL', blurb: 'A SELECT, one record per row. Read-only, nothing stored.', icon: Database, brand: siMysql, action: 'mysql' },
     { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf, brand: siMongodb },
     { name: 'REST endpoint', blurb: 'One JSON response, flattened into records.', icon: ArrowLeftRight, action: 'rest' },
   ] },
@@ -254,6 +254,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const officeInput = useRef<HTMLInputElement>(null)
   const imageInput = useRef<HTMLInputElement>(null)
   const [formExtra, setFormExtra] = useState('')
+  const [sqlPreview, setSqlPreview] = useState<SqlPreview | null>(null)
+  const [sqlTesting, setSqlTesting] = useState(false)
   const scroller = useRef<HTMLDivElement>(null)
 
   // ---- Conversation history: localStorage per Clerk user, never the server.
@@ -390,6 +392,20 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         await uploadTextFile(t, file.name.replace(/\.[^.]+$/, '') + '.txt', text)
       }
     })
+
+  // SQL: the connection string is in formExtra, the query in formText. A
+  // preview runs the same query with LIMIT 5 and stores nothing.
+  async function testSql(engine: 'postgres' | 'mysql') {
+    setSqlTesting(true)
+    setSqlPreview(null)
+    try {
+      setSqlPreview(await withToken((t) => previewSql(t, engine, formExtra.trim(), formText.trim())))
+    } catch (e) {
+      fail(e)
+    } finally {
+      setSqlTesting(false)
+    }
+  }
 
   // Google Drive: consent, then Google's own picker; each picked file is
   // fetched from Google in this tab and pushed to /v1/files like a local
@@ -1083,6 +1099,41 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     <p className="mb-1 text-xs text-muted-foreground">One JSON response, flattened key by key. The header is used for this request only and never stored.</p>
                   </>
                 )}
+                {(form === 'postgres' || form === 'mysql') && (
+                  <>
+                    <Input type="password" autoComplete="off" value={formExtra} onChange={(e) => { setFormExtra(e.target.value); setSqlPreview(null) }} placeholder={form === 'postgres' ? 'postgres://user:password@host:5432/db' : 'mysql://user:password@host:3306/db'} className="mb-2 h-9 bg-background font-mono text-xs" />
+                    <textarea
+                      value={formText}
+                      onChange={(e) => { setFormText(e.target.value); setSqlPreview(null) }}
+                      rows={4}
+                      spellCheck={false}
+                      placeholder="select id, title, body from articles where published"
+                      className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-foreground/40"
+                    />
+                    <p className="mb-1 mt-1 text-xs text-muted-foreground">SELECT only, up to 5,000 rows, one record per row. The database must be reachable from the internet; credentials are used for this import and never stored.</p>
+                    {sqlPreview && (
+                      <div className="mt-2 max-h-48 overflow-auto rounded-lg border border-border">
+                        <table className="w-full text-left font-mono text-[11px]">
+                          <thead><tr>{sqlPreview.columns.map((c) => <th key={c} className="border-b border-border px-2 py-1 font-medium text-muted-foreground">{c}</th>)}</tr></thead>
+                          <tbody>
+                            {sqlPreview.rows.map((r, i) => (
+                              <tr key={i}>{sqlPreview.columns.map((c) => <td key={c} className="max-w-[220px] truncate border-b border-border px-2 py-1">{String(r[c] ?? '')}</td>)}</tr>
+                            ))}
+                            {sqlPreview.rows.length === 0 && <tr><td className="px-2 py-2 text-muted-foreground">The query returned no rows.</td></tr>}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={() => void testSql(form)}
+                      disabled={!formText.trim() || !formExtra.trim() || sqlTesting}
+                      className="mt-2 h-9 w-full text-sm"
+                    >
+                      {sqlTesting ? <><Loader2 className="size-3.5 animate-spin" /> Testing…</> : 'Test query (first 5 rows)'}
+                    </Button>
+                  </>
+                )}
                 {form === 'gmail' && (
                   <>
                     <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="from:support@acme.com newer_than:90d" className="mb-1 h-9 bg-background font-mono text-xs" />
@@ -1156,6 +1207,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     else if (form === 'intercom' || form === 'helpscout' || form === 'hubspot') ingest('Importing articles…', (t) => uploadFromHelpCenter(t, form, formText.trim()))
                     else if (form === 'github') ingest('Reading repository…', (t) => uploadFromGithub(t, formText.trim()))
                     else if (form === 'rest') { const auth = formExtra.trim(); setFormExtra(''); ingest('Fetching JSON…', (t) => uploadFromRest(t, formText.trim(), auth || undefined)) }
+                    else if (form === 'postgres' || form === 'mysql') {
+                      const engine = form, conn = formExtra.trim(), query = formText.trim()
+                      setFormExtra(''); setSqlPreview(null)
+                      ingest('Running query…', (t) => uploadFromSql(t, engine, conn, query))
+                    }
                     else if (form === 'gmail') {
                       const query = formText.trim()
                       ingest('Reading Gmail…', async (t) => {
@@ -1172,7 +1228,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     }
                     setPicker(false)
                   }}
-                  disabled={(form !== 'gcal' && !formText.trim()) || !!uploading}
+                  disabled={(form !== 'gcal' && !formText.trim()) || ((form === 'postgres' || form === 'mysql') && !formExtra.trim()) || !!uploading}
                   className="mt-2 h-9 w-full text-sm"
                 >
                   Add source

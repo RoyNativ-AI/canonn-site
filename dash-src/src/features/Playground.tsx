@@ -342,7 +342,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
         placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
         disabled={busy}
-        className="w-full bg-transparent px-5 pt-4 pb-1.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
+        className="w-full bg-transparent px-5 pt-5 pb-3 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:pt-4 sm:pb-1.5 sm:text-[15px]"
       />
       <div className="flex items-center gap-2 px-3 pt-1 pb-3">
         <button onClick={() => setSrcOpen(true)} className={cn(composerChip, 'min-w-0')}>
@@ -563,19 +563,18 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   : 'Add a website or a document, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
               </p>
               {inScope.length > 0 && (
-                // Phones get the native chat-suggestion pattern: one snap-
-                // scrolled row of full-text pills that bleeds off the right
-                // edge (the cut pill IS the scroll affordance). Truncated
-                // card text read as broken, not compact. Cards return at sm.
-                <div className="-mx-4 mt-6 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:mt-9 sm:grid sm:snap-none sm:gap-2.5 sm:overflow-visible sm:p-0 sm:grid-cols-3">
+                // Phones drop the suggestions entirely - the headline and the
+                // composer are the whole story, nothing between the question
+                // and the input. The three cards return at sm.
+                <div className="mt-9 hidden gap-2.5 sm:grid sm:grid-cols-3">
                   {SUGGESTIONS.map(({ q, icon: Icon }) => (
                     <button
                       key={q}
                       onClick={() => setQuestion(q)}
-                      className="shrink-0 snap-start rounded-full border border-border bg-card px-4 py-2 text-left text-[13px] leading-snug whitespace-nowrap text-foreground/85 transition-colors hover:border-foreground/30 sm:shrink sm:rounded-xl sm:p-4 sm:whitespace-normal"
+                      className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-foreground/30"
                     >
-                      <Icon className="mb-2.5 hidden size-4 text-muted-foreground sm:block" />
-                      {q}
+                      <Icon className="mb-2.5 size-4 text-muted-foreground" />
+                      <div className="text-[13px] leading-snug text-foreground/85">{q}</div>
                     </button>
                   ))}
                 </div>

@@ -111,7 +111,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Google Drive', blurb: 'Pick documents in Google\'s file picker and import them.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
     { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
     { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
-    { name: 'Keep in sync', blurb: 'Share a Sheet, Doc or folder with Canonn\'s address; it stays up to date.', icon: History, brand: siGoogledrive, action: 'gshared' },
+    { name: 'Drive live sync', blurb: 'Share a Sheet, Doc or folder with Canonn like you share with a colleague. No login; stays up to date.', icon: History, brand: siGoogledrive, action: 'gshared' },
     { name: 'Gmail', blurb: 'Messages matching a Gmail search, one record each.', icon: MessageSquare, brand: siGmail, action: google('gmail') },
     { name: 'Google Calendar', blurb: 'Events from the last 90 days and the next 180.', icon: History, brand: siGooglecalendar, action: google('gcal') },
     { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
@@ -1246,52 +1246,71 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     )}
                     {shared && (
                       <>
-                        <div className="rounded-lg border border-border bg-background p-3">
-                          <div className="mb-1 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">1 · Share with this address (Viewer is enough)</div>
-                          <div className="flex items-center gap-2">
-                            <code className="min-w-0 flex-1 truncate font-mono text-xs">{shared.address}</code>
-                            <button onClick={() => { void navigator.clipboard.writeText(shared.address); toast.success('Copied') }} className="text-muted-foreground hover:text-foreground" aria-label="Copy address"><Copy className="size-3.5" /></button>
-                          </div>
-                          <div className="mt-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">2 · Share it from</div>
-                          <div className="text-xs">{shared.emails.length ? shared.emails.join(', ') : 'no verified e-mail on your account'}</div>
-                          <p className="mt-2 text-xs text-muted-foreground">Only files shared from your own e-mail can be imported here, so nobody else's shares ever land in your sources. Sheets, Docs, Slides, text and folders; re-checked every 6 hours.</p>
-                        </div>
-                        {shared.warning && <p className="mt-2 text-xs text-[#c96442]">{shared.warning}</p>}
+                        <p className="mb-3 text-[13px] leading-snug">
+                          Works like sharing with a colleague: give Canonn view access to a file or folder in Google Drive, and it is imported and re-checked every 6 hours. No Google sign-in needed.
+                        </p>
 
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">3 · Shared with Canonn, not yet imported</div>
-                          <button onClick={() => void loadShared()} disabled={sharedBusy} className="text-xs text-muted-foreground hover:text-foreground">{sharedBusy ? 'Checking…' : 'Refresh'}</button>
-                        </div>
-                        {shared.candidates.length === 0 ? (
-                          <p className="py-3 text-xs text-muted-foreground">Nothing yet. Share a file, then Refresh.</p>
-                        ) : (
-                          <div className="mt-1 max-h-[30vh] overflow-y-auto rounded-lg border border-border">
-                            {shared.candidates.map((c) => {
-                              const on = sharedSel.has(c.id)
-                              return (
-                                <label key={c.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
-                                  <input type="checkbox" checked={on} onChange={() => setSharedSel((prev) => { const n = new Set(prev); if (on) n.delete(c.id); else n.add(c.id); return n })} className="size-3.5 accent-foreground" />
-                                  <span className="min-w-0 flex-1 truncate text-[13px]">{c.folder ? `${c.folder} / ` : ''}{c.name}</span>
-                                  <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{c.mimeType.includes('spreadsheet') ? 'Sheet' : c.mimeType.includes('document') ? 'Doc' : c.mimeType.includes('presentation') ? 'Slides' : 'Text'}</span>
-                                </label>
-                              )
-                            })}
-                          </div>
-                        )}
-                        <Button onClick={() => { void claimShared(); setPicker(false) }} disabled={sharedSel.size === 0 || !!uploading} className="mt-2 h-9 w-full text-sm">
-                          Import and keep in sync ({sharedSel.size})
+                        <ol className="space-y-3">
+                          <li className="rounded-lg border border-border bg-background p-3">
+                            <div className="mb-1 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Step 1 · In Google Drive</div>
+                            <div className="text-[13px]">Open the Sheet, Doc, Slides or folder → click <b>Share</b> (top right) → paste this address → leave it as <b>Viewer</b> → <b>Send</b>.</div>
+                            <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2">
+                              <code className="min-w-0 flex-1 truncate font-mono text-xs">{shared.address}</code>
+                              <button onClick={() => { void navigator.clipboard.writeText(shared.address); toast.success('Address copied') }} className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><Copy className="size-3.5" /> Copy</button>
+                            </div>
+                            <div className="mt-1.5 text-xs text-muted-foreground">Google may warn that this address is outside your organisation - that is expected; choose "Share anyway".</div>
+                          </li>
+                          <li className="rounded-lg border border-border bg-background p-3">
+                            <div className="mb-1 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Step 2 · Share from your own account</div>
+                            <div className="text-[13px]">
+                              {shared.emails.length
+                                ? <>Do the sharing while signed in to Google as {shared.emails.map((e, i) => <span key={e}>{i > 0 && ' or '}<b>{e}</b></span>)} - the e-mail on your Canonn account.</>
+                                : <>Your Canonn account has no verified e-mail yet, so shared files cannot be matched to you.</>}
+                            </div>
+                            <div className="mt-1.5 text-xs text-muted-foreground">That is how Canonn knows the file is yours: only files shared from your own e-mail show up here, never anyone else's.</div>
+                          </li>
+                          <li className="rounded-lg border border-border bg-background p-3">
+                            <div className="mb-1 flex items-center justify-between">
+                              <div className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Step 3 · Pick what to import</div>
+                              <button onClick={() => void loadShared()} disabled={sharedBusy} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                                {sharedBusy ? <Loader2 className="size-3 animate-spin" /> : <History className="size-3" />} Refresh
+                              </button>
+                            </div>
+                            {shared.warning && <p className="mb-2 text-xs text-[#c96442]">{shared.warning}</p>}
+                            {shared.candidates.length === 0 ? (
+                              <p className="py-2 text-xs text-muted-foreground">Nothing shared yet. After you share a file, click <b>Refresh</b> - it can take a few seconds to appear.</p>
+                            ) : (
+                              <div className="max-h-[30vh] overflow-y-auto rounded-md border border-border">
+                                {shared.candidates.map((c) => {
+                                  const on = sharedSel.has(c.id)
+                                  return (
+                                    <label key={c.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
+                                      <input type="checkbox" checked={on} onChange={() => setSharedSel((prev) => { const n = new Set(prev); if (on) n.delete(c.id); else n.add(c.id); return n })} className="size-3.5 accent-foreground" />
+                                      <span className="min-w-0 flex-1 truncate text-[13px]">{c.folder ? `${c.folder} / ` : ''}{c.name}</span>
+                                      <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{c.mimeType.includes('spreadsheet') ? 'Sheet' : c.mimeType.includes('document') ? 'Doc' : c.mimeType.includes('presentation') ? 'Slides' : 'Text'}</span>
+                                    </label>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </li>
+                        </ol>
+
+                        <Button onClick={() => { void claimShared(); setPicker(false) }} disabled={sharedSel.size === 0 || !!uploading} className="mt-3 h-9 w-full text-sm">
+                          Import and keep in sync{sharedSel.size ? ` (${sharedSel.size})` : ''}
                         </Button>
+                        <p className="mt-1.5 text-xs text-muted-foreground">Sheets become one record per row; Docs and Slides become text. To stop, remove Canonn from the file's sharing or click Stop below. Deleting the source here also stops syncing.</p>
 
                         {shared.synced.length > 0 && (
                           <>
-                            <div className="mt-4 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Syncing</div>
+                            <div className="mt-4 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Already syncing</div>
                             <div className="mt-1 rounded-lg border border-border">
                               {shared.synced.map((f) => (
                                 <div key={f.file_id} className="flex items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0">
                                   <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[13px]">{f.name}</span>
                                     <span className={cn('block truncate font-mono text-[10.5px]', f.status.startsWith('error') ? 'text-[#c96442]' : 'text-muted-foreground')}>
-                                      {f.status.startsWith('error') ? f.status : `checked ${formatDistanceToNowStrict(f.last_sync * 1000, { addSuffix: true })}`}
+                                      {f.status.startsWith('error') ? f.status : `checked ${formatDistanceToNowStrict(f.last_sync * 1000, { addSuffix: true })} · every 6 h`}
                                     </span>
                                   </span>
                                   <button onClick={() => void sharedAction(f.file_id, 'refresh')} disabled={sharedBusy} className="text-xs text-muted-foreground hover:text-foreground">Sync now</button>

@@ -382,8 +382,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!srcOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
-          srcOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 right-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
+          srcOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -497,8 +497,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       <div
         inert={!histOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
-          histOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 right-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-l border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
+          histOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">

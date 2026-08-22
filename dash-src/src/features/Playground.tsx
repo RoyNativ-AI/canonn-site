@@ -111,7 +111,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Google Drive', blurb: 'Pick documents in Google\'s file picker and import them.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
     { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
     { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
-    { name: 'Drive live sync', blurb: 'Share a Sheet, Doc or folder with Canonn like you share with a colleague. No login; stays up to date.', icon: History, brand: siGoogledrive, action: 'gshared' },
+    { name: 'Drive live sync', blurb: 'Share a file or folder. No login; stays up to date.', icon: History, brand: siGoogledrive, action: 'gshared' },
     { name: 'Gmail', blurb: 'Messages matching a Gmail search, one record each.', icon: MessageSquare, brand: siGmail, action: google('gmail') },
     { name: 'Google Calendar', blurb: 'Events from the last 90 days and the next 180.', icon: History, brand: siGooglecalendar, action: google('gcal') },
     { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
@@ -1085,7 +1085,10 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         else setForm(action)
                       }}
                       className={cn(
-                        'flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-left transition-colors',
+                        // h-full so one long blurb cannot make its own card
+                        // taller than the rest of the row - the grid decides
+                        // the height, the copy fills it.
+                        'flex h-full items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-left transition-colors',
                         action ? 'hover:border-foreground/30' : 'opacity-55',
                       )}
                     >

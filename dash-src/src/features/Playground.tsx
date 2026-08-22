@@ -819,7 +819,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
           {/* One reading column, like the app and every serious chat: turns
               hold a comfortable measure instead of stretching pane-wide. */}
-          <div className="mx-auto w-full max-w-[1040px]">
+          <div className="mx-auto w-full max-w-[1400px]">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="group/user mb-5 flex flex-col items-end">
@@ -867,7 +867,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
         {turns.length > 0 && (
           <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-            <div className="mx-auto w-full max-w-[1040px]">{composer}</div>
+            <div className="mx-auto w-full max-w-[1400px]">{composer}</div>
           </div>
         )}
       </div>

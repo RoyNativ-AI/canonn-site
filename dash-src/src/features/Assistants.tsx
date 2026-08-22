@@ -549,18 +549,19 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
 
                 {/* The address is the product: one field, copyable and
                     openable without hunting through a row of buttons. The
-                    border alone delimits it - a fill would make it read as a
-                    disabled input sitting on the card. */}
-                <div className="mt-3.5 flex max-w-xl items-center gap-1 rounded-lg border border-border py-1 pr-1 pl-2.5">
+                    address is a value to read and copy, not a control to fill,
+                    so it carries no box at all - and its actions sit against
+                    the text rather than at the far edge of a field. */}
+                <div className="mt-3 flex items-center gap-1">
                   {primary.own
                     ? <Globe className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
                     : <Link2 className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />}
-                  <code className={cn('min-w-0 flex-1 truncate font-mono text-xs', s.revoked && 'text-muted-foreground line-through decoration-muted-foreground/40')}>
+                  <code className={cn('min-w-0 truncate font-mono text-xs', s.revoked && 'text-muted-foreground line-through decoration-muted-foreground/40')}>
                     {primary.label}
                   </code>
                   <button
                     onClick={() => copyAddress(`${s.id}:${primary.key}`, primary.url)}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-8"
+                    className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     aria-label={`Copy the link to ${s.name}`}
                   >
                     {copied === `${s.id}:${primary.key}` ? <Check className="size-3.5 text-[#3f7d54]" /> : <Copy className="size-3.5" />}
@@ -569,7 +570,7 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                     href={primary.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-8"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                     aria-label={`Open ${s.name}`}
                   >
                     <ExternalLink className="size-3.5" />

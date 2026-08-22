@@ -146,7 +146,12 @@ interface Turn {
   citations?: GroundedCitation[]
   grounded: boolean
   error?: boolean
+  /** When the turn was created. Older stored chats may not carry one. */
+  ts?: number
 }
+
+const fmtTime = (ts: number) =>
+  new Date(ts).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
 
 // A finished conversation, as it lives in localStorage. Client-side only:
 // the server never sees or stores chat history. Keyed per Clerk user so two
@@ -332,7 +337,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     setQuestion('')
     setBusy(true)
     const history = turns.filter((t) => !t.error).map(({ role, content }) => ({ role, content }))
-    setTurns((ts) => [...ts, { role: 'user', content: q, grounded }, { role: 'assistant', content: '', grounded }])
+    const now = Date.now()
+    setTurns((ts) => [...ts, { role: 'user', content: q, grounded, ts: now }, { role: 'assistant', content: '', grounded, ts: now }])
     try {
       const token = await getToken()
       if (!token) throw new Error('sign in required')
@@ -700,19 +706,21 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           <div className="mx-auto w-full max-w-[760px]">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
-              <div key={i} className="mb-5 flex justify-end">
+              <div key={i} className="group/user mb-5 flex flex-col items-end">
                 <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px] break-words whitespace-pre-wrap">{turn.content}</div>
+                {turn.ts && (
+                  <div className="mt-1 pr-1 font-mono text-[10.5px] text-muted-foreground opacity-0 transition-opacity group-hover/user:opacity-100">
+                    {fmtTime(turn.ts)}
+                  </div>
+                )}
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
-                <div className="mb-1.5 flex items-center gap-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
-                  <span>
+                <div className="mb-1.5 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
                   Canonn R1
                   {turn.citations?.length
                     ? ` · grounded in ${turn.citations.length} ${turn.citations.length === 1 ? 'passage' : 'passages'}`
                     : (!turn.grounded && !turn.error ? ' · no sources in scope' : '')}
-                  </span>
-                  {!turn.error && turn.content && !(busy && i === turns.length - 1) && <CopyAnswer text={turn.content} />}
                 </div>
                 {turn.content === '' && busy && i === turns.length - 1 ? (
                   <div className="pt-1">
@@ -726,6 +734,14 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   )
                 )}
                 {!!turn.citations?.length && <Citations citations={turn.citations} />}
+                {/* Actions live under the message, where every chat keeps
+                    them: copy shows on hover, the timestamp stays put. */}
+                {!turn.error && turn.content && !(busy && i === turns.length - 1) && (
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <CopyAnswer text={turn.content} />
+                    {turn.ts && <span className="font-mono text-[10.5px] text-muted-foreground">{fmtTime(turn.ts)}</span>}
+                  </div>
+                )}
               </div>
             ),
           )}

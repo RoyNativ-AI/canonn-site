@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react'
 import type { IoRow, LogRow } from '@/lib/api'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ScrollText, SlidersHorizontal } from 'lucide-react'
+import { ChevronRight, CircleAlert, ScissorsLineDashed, ScrollText } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FilterButton, FilterChips, FilterSheet, type FilterOption, type FilterSpec } from '@/components/Filters'
 import { cn } from '@/lib/utils'
 import { fetchIo, fetchLogs, fmt, setIoLogging, type Me } from '@/lib/api'
 import { JsonView } from '@/components/JsonView'
@@ -18,6 +18,11 @@ const RANGES = [
   { days: 7, label: '7d' },
   { days: 30, label: '30d' },
 ]
+
+// Mono uppercase micro-labels, the way every panel in the Playground titles
+// itself. A log is read column by column; the header should sit under the
+// data, not compete with it.
+const HEAD = 'h-9 font-mono text-[10.5px] font-normal tracking-[0.11em] text-muted-foreground uppercase'
 
 // One glanceable status per row instead of raw finish flags. A healthy row
 // stays quiet; only trouble gets color. The origin HTTP status is the truth
@@ -38,8 +43,10 @@ function rowEndpoint(r: LogRow): string {
   return '/chat/completions'
 }
 
+// The chip names its own dimension, so the neutral option is just "All" -
+// "STATUS All statuses" says the same word twice.
 const STATUS_FILTERS = [
-  { id: 'all', label: 'All statuses' },
+  { id: 'all', label: 'All' },
   { id: 'ok', label: 'Succeeded' },
   { id: 'failed', label: 'Failed' },
 ] as const
@@ -54,56 +61,53 @@ function rowOrigin(r: LogRow): 'api' | 'playground' | 'assistant' {
 }
 
 const ORIGIN_FILTERS = [
-  { id: 'all', label: 'All traffic' },
+  { id: 'all', label: 'All' },
   { id: 'api', label: 'API' },
   { id: 'playground', label: 'Playground' },
   { id: 'assistant', label: 'Assistants' },
 ] as const
 type OriginFilter = typeof ORIGIN_FILTERS[number]['id']
 
-type FilterOption = { id: string; label: string }
-
-/** One filter control, compact in the desktop row and full width in the phone
- *  sheet - the same control described once, sized by where it lands. */
-function FilterSelect({ value, options, placeholder, onChange, className }: {
-  value: string
-  options: readonly FilterOption[]
-  placeholder?: string
-  onChange: (v: string) => void
-  className?: string
-}) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={cn('h-9 bg-card font-mono text-xs', className)}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.id} value={o.id} className="font-mono text-xs">{o.label}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-function StatusCell({ status }: { status: 'ok' | 'truncated' | 'failed' }) {
+/** Status in form, not only in words: a healthy call is a quiet dot that the
+ *  eye skips, trouble is a chip with a border and an icon that it cannot. The
+ *  HTTP code rides along on failures, because that is the first thing anyone
+ *  asks about a red row. */
+function StatusCell({ status, code }: { status: 'ok' | 'truncated' | 'failed'; code?: number }) {
   if (status === 'ok') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
         <span className="size-1.5 rounded-full bg-[#3f7d54]/70" /> ok
       </span>
     )
   }
   if (status === 'truncated') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-[#996c1f] dark:text-[#d9a94e]">
-        <span className="size-1.5 rounded-full bg-current" /> truncated
+      <span className="inline-flex items-center gap-1 rounded-full border border-[#996c1f]/30 bg-[#996c1f]/10 px-2 py-0.5 font-mono text-[10.5px] text-[#996c1f] dark:border-[#d9a94e]/30 dark:bg-[#d9a94e]/10 dark:text-[#d9a94e]">
+        <ScissorsLineDashed className="size-3" /> truncated
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
-      <span className="size-1.5 rounded-full bg-current" /> failed
+    <span className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 font-mono text-[10.5px] font-medium text-destructive">
+      <CircleAlert className="size-3" /> failed{code && code >= 400 ? ` · ${code}` : ''}
+    </span>
+  )
+}
+
+/** A measured number reads as a number: the digits are tabular and the unit
+ *  is a muted suffix, so a column of latencies lines up on the decimal. */
+function Metric({ value, unit, prefix, className }: {
+  value: string | null
+  unit?: string
+  prefix?: string
+  className?: string
+}) {
+  if (value === null) return <span className="font-mono text-xs text-muted-foreground">·</span>
+  return (
+    <span className={cn('font-mono text-xs tabular-nums', className)}>
+      {prefix && <span className="text-muted-foreground">{prefix}</span>}
+      {value}
+      {unit && <span className="ml-0.5 text-muted-foreground">{unit}</span>}
     </span>
   )
 }
@@ -122,7 +126,7 @@ export function Logs({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [originFilter, setOriginFilter] = useState<OriginFilter>('all')
   // On a phone the filters live in a bottom sheet: the log is the hero, and
-  // three squeezed selects across 375px are not worth the row they cost.
+  // three squeezed chips across 375px are not worth the row they cost.
   const [filtersOpen, setFiltersOpen] = useState(false)
   // The log walks the whole window through /v1/me/logs pages, not just the
   // recency cap /v1/me carries for its summary cards.
@@ -210,54 +214,41 @@ export function Logs({
   }
 
   const keyOptions: FilterOption[] = [
-    { id: 'all', label: 'All keys' },
+    { id: 'all', label: 'All' },
     ...(me?.keys ?? []).map((k) => ({ id: k.name, label: k.name })),
   ]
-  const activeFilters = (keyFilter ? 1 : 0) + (originFilter === 'all' ? 0 : 1) + (statusFilter === 'all' ? 0 : 1)
+  const filters: FilterSpec[] = [
+    { label: 'Key', value: keyFilter || 'all', options: keyOptions, onChange: (v) => setKeyFilter(v === 'all' ? '' : v) },
+    { label: 'Traffic', value: originFilter, options: ORIGIN_FILTERS, onChange: (v) => setOriginFilter(v as OriginFilter) },
+    { label: 'Status', value: statusFilter, options: STATUS_FILTERS, onChange: (v) => setStatusFilter(v as StatusFilter) },
+  ]
   const clearFilters = () => {
     setKeyFilter('')
     setOriginFilter('all')
     setStatusFilter('all')
   }
+  const failed = rows.filter((r) => rowStatus(r) === 'failed').length
+
+  // The I/O switch travels with the filters: it is the same kind of decision
+  // about what this screen shows, and it earns its place in the phone sheet.
+  const ioSwitch = (className?: string) => (
+    <label className={cn('flex items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground', className)}>
+      I/O logging
+      <Switch checked={Boolean(me?.io_logging)} onCheckedChange={toggleIo} />
+    </label>
+  )
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[22px] font-semibold tracking-tight">Logs</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">Your most recent requests · click a row for full details</p>
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          {/* Phone: one chip carries every secondary control, with a count so
-              an active filter is never invisible. */}
-          <Button
-            variant="outline"
-            className="h-10 gap-1.5 bg-card font-mono text-xs sm:hidden"
-            onClick={() => setFiltersOpen(true)}
-          >
-            <SlidersHorizontal className="size-3.5" />
-            Filters
-            {activeFilters > 0 && (
-              <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground tabular-nums">
-                {activeFilters}
-              </span>
-            )}
-          </Button>
-
-          <label className="hidden h-9 items-center gap-2 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground sm:flex">
-            I/O logging
-            <Switch checked={Boolean(me?.io_logging)} onCheckedChange={toggleIo} />
-          </label>
-          <div className="hidden sm:contents">
-            <FilterSelect
-              value={keyFilter || 'all'}
-              options={keyOptions}
-              placeholder="All keys"
-              onChange={(v) => setKeyFilter(v === 'all' ? '' : v)}
-            />
-            <FilterSelect value={originFilter} options={ORIGIN_FILTERS} onChange={(v) => setOriginFilter(v as OriginFilter)} />
-            <FilterSelect value={statusFilter} options={STATUS_FILTERS} onChange={(v) => setStatusFilter(v as StatusFilter)} />
-          </div>
+          <FilterButton filters={filters} onClick={() => setFiltersOpen(true)} className="sm:hidden" />
+          <FilterChips filters={filters} onClear={clearFilters} className="hidden sm:flex" />
+          {ioSwitch('hidden h-9 sm:flex')}
 
           <div className="flex flex-1 rounded-lg border border-input bg-card p-0.5 sm:w-auto sm:flex-initial">
             {RANGES.map((r) => (
@@ -276,84 +267,67 @@ export function Logs({
         </div>
       </div>
 
-      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-        <SheetContent side="bottom" className="max-h-[85dvh] gap-0 overflow-y-auto rounded-t-xl p-4">
-          <SheetHeader className="p-0">
-            <SheetTitle className="font-display text-lg">Filters</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-4">
-            {[
-              { label: 'Key', value: keyFilter || 'all', options: keyOptions, onChange: (v: string) => setKeyFilter(v === 'all' ? '' : v) },
-              { label: 'Traffic', value: originFilter, options: ORIGIN_FILTERS, onChange: (v: string) => setOriginFilter(v as OriginFilter) },
-              { label: 'Status', value: statusFilter, options: STATUS_FILTERS, onChange: (v: string) => setStatusFilter(v as StatusFilter) },
-            ].map((f) => (
-              <div key={f.label}>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{f.label}</label>
-                <FilterSelect value={f.value} options={f.options} onChange={f.onChange} className="h-11 w-full" />
-              </div>
-            ))}
-            <label className="flex h-11 items-center justify-between gap-3 rounded-lg border border-input bg-card px-3 font-mono text-xs text-muted-foreground">
-              I/O logging
-              <Switch checked={Boolean(me?.io_logging)} onCheckedChange={toggleIo} />
-            </label>
-          </div>
-          <div className="mt-5 flex gap-2">
-            <Button variant="outline" className="h-11 flex-1" disabled={activeFilters === 0} onClick={clearFilters}>
-              Clear all
-            </Button>
-            <Button className="h-11 flex-1" onClick={() => setFiltersOpen(false)}>
-              Show {fmt(rows.length)} {rows.length === 1 ? 'request' : 'requests'}
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+      <FilterSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        filters={filters}
+        onClear={clearFilters}
+        doneLabel={`Show ${fmt(rows.length)} ${rows.length === 1 ? 'request' : 'requests'}`}
+      >
+        {ioSwitch('h-11')}
+      </FilterSheet>
+
       <Card className="overflow-hidden py-0">
         {/* One scroll container, not two: the table pans sideways inside its
             own, and only from sm: up does it get a vertical window as well. On
             a phone the page scrolls, so a long log is never a scroll trap. */}
         <Table containerClassName="sm:max-h-[620px]">
           <TableHeader className="relative bg-card shadow-[0_1px_0_var(--border)] sm:sticky sm:top-0 sm:z-10">
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Key</TableHead>
-              <TableHead>Endpoint</TableHead>
-              <TableHead className="text-right">Tokens</TableHead>
-              <TableHead className="text-right">Latency</TableHead>
-              <TableHead className="text-right">Speed</TableHead>
-              <TableHead className="text-right">Cost</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Request ID</TableHead>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className={HEAD}>Time</TableHead>
+              <TableHead className={HEAD}>Status</TableHead>
+              <TableHead className={HEAD}>Endpoint</TableHead>
+              <TableHead className={HEAD}>Key</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Tokens</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Latency</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Speed</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Cost</TableHead>
+              <TableHead className={cn(HEAD, 'text-right')}>Request ID</TableHead>
+              <TableHead className={cn(HEAD, 'w-8')} />
             </TableRow>
           </TableHeader>
           <TableBody>
             {logRows === null && Array.from({ length: 8 }, (_, i) => (
               <TableRow key={`s${i}`} className="hover:bg-transparent">
                 <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-3.5 w-12" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
                 <TableCell><Skeleton className="h-3.5 w-16" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-10" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-12" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-14" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-10" /></TableCell>
                 <TableCell><Skeleton className="ml-auto h-3.5 w-16" /></TableCell>
+                <TableCell />
               </TableRow>
             ))}
             {logRows !== null && rows.length === 0 && (
               <TableRow className="hover:bg-transparent">
                 {/* The cell inherits whitespace-nowrap from the data rows;
                     prose in it would push the whole table sideways. */}
-                <TableCell colSpan={9} className="py-16 text-center whitespace-normal">
-                  <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
-                  <p className="text-sm font-medium">
-                    {statusFilter === 'all' ? 'No requests in this window' : `No ${statusFilter === 'failed' ? 'failed' : 'successful'} requests in this window`}
-                  </p>
-                  <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
-                    Every call to the API shows up here within seconds, with tokens, latency, and cost.
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                    <Button size="sm" className="h-9 sm:h-7" asChild><a href="#keys">Create a key</a></Button>
-                    <Button size="sm" variant="outline" className="h-9 sm:h-7" asChild><a href="#playground">Try the Playground</a></Button>
+                <TableCell colSpan={10} className="p-4 whitespace-normal sm:p-6">
+                  <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
+                    <ScrollText className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
+                    <p className="text-sm font-medium">
+                      {statusFilter === 'all' ? 'No requests in this window' : `No ${statusFilter === 'failed' ? 'failed' : 'successful'} requests in this window`}
+                    </p>
+                    <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
+                      Every call to the API shows up here within seconds, with tokens, latency, and cost.
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                      <Button size="sm" className="h-9 sm:h-7" asChild><a href="#keys">Create a key</a></Button>
+                      <Button size="sm" variant="outline" className="h-9 sm:h-7" asChild><a href="#playground">Try the Playground</a></Button>
+                    </div>
                   </div>
                 </TableCell>
               </TableRow>
@@ -365,26 +339,34 @@ export function Logs({
                   key={r.id ?? `${r.ts}-${i}`}
                   onClick={() => setDetail(r)}
                   className={cn(
-                    'cursor-pointer [&>td]:py-3 sm:[&>td]:py-2',
-                    status === 'failed' && 'bg-destructive/[0.04] hover:bg-destructive/[0.07]',
+                    'group/row cursor-pointer [&>td]:py-3 sm:[&>td]:py-2',
+                    // A failed row wears a rail down its edge, so trouble is
+                    // findable while scrolling past at speed - not something
+                    // you have to read the status column to notice.
+                    status === 'failed'
+                      && 'bg-destructive/[0.045] hover:bg-destructive/[0.08] [&>td:first-child]:shadow-[inset_2px_0_0_var(--destructive)]',
                   )}
                 >
-                  <TableCell className="font-mono text-xs whitespace-nowrap">
+                  <TableCell className="font-mono text-[11px] whitespace-nowrap text-muted-foreground">
                     {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
+                  <TableCell><StatusCell status={status} code={r.status} /></TableCell>
+                  <TableCell className="font-mono text-xs whitespace-nowrap">{rowEndpoint(r)}</TableCell>
                   <TableCell className="max-w-[130px] truncate text-[13px] text-muted-foreground">{r.key}</TableCell>
-                  <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">{rowEndpoint(r)}</TableCell>
-                  <TableCell className="text-right font-mono text-xs whitespace-nowrap">
-                    {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
+                  <TableCell className="text-right whitespace-nowrap">
+                    <span className="font-mono text-xs tabular-nums">
+                      {fmt(r.pt)} <span className="text-muted-foreground/70">→</span> {fmt(r.ct)}
+                    </span>
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs">{r.ms ? `${(r.ms / 1000).toFixed(1)}s` : '·'}</TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                    {r.tok_s ? `${r.tok_s} t/s` : '·'}
+                  <TableCell className="text-right">
+                    <Metric value={r.ms ? (r.ms / 1000).toFixed(1) : null} unit="s" />
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs">
-                    {r.cost !== undefined ? `$${r.cost.toFixed(5)}` : '·'}
+                  <TableCell className="text-right">
+                    <Metric value={r.tok_s ? String(r.tok_s) : null} unit="t/s" className="text-muted-foreground" />
                   </TableCell>
-                  <TableCell><StatusCell status={status} /></TableCell>
+                  <TableCell className="text-right">
+                    <Metric value={r.cost !== undefined ? r.cost.toFixed(5) : null} prefix="$" />
+                  </TableCell>
                   <TableCell className="text-right">
                     {r.req_id ? (
                       <button
@@ -402,6 +384,11 @@ export function Logs({
                       <span className="font-mono text-[10.5px] text-muted-foreground">·</span>
                     )}
                   </TableCell>
+                  {/* The row opens a panel; say so the way a list of links
+                      says so, instead of leaving it to the cursor. */}
+                  <TableCell className="w-8 pl-0 text-right">
+                    <ChevronRight className="ml-auto size-3.5 text-muted-foreground/35 transition-colors group-hover/row:text-foreground" />
+                  </TableCell>
                 </TableRow>
               )
             })}
@@ -413,6 +400,7 @@ export function Logs({
               {statusFilter === 'all'
                 ? `${rows.length} ${nextBefore ? 'newest ' : ''}requests in this window${nextBefore ? '' : ' — that is all of them'}`
                 : `${rows.length} of ${allRows.length} loaded requests match this filter`}
+              {failed > 0 && <span className="text-destructive"> · {failed} failed</span>}
             </span>
             {nextBefore && (
               <Button size="sm" variant="ghost" className="h-9 shrink-0 px-2 font-mono text-[10.5px] sm:h-7" onClick={loadMore} disabled={loadingMore}>
@@ -431,11 +419,12 @@ export function Logs({
           </SheetHeader>
           {detail && (
             <div className="space-y-6 pb-8">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-xs text-primary">canonn-r1</span>
                 {detail.stream && (
                   <span className="rounded-full bg-secondary px-3 py-1 font-mono text-xs">stream</span>
                 )}
+                <StatusCell status={rowStatus(detail)} code={detail.status} />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
@@ -446,7 +435,7 @@ export function Logs({
                 ].map((s) => (
                   <div key={s.l} className="min-w-0 rounded-xl border border-border bg-card p-3">
                     <div className="font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground uppercase">{s.l}</div>
-                    <div className="mt-1 font-display text-sm font-semibold whitespace-nowrap">{s.v}</div>
+                    <div className="mt-1 font-display text-sm font-semibold whitespace-nowrap tabular-nums">{s.v}</div>
                   </div>
                 ))}
               </div>

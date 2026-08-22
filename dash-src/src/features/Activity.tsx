@@ -1,9 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { ArrowDownRight, ArrowUpRight, CalendarRange, Terminal } from 'lucide-react'
+import { FilterChips, type FilterSpec } from '@/components/Filters'
+import { ArrowDownRight, ArrowUpRight, CalendarRange, Terminal, X } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CHAT_URL, fmt, type Me } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -136,22 +136,25 @@ export function Activity({
     ? `${range.from || '…'} → ${range.to || 'now'}`
     : days === 1 ? 'last 24 hours' : `last ${days} days`
 
+  // The same filter treatment the log uses. One dimension fits a phone
+  // without compressing, so this screen shows the chip everywhere rather
+  // than hiding a single control behind a sheet.
+  const filters: FilterSpec[] = [{
+    label: 'Key',
+    value: keyFilter || 'all',
+    options: [
+      { id: 'all', label: 'All' },
+      ...(me?.keys ?? []).map((k) => ({ id: k.name, label: k.name })),
+    ],
+    onChange: (v) => setKeyFilter(v === 'all' ? '' : v),
+  }]
+
   return (
     <div>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-[22px] font-semibold tracking-tight">Usage</h1>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-          <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-11 w-full min-w-[150px] bg-card font-mono text-xs sm:h-9 sm:w-[170px]">
-              <SelectValue placeholder="All keys" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="font-mono text-xs">All keys</SelectItem>
-              {(me?.keys ?? []).map((k) => (
-                <SelectItem key={k.name} value={k.name} className="font-mono text-xs">{k.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterChips filters={filters} onClear={() => setKeyFilter('')} />
 
           <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
             {RANGES.map((r) => (
@@ -188,28 +191,34 @@ export function Activity({
               </PopoverTrigger>
               <PopoverContent align="end" collisionPadding={12} className="w-[min(20rem,calc(100vw-24px))]">
                 <div className="space-y-3">
+                  <div className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Custom range</div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">From</label>
-                      <Input type="date" value={range.from} max={range.to || undefined}
-                             onChange={(e) => setRange({ ...range, from: e.target.value })} className="h-11 font-mono text-xs sm:h-8" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">To</label>
-                      <Input type="date" value={range.to} min={range.from || undefined}
-                             onChange={(e) => setRange({ ...range, to: e.target.value })} className="h-11 font-mono text-xs sm:h-8" />
-                    </div>
+                    {[
+                      { label: 'From', value: range.from, max: range.to || undefined, min: undefined, set: (v: string) => setRange({ ...range, from: v }) },
+                      { label: 'To', value: range.to, max: undefined, min: range.from || undefined, set: (v: string) => setRange({ ...range, to: v }) },
+                    ].map((f) => (
+                      <div key={f.label}>
+                        <label className="mb-1.5 block font-mono text-[10px] tracking-[0.11em] text-muted-foreground uppercase">{f.label}</label>
+                        <Input type="date" value={f.value} max={f.max} min={f.min}
+                               onChange={(e) => f.set(e.target.value)} className="h-11 font-mono text-xs sm:h-8" />
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {[14, 60, 90].map((d) => (
-                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-9 text-xs sm:h-7">
-                        Last {d}d
+                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-9 font-mono text-xs sm:h-7">
+                        {d}d
                       </Button>
                     ))}
+                    {/* Clearing a range is not destructive - it is just an
+                        undo, so it reads like one. */}
                     {(range.from || range.to) && (
-                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-9 text-xs text-destructive sm:h-7">
-                        Clear
-                      </Button>
+                      <button
+                        onClick={() => setRange({ from: '', to: '' })}
+                        className="ml-auto flex h-9 items-center gap-1 rounded-lg px-2 font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase transition-colors hover:text-foreground sm:h-7"
+                      >
+                        <X className="size-3" /> Clear
+                      </button>
                     )}
                   </div>
                 </div>

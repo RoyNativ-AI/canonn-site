@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSession } from '@clerk/clerk-react'
-import { Check, Copy, KeyRound, Pencil } from 'lucide-react'
+import { Check, Copy, KeyRound, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -11,9 +11,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
-import { createKey, renameKey, revokeKey, type Me } from '@/lib/api'
+import { API_BASE, createKey, renameKey, revokeKey, type Me } from '@/lib/api'
 import { QuickStart } from '@/features/QuickStart'
 
 export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }) {
@@ -24,6 +23,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
   const [qsOpen, setQsOpen] = useState(false)
   const [freshKey, setFreshKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [urlCopied, setUrlCopied] = useState(false)
   const [renameFrom, setRenameFrom] = useState<string | null>(null)
   const [renameTo, setRenameTo] = useState('')
   const [renaming, setRenaming] = useState(false)
@@ -88,24 +88,167 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
 
   return (
     <div>
-      <h1 className="font-display text-[22px] font-semibold tracking-tight">API keys</h1>
-      <p className="mt-0.5 mb-8 text-sm text-muted-foreground">Create a key, copy it once, and call the API with it</p>
+      <h1 className="mb-10 font-display text-[22px] font-semibold tracking-tight">API keys</h1>
 
-      <div className="mb-5 flex flex-wrap gap-2">
-        {isAdmin && (
-          <Button className="h-10 sm:h-8" onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" /> Create key
+      {/* Billing opens on the number you came for; this screen opens on the
+          address you came for. Same shape: display sub-headline, mono
+          micro-label, the value at size, one mono line of context. */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <div className="mb-2 font-display text-xl font-semibold">Call the API</div>
+          <div className="font-mono text-xs tracking-[0.1em] text-muted-foreground uppercase">Base URL</div>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="font-mono text-lg font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-2xl">
+              {API_BASE}
+            </span>
+            <button
+              onClick={() => {
+                void navigator.clipboard.writeText(API_BASE)
+                setUrlCopied(true)
+                setTimeout(() => setUrlCopied(false), 1500)
+                toast.success('Base URL copied.')
+              }}
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:size-7"
+              aria-label="Copy base URL"
+            >
+              {urlCopied ? <Check className="size-4" /> : <Copy className="size-4" />}
+            </button>
+          </div>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
+            {me === null
+              ? 'Loading your keys…'
+              : `${keys.length} active key${keys.length === 1 ? '' : 's'}`}
+            {' · '}OpenAI-compatible: point any SDK here and keep your existing code
+          </p>
+        </div>
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          {isAdmin && (
+            <Button size="lg" className="h-11 flex-1 sm:h-9 sm:flex-initial" onClick={() => setCreateOpen(true)}>
+              <Plus className="size-4" /> Create key
+            </Button>
+          )}
+          <Button size="lg" variant="outline" className="h-11 flex-1 sm:h-9 sm:flex-initial" onClick={() => setQsOpen(true)}>
+            <Terminal className="size-4" /> Quick start
           </Button>
-        )}
-        <Button variant="outline" className="h-10 sm:h-8" onClick={() => setQsOpen(true)}>
-          <Terminal className="size-4" /> Quick start
-        </Button>
+        </div>
       </div>
+
       {!isAdmin && (
-        <p className="mb-5 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <p className="mt-6 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           Only organization admins can create or revoke keys. Ask your admin for access.
         </p>
       )}
+
+      {/* One panel, hairline-separated rows: a handful of credentials is a
+          list to read, not a grid to query. */}
+      <Card className="mt-8 w-full py-0">
+        <div className="border-b border-border px-4 py-3 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase sm:px-5">
+          Your keys
+        </div>
+
+        {me === null && (
+          <div className="divide-y divide-border">
+            {[0, 1].map((i) => (
+              <div key={`s${i}`} className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
+                <Skeleton className="size-10 shrink-0 rounded-xl" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-56" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {me !== null && keys.length === 0 && (
+          <div className="p-4 sm:p-6">
+            <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
+              <KeyRound className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
+              <p className="text-sm font-medium">No keys yet</p>
+              <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
+                Create one and you will see it here, and its traffic under Usage and Logs.
+              </p>
+              {isAdmin && (
+                <Button size="sm" className="mt-4 h-9 sm:h-7" onClick={() => setCreateOpen(true)}>
+                  <Plus className="size-3.5" /> Create key
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="divide-y divide-border">
+          {keys.map((k) => (
+            <div key={k.name} className="flex flex-wrap items-center gap-3 px-4 py-3.5 sm:gap-4 sm:px-5">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                <KeyRound className="size-4.5 text-muted-foreground" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{k.name}</div>
+                {/* The prefix is all anyone can ever see again - it stays in
+                    mono, next to the date, as the row's identity. */}
+                <div className="mt-0.5 flex items-center gap-x-2 font-mono text-[10.5px] text-muted-foreground">
+                  <span className="whitespace-nowrap">{k.prefix}…</span>
+                  {/* The creation date is context, not identity: on a phone it
+                      goes away rather than wrapping the row to three lines. */}
+                  <span aria-hidden className="max-sm:hidden">·</span>
+                  <span className="whitespace-nowrap max-sm:hidden">
+                    {k.created
+                      ? `created ${new Date(k.created * 1000).toLocaleString(undefined, {
+                          day: '2-digit', month: '2-digit', year: 'numeric',
+                          hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+                        })}`
+                      : 'created ·'}
+                  </span>
+                </div>
+              </div>
+              {isAdmin && (
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost" size="sm"
+                    className="h-9 font-mono text-xs text-muted-foreground hover:text-foreground sm:h-7"
+                    onClick={() => { setRenameFrom(k.name); setRenameTo(k.name) }}
+                  >
+                    <Pencil className="size-3" /> rename
+                  </Button>
+                  {/* Revoking breaks live traffic, so it never shouts from the
+                      row: a muted glyph that only turns crimson under the
+                      pointer, with the confirmation carrying the warning. */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive sm:size-7"
+                        aria-label={`Revoke ${k.name}`}
+                        title="Revoke key"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Revoke "{k.name}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Any application still using this key will stop working immediately. This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Keep it</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleRevoke(k.name)} className="bg-destructive hover:bg-destructive/90">
+                          Revoke key
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <p className="mt-10 font-mono text-[10.5px] text-muted-foreground">
+        Keys are stored hashed - a secret is shown once, at creation, and never again. Rotate by creating a new key and revoking the old one.
+      </p>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
@@ -126,86 +269,6 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
           </Button>
         </DialogContent>
       </Dialog>
-
-      <Card className="overflow-hidden py-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Key</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-24" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {me === null && [0, 1].map((i) => (
-              <TableRow key={`s${i}`} className="hover:bg-transparent">
-                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-40" /></TableCell>
-                <TableCell />
-              </TableRow>
-            ))}
-            {me !== null && keys.length === 0 && (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={4} className="py-14 text-center whitespace-normal">
-                  <KeyRound className="mx-auto mb-3 size-6 text-muted-foreground/40" strokeWidth={1.5} />
-                  <p className="text-sm font-medium">No keys yet</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Create one above — you will see it here, and its traffic under Usage and Logs.
-                  </p>
-                </TableCell>
-              </TableRow>
-            )}
-            {keys.map((k) => (
-              <TableRow key={k.name}>
-                <TableCell className="font-medium">{k.name}</TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">{k.prefix}</TableCell>
-                <TableCell className="font-mono text-xs">
-                  {k.created
-                    ? new Date(k.created * 1000).toLocaleString(undefined, {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
-                      })
-                    : '·'}
-                </TableCell>
-                <TableCell className="text-right whitespace-nowrap">
-                  {isAdmin && (
-                    <Button
-                      variant="ghost" size="sm"
-                      className="h-9 font-mono text-xs text-muted-foreground hover:text-foreground sm:h-7"
-                      onClick={() => { setRenameFrom(k.name); setRenameTo(k.name) }}
-                    >
-                      <Pencil className="size-3" /> rename
-                    </Button>
-                  )}
-                  {isAdmin && <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-9 font-mono text-xs text-destructive hover:text-destructive sm:h-7">
-                        revoke
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Revoke "{k.name}"?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Any application still using this key will stop working immediately. This cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Keep it</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleRevoke(k.name)} className="bg-destructive hover:bg-destructive/90">
-                          Revoke key
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
 
       {/* Too tall to ever fit a phone as a centred dialog - it gets the sheet
           treatment: fixed header, the form scrolling under it. */}
@@ -245,21 +308,36 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
         </DialogContent>
       </Dialog>
 
+      {/* The one screen a customer sees exactly once. It says so before it
+          says anything else, gives the secret its own framed panel, and makes
+          copying the single obvious thing to do. */}
       <Dialog open={freshKey !== null} onOpenChange={(open) => !open && setFreshKey(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-display">Your new API key</DialogTitle>
+            <span className="flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.14em] text-[#3f7d54] uppercase">
+              <ShieldCheck className="size-3.5" /> Shown once
+            </span>
+            <DialogTitle className="font-display text-xl leading-tight">Your new API key</DialogTitle>
             <DialogDescription>
-              This is the only time it will be shown. Store it somewhere safe.
+              Copy it now and store it somewhere safe. For your security it is never displayed again — if it is
+              lost, revoke this key and create another.
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-xl border border-[#3f7d54]/30 bg-[#3f7d54]/5 p-4 font-mono text-sm break-all text-[#3f7d54]">
-            {freshKey}
+          <div className="overflow-hidden rounded-xl border border-[#3f7d54]/30 bg-[#3f7d54]/[0.06]">
+            <div className="border-b border-[#3f7d54]/20 px-3.5 py-2 font-mono text-[10.5px] tracking-[0.14em] text-[#3f7d54] uppercase">
+              Secret key
+            </div>
+            <div className="p-3.5 font-mono text-sm leading-relaxed break-all text-[#3f7d54] select-all">
+              {freshKey}
+            </div>
           </div>
-          <Button onClick={copyKey} className="h-11 w-full sm:h-8">
+          <Button onClick={copyKey} className="h-11 w-full sm:h-9">
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             {copied ? 'Copied' : 'Copy key'}
           </Button>
+          <p className="font-mono text-[10.5px] text-muted-foreground">
+            Send it as <span className="text-foreground">Authorization: Bearer …</span> — never in a browser or a public repository.
+          </p>
         </DialogContent>
       </Dialog>
     </div>

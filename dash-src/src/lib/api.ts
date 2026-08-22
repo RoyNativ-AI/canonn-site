@@ -114,20 +114,22 @@ export interface ShareRow {
   revoked: boolean
   requests: number
   url: string
+  slug: string | null
+  vanity_url: string | null
 }
 export const listShares = (token: string) =>
   request<{ data: ShareRow[] }>('/me/shares', token)
-export const createShare = (token: string, name: string, instructions: string, fileIds: string[], dailyCap?: number) =>
-  request<{ id: string; url: string }>('/me/shares', token, {
+export const createShare = (token: string, name: string, instructions: string, fileIds: string[], dailyCap?: number, slug?: string) =>
+  request<{ id: string; url: string; vanity_url: string | null }>('/me/shares', token, {
     method: 'POST',
-    body: JSON.stringify({ name, instructions, file_ids: fileIds, daily_cap: dailyCap }),
+    body: JSON.stringify({ name, instructions, file_ids: fileIds, daily_cap: dailyCap, ...(slug ? { slug } : {}) }),
   })
 export const revokeShare = (token: string, id: string, revoked = true) =>
   request<{ id: string; revoked: boolean }>('/me/shares/revoke', token, {
     method: 'POST',
     body: JSON.stringify({ id, revoked }),
   })
-export const updateShare = (token: string, id: string, patch: { name?: string; instructions?: string; daily_cap?: number }) =>
+export const updateShare = (token: string, id: string, patch: { name?: string; instructions?: string; daily_cap?: number; slug?: string | null }) =>
   request<{ id: string; updated: boolean }>('/me/shares/update', token, {
     method: 'POST',
     body: JSON.stringify({ id, ...patch }),

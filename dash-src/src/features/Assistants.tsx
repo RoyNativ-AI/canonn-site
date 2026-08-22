@@ -27,6 +27,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   const [instructions, setInstructions] = useState('')
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [cap, setCap] = useState('500')
+  const [slug, setSlug] = useState('')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   // Edit dialog state, and the two-tap delete arm (first tap arms, second
@@ -35,6 +36,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   const [editName, setEditName] = useState('')
   const [editInstructions, setEditInstructions] = useState('')
   const [editCap, setEditCap] = useState('500')
+  const [editSlug, setEditSlug] = useState('')
   const [armedDelete, setArmedDelete] = useState<string | null>(null)
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
@@ -75,13 +77,14 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
     if (!name.trim() || picked.size === 0 || saving) return
     setSaving(true)
     try {
-      const r = await withToken((t) => createShare(t, name.trim(), instructions.trim(), [...picked], parseInt(cap, 10) || 500))
+      const r = await withToken((t) => createShare(t, name.trim(), instructions.trim(), [...picked], parseInt(cap, 10) || 500, slug.trim() || undefined))
       setOpen(false)
       setName('')
       setInstructions('')
+      setSlug('')
       setPicked(new Set())
       refresh()
-      await navigator.clipboard.writeText(r.url).catch(() => {})
+      await navigator.clipboard.writeText(r.vanity_url || r.url).catch(() => {})
       toast.success('Assistant created - link copied to your clipboard.')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not create the assistant.')
@@ -91,7 +94,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   }
 
   const copyLink = (s: ShareRow) => {
-    void navigator.clipboard.writeText(s.url)
+    void navigator.clipboard.writeText(s.vanity_url || s.url)
     setCopied(s.id)
     setTimeout(() => setCopied(null), 1500)
   }
@@ -111,6 +114,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
     setEditName(s.name)
     setEditInstructions(s.instructions)
     setEditCap(String(s.daily_cap))
+    setEditSlug(s.slug ?? '')
   }
 
   const saveEdit = async () => {
@@ -121,6 +125,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
         name: editName.trim() || undefined,
         instructions: editInstructions,
         daily_cap: parseInt(editCap, 10) || undefined,
+        slug: editSlug.trim() || null,
       }))
       setEditing(null)
       refresh()
@@ -190,8 +195,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 )}
               </div>
               <div className="mt-1 font-mono text-[10.5px] text-muted-foreground">
-                {s.file_ids.length} {s.file_ids.length === 1 ? 'source' : 'sources'} · {s.requests} {s.requests === 1 ? 'message' : 'messages'} · cap {s.daily_cap}/day
-                · created {new Date(s.created * 1000).toLocaleDateString()}
+                {s.vanity_url ? `${s.slug}.canonn.ai · ` : ''}{s.file_ids.length} {s.file_ids.length === 1 ? 'source' : 'sources'} · {s.requests} {s.requests === 1 ? 'message' : 'messages'} · cap {s.daily_cap}/day
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
@@ -200,7 +204,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 {copied === s.id ? 'Copied' : 'Copy link'}
               </Button>
               <Button size="sm" variant="ghost" className="h-8 px-2" asChild>
-                <a href={s.url} target="_blank" rel="noreferrer" aria-label="Open assistant"><ExternalLink className="size-3.5" /></a>
+                <a href={s.vanity_url || s.url} target="_blank" rel="noreferrer" aria-label="Open assistant"><ExternalLink className="size-3.5" /></a>
               </Button>
               <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => openEdit(s)}>
                 Edit
@@ -241,6 +245,13 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 maxLength={2000}
                 className="w-full resize-none rounded-lg border border-input bg-background p-2.5 text-[13px] leading-relaxed outline-none focus:border-foreground/40"
               />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Custom link (paid)</label>
+              <div className="flex items-center gap-1.5">
+                <Input value={editSlug} onChange={(e) => setEditSlug(e.target.value.toLowerCase())} placeholder="grammarly" className="h-9 font-mono text-xs" maxLength={31} />
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
+              </div>
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Daily message cap</label>
@@ -301,6 +312,15 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 placeholder="Answer only from the documentation. For anything else, refer to support@acme.com."
                 className="w-full resize-none rounded-lg border border-input bg-background p-2.5 text-[13px] leading-relaxed outline-none focus:border-foreground/40"
               />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Custom link (paid)</label>
+              <div className="flex items-center gap-1.5">
+                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="grammarly" className="h-9 font-mono text-xs" maxLength={31} />
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
+              </div>
+              <p className="mt-1 text-[10.5px] text-muted-foreground">Optional. A branded subdomain your customers see instead of the token link.</p>
             </div>
 
             <div>

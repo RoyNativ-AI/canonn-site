@@ -125,7 +125,9 @@ const bodyHtml = `
 (function () {
   var API = 'https://api.canonn.ai/v1';
   var BT = String.fromCharCode(96); // backtick, kept out of the literal
-  var token = (location.hash || '').replace(/^#/, '');
+  // On a vanity subdomain the edge injects the share id; the hash form
+  // stays for plain canonn.ai/c/#token links.
+  var token = window.__CANONN_SHARE__ || (location.hash || '').replace(/^#/, '');
   var el = function (id) { return document.getElementById(id); };
   var turns = [];
   var busy = false;

@@ -563,20 +563,23 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   : 'Add a website or a document, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
               </p>
               {inScope.length > 0 && (
-                <div className="mt-9 grid gap-2.5 sm:grid-cols-3">
+                // Stacked padded cards ate the small-phone viewport and pushed
+                // the composer below the fold; under sm each suggestion is a
+                // one-line chip, the cards return at sm.
+                <div className="mt-6 grid gap-2 sm:mt-9 sm:grid-cols-3 sm:gap-2.5">
                   {SUGGESTIONS.map(({ q, icon: Icon }) => (
                     <button
                       key={q}
                       onClick={() => setQuestion(q)}
-                      className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-foreground/30"
+                      className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 text-left transition-colors hover:border-foreground/30 sm:block sm:p-4"
                     >
-                      <Icon className="mb-2.5 size-4 text-muted-foreground" />
-                      <div className="text-[13px] leading-snug text-foreground/85">{q}</div>
+                      <Icon className="size-4 shrink-0 text-muted-foreground sm:mb-2.5" />
+                      <div className="min-w-0 truncate text-[13px] leading-snug text-foreground/85 sm:whitespace-normal">{q}</div>
                     </button>
                   ))}
                 </div>
               )}
-              <div className="mt-9">{composer}</div>
+              <div className="mt-6 sm:mt-9">{composer}</div>
             </div>
           </div>
         )}

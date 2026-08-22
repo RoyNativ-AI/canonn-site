@@ -330,29 +330,31 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
   // One composer, two homes: centered on the empty screen, pinned to the
-  // bottom once a conversation is running. Two rows, like the serious chat
-  // products: the question on top, the toolbar - sources in, send out -
-  // underneath. Sources live behind it, not beside it.
-  const composerChip = 'flex items-center gap-1.5 rounded-full border border-input px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground'
+  // bottom once a conversation is running. The proportions are the point:
+  // a textarea with real body (two lines of reserved height), a flat
+  // borderless toolbar underneath, and a radius that suits a tall box -
+  // not a pill wrapped around one cramped line.
+  const composerTool = 'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground'
   const composer = (
-    <div className="rounded-[24px] border border-input bg-card shadow-sm transition-colors focus-within:border-foreground/40">
-      <input
+    <div className="rounded-[20px] border border-input bg-card shadow-sm transition-colors focus-within:border-foreground/40">
+      <textarea
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() } }}
         placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
         disabled={busy}
-        className="w-full bg-transparent px-5 pt-5 pb-3 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:pt-4 sm:pb-1.5 sm:text-[15px]"
+        rows={2}
+        className="max-h-40 w-full resize-none bg-transparent px-5 pt-4 text-base leading-relaxed outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
       />
-      <div className="flex items-center gap-2 px-3 pt-1 pb-3">
-        <button onClick={() => setSrcOpen(true)} className={cn(composerChip, 'min-w-0')}>
-          <Database className="size-3.5 shrink-0" />
+      <div className="flex items-center gap-1 px-2.5 pt-0.5 pb-2.5">
+        <button onClick={() => setSrcOpen(true)} className={cn(composerTool, 'min-w-0')}>
+          <Database className="size-4 shrink-0" strokeWidth={1.75} />
           <span className="truncate">{inScope.length ? `Sources · ${inScope.length} in scope` : 'Sources'}</span>
         </button>
         {/* Text labels yield to icons on a phone so the toolbar never wraps
             or scrolls at 375px. */}
-        <button onClick={() => { if (!busy) setHistOpen(true) }} className={composerChip} aria-label="Conversation history">
-          <History className="size-3.5" />
+        <button onClick={() => { if (!busy) setHistOpen(true) }} className={composerTool} aria-label="Conversation history">
+          <History className="size-4" strokeWidth={1.75} />
           <span className="max-sm:hidden">History</span>
         </button>
         <div className="flex-1" />

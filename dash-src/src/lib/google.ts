@@ -172,22 +172,33 @@ export interface YouTubeVideo {
 
 export const youtubeToken = () => googleToken(YOUTUBE_SCOPE)
 
-/** The signed-in channel's most recent uploads. */
+/** The signed-in channel's most recent uploads, via its uploads playlist —
+ *  the canonical listing, and 1 quota unit per page instead of search's 100. */
 export async function youtubeOwnVideos(accessToken: string, limit = 50): Promise<YouTubeVideo[]> {
-  const q = new URLSearchParams({ part: 'snippet', forMine: 'true', type: 'video', order: 'date', maxResults: String(limit) })
-  const r = await googleFetch(YOUTUBE_SCOPE, accessToken, `https://www.googleapis.com/youtube/v3/search?${q}`)
-  const b = await r.json() as { items: { id: { videoId: string }; snippet: { title: string; publishedAt: string } }[] }
-  return b.items.map((i) => ({ id: i.id.videoId, title: i.snippet.title, publishedAt: i.snippet.publishedAt }))
+  const ch = await googleFetch(YOUTUBE_SCOPE, accessToken, 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true')
+  const channels = await ch.json() as { items?: { contentDetails?: { relatedPlaylists?: { uploads?: string } } }[] }
+  const uploads = channels.items?.[0]?.contentDetails?.relatedPlaylists?.uploads
+  if (!uploads) return []
+  const q = new URLSearchParams({ part: 'snippet,status', playlistId: uploads, maxResults: String(limit) })
+  const r = await googleFetch(YOUTUBE_SCOPE, accessToken, `https://www.googleapis.com/youtube/v3/playlistItems?${q}`)
+  const b = await r.json() as {
+    items?: { snippet?: { title?: string; publishedAt?: string; resourceId?: { videoId?: string } } }[]
+  }
+  return (b.items ?? []).flatMap((i) => {
+    const id = i.snippet?.resourceId?.videoId
+    return id ? [{ id, title: i.snippet?.title ?? id, publishedAt: i.snippet?.publishedAt ?? '' }] : []
+  })
 }
 
 /** The transcript of one owned video as plain paragraphs, or null when the
  *  video has no caption track at all. */
 export async function youtubeTranscript(accessToken: string, videoId: string): Promise<string | null> {
   const list = await googleFetch(YOUTUBE_SCOPE, accessToken, `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}`)
-  const b = await list.json() as { items: { id: string; snippet: { language: string; trackKind: string } }[] }
-  if (b.items.length === 0) return null
+  const b = await list.json() as { items?: { id: string; snippet?: { language?: string; trackKind?: string } }[] }
+  const items = b.items ?? []
+  if (items.length === 0) return null
   // Prefer a human-made track; fall back to YouTube's automatic one.
-  const track = b.items.find((i) => i.snippet.trackKind !== 'asr') ?? b.items[0]
+  const track = items.find((i) => i.snippet?.trackKind !== 'asr') ?? items[0]
   const r = await googleFetch(YOUTUBE_SCOPE, accessToken, `https://www.googleapis.com/youtube/v3/captions/${track.id}?tfmt=srt`)
   return srtToText(await r.text())
 }

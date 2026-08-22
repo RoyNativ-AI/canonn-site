@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import {
-  createShare, listFiles, listShares, revokeShare,
+  createShare, deleteShare, listFiles, listShares, revokeShare, updateShare,
   type KnowledgeFile, type ShareRow,
 } from '@/lib/api'
 
@@ -29,6 +29,13 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   const [cap, setCap] = useState('500')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  // Edit dialog state, and the two-tap delete arm (first tap arms, second
+  // deletes; it disarms itself after a moment).
+  const [editing, setEditing] = useState<ShareRow | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editInstructions, setEditInstructions] = useState('')
+  const [editCap, setEditCap] = useState('500')
+  const [armedDelete, setArmedDelete] = useState<string | null>(null)
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
     const t = await getToken()
@@ -99,6 +106,48 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
     }
   }
 
+  const openEdit = (s: ShareRow) => {
+    setEditing(s)
+    setEditName(s.name)
+    setEditInstructions(s.instructions)
+    setEditCap(String(s.daily_cap))
+  }
+
+  const saveEdit = async () => {
+    if (!editing || saving) return
+    setSaving(true)
+    try {
+      await withToken((t) => updateShare(t, editing.id, {
+        name: editName.trim() || undefined,
+        instructions: editInstructions,
+        daily_cap: parseInt(editCap, 10) || undefined,
+      }))
+      setEditing(null)
+      refresh()
+      toast.success('Assistant updated.')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not update the assistant.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeShare = async (s: ShareRow) => {
+    if (armedDelete !== s.id) {
+      setArmedDelete(s.id)
+      setTimeout(() => setArmedDelete((cur) => (cur === s.id ? null : cur)), 3000)
+      return
+    }
+    setArmedDelete(null)
+    try {
+      await withToken((t) => deleteShare(t, s.id))
+      toast.success('Assistant deleted - the link is gone for good.')
+      refresh()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not delete the assistant.')
+    }
+  }
+
   return (
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -153,13 +202,56 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
               <Button size="sm" variant="ghost" className="h-8 px-2" asChild>
                 <a href={s.url} target="_blank" rel="noreferrer" aria-label="Open assistant"><ExternalLink className="size-3.5" /></a>
               </Button>
-              <Button size="sm" variant="ghost" className={cn('h-8 text-xs', !s.revoked && 'text-destructive')} onClick={() => toggleRevoke(s)}>
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => openEdit(s)}>
+                Edit
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => toggleRevoke(s)}>
                 {s.revoked ? 'Re-enable' : 'Revoke'}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className={cn('h-8 text-xs text-destructive', armedDelete === s.id && 'bg-destructive/10 font-medium')}
+                onClick={() => removeShare(s)}
+              >
+                {armedDelete === s.id ? 'Confirm?' : 'Delete'}
               </Button>
             </div>
           </Card>
         ))}
       </div>
+
+      <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit assistant</DialogTitle>
+            <DialogDescription>The link stays the same; changes apply to the next message.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name</label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-9" maxLength={80} />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Instructions</label>
+              <textarea
+                value={editInstructions}
+                onChange={(e) => setEditInstructions(e.target.value)}
+                rows={3}
+                maxLength={2000}
+                className="w-full resize-none rounded-lg border border-input bg-background p-2.5 text-[13px] leading-relaxed outline-none focus:border-foreground/40"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Daily message cap</label>
+              <Input value={editCap} onChange={(e) => setEditCap(e.target.value)} inputMode="numeric" className="h-9 w-28 font-mono text-xs" />
+            </div>
+            <Button onClick={saveEdit} disabled={saving || !editName.trim()} className="w-full">
+              {saving ? 'Saving…' : 'Save changes'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">

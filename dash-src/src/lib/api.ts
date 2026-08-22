@@ -127,6 +127,16 @@ export const revokeShare = (token: string, id: string, revoked = true) =>
     method: 'POST',
     body: JSON.stringify({ id, revoked }),
   })
+export const updateShare = (token: string, id: string, patch: { name?: string; instructions?: string; daily_cap?: number }) =>
+  request<{ id: string; updated: boolean }>('/me/shares/update', token, {
+    method: 'POST',
+    body: JSON.stringify({ id, ...patch }),
+  })
+export const deleteShare = (token: string, id: string) =>
+  request<{ id: string; deleted: boolean }>('/me/shares/delete', token, {
+    method: 'POST',
+    body: JSON.stringify({ id }),
+  })
 
 export const runDemo = (data: string, question: string) =>
   fetch(`${API_BASE}/demo`, {

@@ -266,9 +266,6 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         className="w-full bg-transparent px-5 pt-4 pb-1.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
       />
       <div className="flex items-center gap-2 px-3 pt-1 pb-3">
-        <button onClick={() => { setPicker(true); setForm(null) }} className={composerChip}>
-          <Plus className="size-3.5" /> Add source
-        </button>
         <button onClick={() => setSrcOpen(true)} className={composerChip}>
           <Database className="size-3.5" />
           {inScope.length ? `Sources · ${inScope.length} in scope` : 'Sources'}

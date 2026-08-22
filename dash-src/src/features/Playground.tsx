@@ -27,7 +27,7 @@ import {
   type GroundedCitation, type KnowledgeFile,
 } from '@/lib/api'
 import {
-  googleConfigured, googleDisconnect, driveDownload, driveKind, driveRecentFiles, driveToken,
+  googleConfigured, driveConfigured, googleDisconnect, driveDownload, drivePick, driveToken,
   youtubeOwnVideos, youtubeToken, youtubeTranscript,
   type DriveFile, type DriveFilter, type YouTubeVideo,
 } from '@/lib/google'
@@ -45,8 +45,9 @@ const ACCENT = '#c96442'
 type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube'
 
 // Google loaders light up only once the dashboard has a client ID.
-const google = (id: LoaderId): LoaderId | undefined => (googleConfigured() ? id : undefined)
 const DRIVE_FILTERS: Partial<Record<LoaderId, DriveFilter>> = { gdrive: 'all', gdocs: 'docs', gsheets: 'sheets' }
+const google = (id: LoaderId): LoaderId | undefined =>
+  ((id in DRIVE_FILTERS ? driveConfigured() : googleConfigured()) ? id : undefined)
 
 // The app's loader catalog (LoaderCatalog.swift), mirrored: the same
 // categories, names, and summaries. Loaders with an `action` run on the API
@@ -192,8 +193,6 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [form, setForm] = useState<LoaderId | null>(null)
   const [formTitle, setFormTitle] = useState('')
   const [formText, setFormText] = useState('')
-  const [driveFiles, setDriveFiles] = useState<DriveFile[] | null>(null)
-  const [driveSel, setDriveSel] = useState<Set<string>>(new Set())
   const [ytVideos, setYtVideos] = useState<YouTubeVideo[] | null>(null)
   const [ytSel, setYtSel] = useState<Set<string>>(new Set())
   const [dragOver, setDragOver] = useState(false)
@@ -340,19 +339,19 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       }
     })
 
-  // Google Drive: consent and listing happen in this tab; each picked file is
-  // fetched from Google here and pushed to /v1/files like a local upload.
+  // Google Drive: consent, then Google's own picker; each picked file is
+  // fetched from Google in this tab and pushed to /v1/files like a local
+  // upload. Under drive.file, picking is what grants access.
   async function openDrive(id: LoaderId) {
-    setForm(id)
-    setDriveFiles(null)
-    setDriveSel(new Set())
+    setPicker(false)
+    let chosen: DriveFile[] = []
     try {
-      const token = await driveToken()
-      setDriveFiles(await driveRecentFiles(token, DRIVE_FILTERS[id] ?? 'all'))
+      chosen = await drivePick(await driveToken(), DRIVE_FILTERS[id] ?? 'all')
     } catch (e) {
-      setForm(null)
       fail(e)
+      return
     }
+    if (chosen.length) await importDrive(chosen)
   }
 
   // YouTube: the Data API only releases captions to the video's owner, so
@@ -383,10 +382,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       if (missing.length) toast.warning(`No captions yet: ${missing.join(', ')}`)
     })
 
-  const importDrive = () =>
+  const importDrive = (chosen: DriveFile[]) =>
     ingest('Importing from Drive…', async (t) => {
       const token = await driveToken()
-      const chosen = (driveFiles ?? []).filter((f) => driveSel.has(f.id))
       for (const file of chosen) {
         const got = await driveDownload(token, file)
         if ('text' in got) {
@@ -1032,58 +1030,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     </div>
                   </>
                 )}
-                {form && form in DRIVE_FILTERS && (
-                  <>
-                    <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
-                      {form === 'gsheets' ? 'Recent spreadsheets' : 'Recent documents'}
-                    </div>
-                    {driveFiles === null && (
-                      <div className="flex items-center gap-2 py-6 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Waiting for Google…</div>
-                    )}
-                    {driveFiles?.length === 0 && (
-                      <p className="py-6 text-xs text-muted-foreground">No readable documents found in this Drive.</p>
-                    )}
-                    {driveFiles && driveFiles.length > 0 && (
-                      <div className="max-h-[45vh] overflow-y-auto rounded-lg border border-border">
-                        {driveFiles.map((f) => {
-                          const on = driveSel.has(f.id)
-                          return (
-                            <label key={f.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
-                              <input
-                                type="checkbox"
-                                checked={on}
-                                onChange={() => setDriveSel((s) => { const n = new Set(s); if (on) n.delete(f.id); else n.add(f.id); return n })}
-                                className="size-3.5 accent-foreground"
-                              />
-                              <span className="min-w-0 flex-1 truncate text-[13px]">{f.name}</span>
-                              <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{driveKind(f.mimeType)}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Read-only. Files are fetched from Google to this browser and added as sources — Canonn never holds your Google credentials.
-                    </p>
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        onClick={() => { void importDrive(); setPicker(false) }}
-                        disabled={driveSel.size === 0 || !!uploading}
-                        className="h-9 flex-1 text-sm"
-                      >
-                        Import {driveSel.size} {driveSel.size === 1 ? 'file' : 'files'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => { void googleDisconnect(); setForm(null) }}
-                        className="h-9 text-sm"
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  </>
-                )}
-                {!(form in DRIVE_FILTERS) && form !== 'youtube' && <Button
+                {form !== 'youtube' && <Button
                   onClick={() => {
                     if (form === 'paste') {
                       const name = (formTitle.trim() || 'Pasted text').slice(0, 80)

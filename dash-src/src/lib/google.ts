@@ -8,11 +8,19 @@
 // plain text, so no Canonn server ever holds a Google credential.
 
 export const GOOGLE_CLIENT_ID: string = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
+/** Referrer-restricted browser key; the Picker requires one. Public by design. */
+export const GOOGLE_API_KEY: string = import.meta.env.VITE_GOOGLE_API_KEY ?? ''
 export const googleConfigured = () => GOOGLE_CLIENT_ID.length > 0
+export const driveConfigured = () => googleConfigured() && GOOGLE_API_KEY.length > 0
 
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly'
+// drive.file is non-sensitive: no Google verification, no user cap. The app
+// only ever sees the files the person picks in Google's own picker.
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file'
 const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube.force-ssl'
 const GSI_SRC = 'https://accounts.google.com/gsi/client'
+const GAPI_SRC = 'https://apis.google.com/js/api.js'
+// The Picker ties its grant to the Cloud project that owns the OAuth client.
+const PROJECT_NUMBER = GOOGLE_CLIENT_ID.split('-')[0]
 
 interface TokenResponse { access_token?: string; expires_in?: number; error?: string; error_description?: string }
 interface TokenClient { requestAccessToken: (o?: { prompt?: string }) => void }
@@ -23,7 +31,45 @@ interface Gis {
   } }
 }
 
-declare global { interface Window { google?: Gis } }
+interface PickerDoc { id: string; name: string; mimeType: string }
+interface PickerView { setMimeTypes: (m: string) => PickerView; setIncludeFolders: (b: boolean) => PickerView }
+interface PickerBuilder {
+  setOAuthToken: (t: string) => PickerBuilder
+  setDeveloperKey: (k: string) => PickerBuilder
+  setAppId: (id: string) => PickerBuilder
+  setOrigin: (o: string) => PickerBuilder
+  addView: (v: PickerView | string) => PickerBuilder
+  enableFeature: (f: string) => PickerBuilder
+  setTitle: (t: string) => PickerBuilder
+  setCallback: (cb: (data: { action: string; docs?: PickerDoc[] }) => void) => PickerBuilder
+  build: () => { setVisible: (b: boolean) => void }
+}
+interface PickerNs {
+  PickerBuilder: new () => PickerBuilder
+  DocsView: new (viewId?: string) => PickerView
+  ViewId: { DOCS: string; DOCUMENTS: string; SPREADSHEETS: string; PRESENTATIONS: string }
+  Feature: { MULTISELECT_ENABLED: string; NAV_HIDDEN: string }
+  Action: { PICKED: string; CANCEL: string }
+}
+interface Gapi { load: (lib: string, cb: () => void) => void }
+
+declare global { interface Window { google?: Gis & { picker?: PickerNs }; gapi?: Gapi } }
+
+let pickerLoading: Promise<PickerNs> | null = null
+function loadPicker(): Promise<PickerNs> {
+  if (window.google?.picker) return Promise.resolve(window.google.picker)
+  pickerLoading ??= new Promise<PickerNs>((resolve, reject) => {
+    const ready = () => window.gapi?.load('picker', () => (window.google?.picker ? resolve(window.google.picker) : reject(new Error('Google Picker failed to load'))))
+    if (window.gapi) { ready(); return }
+    const s = document.createElement('script')
+    s.src = GAPI_SRC
+    s.async = true
+    s.onload = ready
+    s.onerror = () => reject(new Error('Google Picker failed to load'))
+    document.head.appendChild(s)
+  })
+  return pickerLoading
+}
 
 let gisLoading: Promise<Gis> | null = null
 function loadGis(): Promise<Gis> {
@@ -130,21 +176,33 @@ export function driveKind(mime: string): string {
 
 export const driveToken = () => googleToken(DRIVE_SCOPE)
 
-/** The most recently modified readable files, newest first. */
-export async function driveRecentFiles(accessToken: string, filter: DriveFilter = 'all', limit = 100): Promise<DriveFile[]> {
-  const mimeClause =
-    filter === 'docs' ? ` and (mimeType = '${DOC}' or mimeType = '${SLIDES}')`
-    : filter === 'sheets' ? ` and mimeType = '${SHEET}'`
-    : " and mimeType != 'application/vnd.google-apps.folder'"
-  const q = new URLSearchParams({
-    q: `trashed = false${mimeClause}`,
-    orderBy: 'modifiedTime desc',
-    pageSize: String(limit),
-    fields: 'files(id,name,mimeType,modifiedTime)',
+/** Opens Google's own file picker and resolves with what the person chose
+ *  (empty when they cancel). Picking is what grants this tab access to those
+ *  files under drive.file. */
+export async function drivePick(accessToken: string, filter: DriveFilter = 'all'): Promise<DriveFile[]> {
+  if (!driveConfigured()) throw new Error('Google Drive is not configured for this dashboard')
+  const picker = await loadPicker()
+  const mimes =
+    filter === 'docs' ? [DOC, SLIDES]
+    : filter === 'sheets' ? [SHEET]
+    : [DOC, SHEET, SLIDES, ...DOWNLOADABLE]
+  const view = new picker.DocsView(picker.ViewId.DOCS).setMimeTypes(mimes.join(',')).setIncludeFolders(true)
+  return new Promise<DriveFile[]>((resolve) => {
+    new picker.PickerBuilder()
+      .setOAuthToken(accessToken)
+      .setDeveloperKey(GOOGLE_API_KEY)
+      .setAppId(PROJECT_NUMBER)
+      .setOrigin(window.location.origin)
+      .setTitle(filter === 'sheets' ? 'Choose spreadsheets' : 'Choose documents')
+      .addView(view)
+      .enableFeature(picker.Feature.MULTISELECT_ENABLED)
+      .setCallback((data) => {
+        if (data.action === picker.Action.PICKED) resolve((data.docs ?? []).filter((d) => driveSupported(d.mimeType)))
+        else if (data.action === picker.Action.CANCEL) resolve([])
+      })
+      .build()
+      .setVisible(true)
   })
-  const r = await googleFetch(DRIVE_SCOPE, accessToken, `https://www.googleapis.com/drive/v3/files?${q}`)
-  const b = await r.json() as { files: DriveFile[] }
-  return b.files.filter((f) => driveSupported(f.mimeType))
 }
 
 /** One file as either extracted text or the original bytes. */

@@ -48,8 +48,8 @@ import { toast } from 'sonner'
 import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
   uploadFromZendesk, uploadTextFile, uploadFromSitemap, uploadFromFeed, uploadFromHelpCenter,
-  uploadFromGithub, uploadFromRest, previewSql, uploadFromSql,
-  type GroundedCitation, type KnowledgeFile, type SqlPreview,
+  uploadFromGithub, uploadFromRest, previewSql, uploadFromSql, listSqlTables, uploadFromSqlTable, fmt,
+  type GroundedCitation, type KnowledgeFile, type SqlPreview, type SqlTable,
 } from '@/lib/api'
 import { officeToText, imageToText } from '@/lib/office'
 import {
@@ -256,6 +256,10 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [formExtra, setFormExtra] = useState('')
   const [sqlPreview, setSqlPreview] = useState<SqlPreview | null>(null)
   const [sqlTesting, setSqlTesting] = useState(false)
+  const [sqlTables, setSqlTables] = useState<SqlTable[] | null>(null)
+  const [sqlSel, setSqlSel] = useState<Set<string>>(new Set())
+  const [sqlAdvanced, setSqlAdvanced] = useState(false)
+  const [sqlFilter, setSqlFilter] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
 
   // ---- Conversation history: localStorage per Clerk user, never the server.
@@ -393,8 +397,32 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
       }
     })
 
-  // SQL: the connection string is in formExtra, the query in formText. A
-  // preview runs the same query with LIMIT 5 and stores nothing.
+  // SQL: the connection string is in formExtra. Connect lists the tables
+  // for picking; Advanced exposes a SELECT (formText) with a 5-row preview.
+  async function connectSql(engine: 'postgres' | 'mysql') {
+    setSqlTesting(true)
+    setSqlTables(null)
+    setSqlSel(new Set())
+    try {
+      const r = await withToken((t) => listSqlTables(t, engine, formExtra.trim()))
+      setSqlTables(r.tables)
+      if (r.tables.length === 0) toast.message('Connected, but this user can see no tables.')
+    } catch (e) {
+      fail(e)
+    } finally {
+      setSqlTesting(false)
+    }
+  }
+
+  const importSqlTables = (engine: 'postgres' | 'mysql') => {
+    const conn = formExtra.trim()
+    const chosen = (sqlTables ?? []).filter((t) => sqlSel.has(`${t.schema}.${t.name}`))
+    setFormExtra(''); setSqlTables(null); setSqlSel(new Set())
+    return ingest(`Importing ${chosen.length} ${chosen.length === 1 ? 'table' : 'tables'}…`, async (t) => {
+      for (const table of chosen) await uploadFromSqlTable(t, engine, conn, { schema: table.schema, name: table.name })
+    })
+  }
+
   async function testSql(engine: 'postgres' | 'mysql') {
     setSqlTesting(true)
     setSqlPreview(null)
@@ -1100,37 +1128,81 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 )}
                 {(form === 'postgres' || form === 'mysql') && (
                   <>
-                    <Input type="password" autoComplete="off" value={formExtra} onChange={(e) => { setFormExtra(e.target.value); setSqlPreview(null) }} placeholder={form === 'postgres' ? 'postgres://user:password@host:5432/db' : 'mysql://user:password@host:3306/db'} className="mb-2 h-9 bg-background font-mono text-xs" />
-                    <textarea
-                      value={formText}
-                      onChange={(e) => { setFormText(e.target.value); setSqlPreview(null) }}
-                      rows={4}
-                      spellCheck={false}
-                      placeholder="select id, title, body from articles where published"
-                      className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-foreground/40"
-                    />
-                    <p className="mb-1 mt-1 text-xs text-muted-foreground">SELECT only, up to 5,000 rows, one record per row. The database must be reachable from the internet; credentials are used for this import and never stored.</p>
-                    {sqlPreview && (
-                      <div className="mt-2 max-h-48 overflow-auto rounded-lg border border-border">
-                        <table className="w-full text-left font-mono text-[11px]">
-                          <thead><tr>{sqlPreview.columns.map((c) => <th key={c} className="border-b border-border px-2 py-1 font-medium text-muted-foreground">{c}</th>)}</tr></thead>
-                          <tbody>
-                            {sqlPreview.rows.map((r, i) => (
-                              <tr key={i}>{sqlPreview.columns.map((c) => <td key={c} className="max-w-[220px] truncate border-b border-border px-2 py-1">{String(r[c] ?? '')}</td>)}</tr>
-                            ))}
-                            {sqlPreview.rows.length === 0 && <tr><td className="px-2 py-2 text-muted-foreground">The query returned no rows.</td></tr>}
-                          </tbody>
-                        </table>
-                      </div>
+                    <div className="flex gap-2">
+                      <Input type="password" autoComplete="off" value={formExtra} onChange={(e) => { setFormExtra(e.target.value); setSqlTables(null); setSqlPreview(null) }} placeholder={form === 'postgres' ? 'postgres://user:password@host:5432/db' : 'mysql://user:password@host:3306/db'} className="h-9 flex-1 bg-background font-mono text-xs" />
+                      <Button variant="outline" onClick={() => void connectSql(form)} disabled={!formExtra.trim() || sqlTesting} className="h-9 text-sm">
+                        {sqlTesting && !sqlAdvanced ? <Loader2 className="size-3.5 animate-spin" /> : 'Connect'}
+                      </Button>
+                    </div>
+                    <p className="mb-1 mt-1 text-xs text-muted-foreground">Read-only. The database must be reachable from the internet; credentials are used for this import and never stored.</p>
+
+                    {sqlTables && !sqlAdvanced && (
+                      <>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">{sqlTables.length} tables</div>
+                          {sqlTables.length > 8 && (
+                            <Input value={sqlFilter} onChange={(e) => setSqlFilter(e.target.value)} placeholder="Filter" className="h-7 w-36 bg-background text-xs" />
+                          )}
+                        </div>
+                        <div className="mt-1 max-h-[40vh] overflow-y-auto rounded-lg border border-border">
+                          {sqlTables.filter((t) => !sqlFilter || `${t.schema}.${t.name}`.toLowerCase().includes(sqlFilter.toLowerCase())).map((t) => {
+                            const id = `${t.schema}.${t.name}`
+                            const on = sqlSel.has(id)
+                            return (
+                              <label key={id} className="flex cursor-pointer items-start gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
+                                <input type="checkbox" checked={on} onChange={() => setSqlSel((prev) => { const n = new Set(prev); if (on) n.delete(id); else n.add(id); return n })} className="mt-0.5 size-3.5 accent-foreground" />
+                                <span className="min-w-0 flex-1">
+                                  <span className="flex items-baseline gap-2">
+                                    <span className="truncate text-[13px] font-medium">{t.name}</span>
+                                    <span className="font-mono text-[10.5px] text-muted-foreground">{t.schema}{t.rows > 0 ? ` · ~${fmt(t.rows)} rows` : ''}</span>
+                                  </span>
+                                  <span className="block truncate font-mono text-[10.5px] text-muted-foreground">{t.columns.join(', ')}</span>
+                                </span>
+                              </label>
+                            )
+                          })}
+                          {sqlTables.length === 0 && <p className="px-3 py-4 text-xs text-muted-foreground">No tables visible to this user.</p>}
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">Each table becomes its own source, one record per row, up to 5,000 rows.</p>
+                      </>
                     )}
-                    <Button
-                      variant="outline"
-                      onClick={() => void testSql(form)}
-                      disabled={!formText.trim() || !formExtra.trim() || sqlTesting}
-                      className="mt-2 h-9 w-full text-sm"
-                    >
-                      {sqlTesting ? <><Loader2 className="size-3.5 animate-spin" /> Testing…</> : 'Test query (first 5 rows)'}
-                    </Button>
+
+                    <button onClick={() => { setSqlAdvanced((v) => !v); setSqlPreview(null) }} className="mt-2 text-xs text-muted-foreground hover:text-foreground">
+                      {sqlAdvanced ? '← Pick tables instead' : 'Advanced: write a SELECT'}
+                    </button>
+                    {sqlAdvanced && (
+                      <>
+                        <textarea
+                          value={formText}
+                          onChange={(e) => { setFormText(e.target.value); setSqlPreview(null) }}
+                          rows={4}
+                          spellCheck={false}
+                          placeholder="select id, title, body from articles where published"
+                          className="mt-2 w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-foreground/40"
+                        />
+                        {sqlPreview && (
+                          <div className="mt-2 max-h-48 overflow-auto rounded-lg border border-border">
+                            <table className="w-full text-left font-mono text-[11px]">
+                              <thead><tr>{sqlPreview.columns.map((c) => <th key={c} className="border-b border-border px-2 py-1 font-medium text-muted-foreground">{c}</th>)}</tr></thead>
+                              <tbody>
+                                {sqlPreview.rows.map((r, i) => (
+                                  <tr key={i}>{sqlPreview.columns.map((c) => <td key={c} className="max-w-[220px] truncate border-b border-border px-2 py-1">{String(r[c] ?? '')}</td>)}</tr>
+                                ))}
+                                {sqlPreview.rows.length === 0 && <tr><td className="px-2 py-2 text-muted-foreground">The query returned no rows.</td></tr>}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                        <Button variant="outline" onClick={() => void testSql(form)} disabled={!formText.trim() || !formExtra.trim() || sqlTesting} className="mt-2 h-9 w-full text-sm">
+                          {sqlTesting ? <><Loader2 className="size-3.5 animate-spin" /> Testing…</> : 'Test query (first 5 rows)'}
+                        </Button>
+                      </>
+                    )}
+                    {!sqlAdvanced && (
+                      <Button onClick={() => { void importSqlTables(form); setPicker(false) }} disabled={sqlSel.size === 0 || !!uploading} className="mt-2 h-9 w-full text-sm">
+                        Import {sqlSel.size} {sqlSel.size === 1 ? 'table' : 'tables'}
+                      </Button>
+                    )}
                   </>
                 )}
                 {form === 'gmail' && (
@@ -1193,7 +1265,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     </div>
                   </>
                 )}
-                {form !== 'youtube' && <Button
+                {form !== 'youtube' && !((form === 'postgres' || form === 'mysql') && !sqlAdvanced) && <Button
                   onClick={() => {
                     if (form === 'paste') {
                       const name = (formTitle.trim() || 'Pasted text').slice(0, 80)

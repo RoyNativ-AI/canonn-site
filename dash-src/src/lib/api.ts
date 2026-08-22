@@ -394,3 +394,17 @@ export const uploadFromSql = (token: string, engine: SqlEngine, connectionString
     method: 'POST',
     body: JSON.stringify({ [engine]: { connection_string: connectionString, query, ...(name ? { name } : {}) } }),
   })
+
+export interface SqlTable { schema: string; name: string; rows: number; columns: string[] }
+
+export const listSqlTables = (token: string, engine: SqlEngine, connectionString: string) =>
+  request<{ tables: SqlTable[] }>('/files/preview', token, {
+    method: 'POST',
+    body: JSON.stringify({ [engine]: { connection_string: connectionString, tables: true } }),
+  })
+
+export const uploadFromSqlTable = (token: string, engine: SqlEngine, connectionString: string, table: { schema: string; name: string }) =>
+  request<KnowledgeFile & { rows: number }>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ [engine]: { connection_string: connectionString, table } }),
+  })

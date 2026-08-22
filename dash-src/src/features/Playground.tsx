@@ -355,12 +355,6 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           <History className="size-3.5" />
           <span className="max-sm:hidden">History</span>
         </button>
-        {turns.length > 0 && (
-          <button onClick={newChat} className={composerChip} aria-label="New chat">
-            <SquarePen className="size-3.5" />
-            <span className="max-sm:hidden">New chat</span>
-          </button>
-        )}
         <div className="flex-1" />
         <button
           onClick={ask}
@@ -378,11 +372,20 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     <div className="flex min-h-0 flex-1 flex-col">
       {/* ---- Sources: a drawer over the chat, not a permanent column. The
            canvas belongs to the conversation; knowledge slides in on demand. ---- */}
-      {srcOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSrcOpen(false)} />}
-      <div className={cn(
-        'flex-col border-r border-border bg-card',
-        srcOpen ? 'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] shadow-2xl' : 'hidden',
-      )}>
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none',
+          srcOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+        onClick={() => setSrcOpen(false)}
+      />
+      <div
+        inert={!srcOpen}
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
+          srcOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-xs font-medium text-muted-foreground">Knowledge</span>
           <div className="flex items-center gap-1">
@@ -484,11 +487,20 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
       {/* ---- History: same drawer pattern as Knowledge. Conversations live
            in this browser only - localStorage, per signed-in user. ---- */}
-      {histOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setHistOpen(false)} />}
-      <div className={cn(
-        'flex-col border-r border-border bg-card',
-        histOpen ? 'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] shadow-2xl' : 'hidden',
-      )}>
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 motion-reduce:transition-none',
+          histOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
+        )}
+        onClick={() => setHistOpen(false)}
+      />
+      <div
+        inert={!histOpen}
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] flex-col border-r border-border bg-card shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none',
+          histOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-xs font-medium text-muted-foreground">Chats</span>
           <div className="flex items-center gap-1">

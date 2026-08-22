@@ -79,10 +79,12 @@ const bodyHtml = `
   </ul>
 
   <h2 id="google">6. Google user data</h2>
-  <p>Canonn can import documents from Google Drive (Docs, Sheets, Slides and uploaded files) and the captions of videos on your own YouTube channel, so that Canonn can answer questions from them. It works like this:</p>
+  <p>Canonn can import documents from Google Drive (Docs, Sheets, Slides and uploaded files), messages from Gmail, events from Google Calendar, and the captions of videos on your own YouTube channel, so that Canonn can answer questions from them. It works like this:</p>
   <ul>
     <li><strong>Drive</strong> uses the per-file scope (<code>drive.file</code>): Canonn only ever sees the files you pick in Google's own file picker. It cannot list or read anything else in your Drive.</li>
     <li><strong>YouTube</strong> uses the <code>youtube.force-ssl</code> scope solely to list your channel's uploads and download their caption tracks. Nothing is ever modified, posted or deleted on your channel.</li>
+    <li><strong>Gmail</strong> uses the read-only scope (<code>gmail.readonly</code>) to read the messages that match a search you type, up to 100 at a time, and only when you run that import. Canonn never sends, labels, or deletes mail.</li>
+    <li><strong>Calendar</strong> uses the read-only scope (<code>calendar.readonly</code>) to read events on your primary calendar for the window you import. Nothing is ever created or changed.</li>
     <li>Content is fetched directly from Google's API to your device or browser, over TLS, and converted to text there. In the Canonn app that text is indexed <strong>locally on your device</strong>. In the Canonn dashboard the extracted text is stored in your Canonn workspace as a knowledge source, exactly like a file you upload by hand, and you can delete it at any time.</li>
     <li>Google access tokens are short-lived and held only in memory on your device or browser tab. Canonn's servers never receive or store your Google credentials, and no third party holds them on our behalf. Disconnecting revokes the token at Google.</li>
     <li>Google user data is never used to train models, never sold, never used for advertising, and never shared with anyone except as needed to provide the feature you asked for.</li>

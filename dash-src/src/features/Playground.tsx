@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import {
   siAirtable, siAmazons3, siBox, siConfluence, siDropbox, siGithub, siGitlab,
-  siGooglebigquery, siGoogledocs, siGoogledrive, siGooglesheets, siHelpscout, siHubspot,
+  siGmail, siGooglebigquery, siGooglecalendar, siGoogledocs, siGoogledrive, siGooglesheets, siHelpscout, siHubspot,
   siIntercom, siJira, siLinear, siMicrosoftonedrive, siMongodb, siMysql,
   siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
 } from 'simple-icons'
@@ -28,7 +28,7 @@ import {
 } from '@/lib/api'
 import {
   googleConfigured, driveConfigured, googleDisconnect, driveDownload, drivePick, driveToken,
-  youtubeOwnVideos, youtubeToken, youtubeTranscript,
+  youtubeOwnVideos, youtubeToken, youtubeTranscript, gmailSearch, gmailToken, calendarEvents, calendarToken,
   type DriveFile, type DriveFilter, type YouTubeVideo,
 } from '@/lib/google'
 
@@ -42,7 +42,7 @@ import {
 // backed by your data".
 const ACCENT = '#c96442'
 
-type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube'
+type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal'
 
 // Google loaders light up only once the dashboard has a client ID.
 const DRIVE_FILTERS: Partial<Record<LoaderId, DriveFilter>> = { gdrive: 'all', gdocs: 'docs', gsheets: 'sheets' }
@@ -76,12 +76,21 @@ function BrandIcon({ brand, className }: { brand: { path: string; hex: string };
 }
 
 const CATALOG: { category: string; items: CatalogItem[] }[] = [
+  // Google Workspace, together: one consent style, one picker, one place.
+  { category: 'Google', items: [
+    { name: 'Google Drive', blurb: 'Pick documents in Google\'s file picker and import them.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
+    { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
+    { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
+    { name: 'Gmail', blurb: 'Messages matching a Gmail search, one record each.', icon: MessageSquare, brand: siGmail, action: google('gmail') },
+    { name: 'Google Calendar', blurb: 'Events from the last 90 days and the next 180.', icon: History, brand: siGooglecalendar, action: google('gcal') },
+    { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
+    { name: 'BigQuery', blurb: 'Warehouse tables as knowledge records.', icon: BarChart3, brand: siGooglebigquery },
+  ] },
   { category: 'Web', items: [
     { name: 'Web page', blurb: 'Fetch one URL and strip it to clean text.', icon: Link2, action: 'web' },
     { name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages.', icon: Network, action: 'crawl' },
     { name: 'Sitemap', blurb: 'Ingest every URL listed in a sitemap.xml.', icon: List },
     { name: 'RSS / Atom feed', blurb: 'Pull articles from a syndication feed.', icon: Rss },
-    { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
   ] },
   { category: 'Files', items: [
     { name: 'PDF', blurb: 'Contracts, reports, policies — text extracted page by page.', icon: FileText, action: 'pdf' },
@@ -95,7 +104,6 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
   ] },
   { category: 'Cloud storage', items: [
-    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
     { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package, brand: siDropbox },
     { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive, brand: siMicrosoftonedrive },
     { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive, brand: siBox },
@@ -105,8 +113,6 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote, brand: siNotion },
     { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen, brand: siConfluence },
     { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash, brand: siSlack },
-    { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
-    { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
     { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check, brand: siJira },
     { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight, brand: siLinear },
     { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table, brand: siAirtable },
@@ -127,7 +133,6 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database, brand: siPostgresql },
     { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database, brand: siMysql },
     { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf, brand: siMongodb },
-    { name: 'BigQuery', blurb: 'Warehouse tables as knowledge records.', icon: BarChart3, brand: siGooglebigquery },
     { name: 'REST endpoint', blurb: 'Poll a JSON API and map fields to documents.', icon: ArrowLeftRight },
   ] },
 ]
@@ -979,6 +984,15 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 {form === 'crawl' && (
                   <p className="mb-1 text-xs text-muted-foreground">Follows same-site links from this page, up to 8 pages.</p>
                 )}
+                {form === 'gmail' && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="from:support@acme.com newer_than:90d" className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-xs text-muted-foreground">Any Gmail search. Up to 100 matching messages are read in this browser and saved as one source.</p>
+                  </>
+                )}
+                {form === 'gcal' && (
+                  <p className="mb-1 text-xs text-muted-foreground">Imports your primary calendar — the last 90 days and the next 180 — one record per event, read in this browser.</p>
+                )}
                 {form === 'zendesk' && (
                   <>
                     <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="support.yourcompany.com or subdomain" className="mb-1 h-9 bg-background font-mono text-xs" />
@@ -1038,9 +1052,23 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     } else if (form === 'web') ingest('Fetching page…', (t) => uploadFromUrl(t, formText.trim(), false))
                     else if (form === 'crawl') ingest('Crawling…', (t) => uploadFromUrl(t, formText.trim(), true))
                     else if (form === 'zendesk') ingest('Importing articles…', (t) => uploadFromZendesk(t, formText.trim()))
+                    else if (form === 'gmail') {
+                      const query = formText.trim()
+                      ingest('Reading Gmail…', async (t) => {
+                        const got = await gmailSearch(await gmailToken(), query)
+                        if (got.count === 0) throw new Error('No messages matched that search')
+                        await uploadTextFile(t, `Gmail - ${query.slice(0, 60)}.md`, got.text)
+                      })
+                    } else if (form === 'gcal') {
+                      ingest('Reading Calendar…', async (t) => {
+                        const got = await calendarEvents(await calendarToken())
+                        if (got.count === 0) throw new Error('No events in that window')
+                        await uploadTextFile(t, 'Google Calendar.md', got.text)
+                      })
+                    }
                     setPicker(false)
                   }}
-                  disabled={!formText.trim() || !!uploading}
+                  disabled={(form !== 'gcal' && !formText.trim()) || !!uploading}
                   className="mt-2 h-9 w-full text-sm"
                 >
                   Add source

@@ -277,3 +277,120 @@ function srtToText(srt: string): string {
   for (let i = 0; i < lines.length; i += 12) paragraphs.push(lines.slice(i, i + 12).join(' '))
   return paragraphs.join('\n\n')
 }
+
+// ---------------------------------------------------------------- Gmail
+// gmail.readonly is a Google *restricted* scope: it needs Google's scope
+// verification plus a CASA assessment before the public can use it. The flow
+// itself is the same as the others — messages are read into this tab and
+// reduced to text.
+
+const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly'
+export const gmailToken = () => googleToken(GMAIL_SCOPE)
+
+interface GmailPart { mimeType?: string; body?: { data?: string }; parts?: GmailPart[] }
+interface GmailMessage { id: string; payload?: GmailPart & { headers?: { name: string; value: string }[] } }
+
+function base64UrlDecode(data: string): string {
+  const b64 = data.replace(/-/g, '+').replace(/_/g, '/')
+  const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+}
+
+function htmlToText(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  doc.querySelectorAll('script,style,head').forEach((n) => n.remove())
+  return (doc.body?.textContent ?? '').replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n+/g, '\n\n').trim()
+}
+
+/** The plain text of a message: a text/plain part when there is one, else
+ *  the HTML part stripped. */
+function gmailBody(part: GmailPart | undefined): string {
+  if (!part) return ''
+  const flat: GmailPart[] = []
+  const walk = (p: GmailPart) => { flat.push(p); p.parts?.forEach(walk) }
+  walk(part)
+  const plain = flat.find((p) => p.mimeType === 'text/plain' && p.body?.data)
+  if (plain?.body?.data) return base64UrlDecode(plain.body.data).trim()
+  const html = flat.find((p) => p.mimeType === 'text/html' && p.body?.data)
+  if (html?.body?.data) return htmlToText(base64UrlDecode(html.body.data))
+  return ''
+}
+
+/** Messages matching a Gmail search, newest first, rendered as one text
+ *  document with a record per message. */
+export async function gmailSearch(accessToken: string, query: string, limit = 100): Promise<{ text: string; count: number }> {
+  const q = new URLSearchParams({ q: query, maxResults: String(Math.min(limit, 100)) })
+  const list = await googleFetch(GMAIL_SCOPE, accessToken, `https://gmail.googleapis.com/gmail/v1/users/me/messages?${q}`)
+  const ids = ((await list.json() as { messages?: { id: string }[] }).messages ?? []).map((m) => m.id)
+  const records: string[] = []
+  // Sequential with a small window: Gmail rate-limits bursts per user.
+  for (let i = 0; i < ids.length; i += 5) {
+    const batch = await Promise.all(ids.slice(i, i + 5).map(async (id) => {
+      const r = await googleFetch(GMAIL_SCOPE, accessToken, `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=full`)
+      return await r.json() as GmailMessage
+    }))
+    for (const m of batch) {
+      const h = (name: string) => m.payload?.headers?.find((x) => x.name.toLowerCase() === name)?.value ?? ''
+      const body = gmailBody(m.payload)
+      if (!body) continue
+      records.push([
+        `## ${h('subject') || '(no subject)'}`,
+        `From: ${h('from')}`,
+        `To: ${h('to')}`,
+        `Date: ${h('date')}`,
+        '',
+        body.slice(0, 20_000),
+      ].join('\n'))
+    }
+  }
+  return { text: records.join('\n\n'), count: records.length }
+}
+
+// ------------------------------------------------------------- Calendar
+// calendar.readonly is *sensitive* (verification, no CASA).
+
+const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly'
+export const calendarToken = () => googleToken(CALENDAR_SCOPE)
+
+interface CalendarEvent {
+  summary?: string
+  description?: string
+  location?: string
+  start?: { dateTime?: string; date?: string }
+  end?: { dateTime?: string; date?: string }
+  attendees?: { email: string; displayName?: string; responseStatus?: string }[]
+  organizer?: { email?: string; displayName?: string }
+  hangoutLink?: string
+}
+
+/** Events on the primary calendar in a window around today, as one text
+ *  document with a record per event. */
+export async function calendarEvents(accessToken: string, pastDays = 90, futureDays = 180): Promise<{ text: string; count: number }> {
+  const now = Date.now()
+  const timeMin = new Date(now - pastDays * 86_400_000).toISOString()
+  const timeMax = new Date(now + futureDays * 86_400_000).toISOString()
+  const records: string[] = []
+  let pageToken: string | undefined
+  do {
+    const q = new URLSearchParams({ timeMin, timeMax, singleEvents: 'true', orderBy: 'startTime', maxResults: '250' })
+    if (pageToken) q.set('pageToken', pageToken)
+    const r = await googleFetch(CALENDAR_SCOPE, accessToken, `https://www.googleapis.com/calendar/v3/calendars/primary/events?${q}`)
+    const b = await r.json() as { items?: CalendarEvent[]; nextPageToken?: string }
+    for (const e of b.items ?? []) {
+      const when = (t?: { dateTime?: string; date?: string }) => t?.dateTime ?? t?.date ?? ''
+      const people = (e.attendees ?? []).map((a) => `${a.displayName ?? a.email}${a.responseStatus ? ` (${a.responseStatus})` : ''}`).join(', ')
+      records.push([
+        `## ${e.summary ?? '(untitled)'}`,
+        `Start: ${when(e.start)}`,
+        `End: ${when(e.end)}`,
+        e.location ? `Location: ${e.location}` : '',
+        e.organizer ? `Organizer: ${e.organizer.displayName ?? e.organizer.email}` : '',
+        people ? `Attendees: ${people}` : '',
+        e.hangoutLink ? `Meet: ${e.hangoutLink}` : '',
+        e.description ? `\n${htmlToText(e.description)}` : '',
+      ].filter(Boolean).join('\n'))
+    }
+    pageToken = b.nextPageToken
+  } while (pageToken && records.length < 2000)
+  return { text: records.join('\n\n'), count: records.length }
+}

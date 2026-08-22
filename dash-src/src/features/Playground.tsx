@@ -217,7 +217,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   )
 
   return (
-    <div className="flex h-[calc(100dvh-7.5rem)] min-h-[480px] lg:h-[calc(100vh-9.5rem)] flex-col gap-4 lg:flex-row lg:items-stretch">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
       {srcOpen && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setSrcOpen(false)} />}
       <div className={cn(
@@ -345,7 +345,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     <button
                       key={s}
                       onClick={() => setQuestion(s)}
-                      className="rounded-xl border border-border bg-background p-3 text-left text-[13px] leading-snug text-foreground/80 transition-colors hover:border-foreground/30 hover:text-foreground"
+                      className="rounded-lg border border-border bg-background p-3 text-left text-[13px] leading-snug text-foreground/80 transition-colors hover:border-foreground/30 hover:text-foreground"
                     >
                       {s}
                     </button>
@@ -456,7 +456,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         else if (id === 'pdf') { setPicker(false); pdfInput.current?.click() }
                         else setForm(id)
                       }}
-                      className="rounded-xl border border-border bg-background p-3 text-left transition-colors hover:border-foreground/30"
+                      className="rounded-lg border border-border bg-background p-3 text-left transition-colors hover:border-foreground/30"
                     >
                       <Icon className="mb-2 size-4 text-foreground/70" />
                       <div className="text-[13px] font-medium">{name}</div>
@@ -608,7 +608,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
           <button
             key={`${c.file_id}-${c.ordinal}`}
             onClick={() => setOpen(open === i ? null : i)}
-            className="block w-full rounded-xl border border-border bg-secondary/60 px-3.5 py-3 text-left transition-colors hover:bg-secondary"
+            className="block w-full rounded-lg border border-border bg-secondary/60 px-3.5 py-3 text-left transition-colors hover:bg-secondary"
           >
             {c.excerpt && (
               <div className={cn(

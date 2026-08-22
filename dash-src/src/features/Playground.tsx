@@ -785,7 +785,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           // taller than the viewport (small phones, open keyboard); my-auto on
           // the child centers the same way but degrades to scrollable.
           <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 py-8 sm:px-6">
-            <div className="my-auto w-full max-w-2xl">
+            <div className="my-auto w-full max-w-[1400px]">
               <div className="mb-5 flex items-center justify-center gap-2.5">
                 <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
                 <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>

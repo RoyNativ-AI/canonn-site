@@ -182,6 +182,29 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const inScope = (files ?? []).filter((f) => !disabled.has(f.id))
   const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
+  // One composer, two homes: centered on the empty screen, pinned to the
+  // bottom once a conversation is running.
+  const composer = (
+    <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-1.5 pr-1.5 pl-4">
+      <input
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
+        placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
+        disabled={busy}
+        className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-sm"
+      />
+      <button
+        onClick={ask}
+        disabled={busy || !question.trim()}
+        className="flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
+        aria-label="Send"
+      >
+        <ArrowUp className="size-4" />
+      </button>
+    </div>
+  )
+
   return (
     <div className="flex h-[calc(100dvh-7.5rem)] min-h-[480px] lg:h-[calc(100vh-9.5rem)] flex-col gap-4 lg:flex-row lg:items-stretch">
       {/* ---- Sources ---- */}
@@ -287,37 +310,44 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           </button>
           {scopePassages > 0 && <span className="font-mono text-[10.5px] text-muted-foreground">{scopePassages} passages</span>}
         </div>
-        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
-          {turns.length === 0 && (
-            <div className="mx-auto flex h-full max-w-md flex-col justify-center">
-              <div className="mb-4 flex items-center gap-2.5">
+        {/* Empty state is a chat home, not a splash: headline, suggestions,
+            and the composer together in one centered column. Once the first
+            message is sent the composer drops to the bottom like any chat. */}
+        {turns.length === 0 && (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8 sm:px-6">
+            <div className="w-full max-w-2xl">
+              <div className="mb-4 flex items-center justify-center gap-2.5">
                 <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
                 <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
               </div>
-              <h2 className="font-display text-[30px] leading-[1.12] font-semibold tracking-tight sm:text-[34px]">
+              <h2 className="text-center font-display text-[28px] leading-[1.12] font-semibold tracking-tight sm:text-[32px]">
                 The model that trusts your data.
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
                 {inScope.length
                   ? `${inScope.length} ${inScope.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
                   : 'Add a website or a document under Knowledge, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
               </p>
               {inScope.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-7 grid gap-2 sm:grid-cols-3">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => setQuestion(s)}
-                      className="block w-full border-b border-border py-2.5 text-left text-sm text-foreground/75 transition-colors first:border-t hover:text-foreground"
+                      className="rounded-xl border border-border bg-background p-3 text-left text-[13px] leading-snug text-foreground/80 transition-colors hover:border-foreground/30 hover:text-foreground"
                     >
                       {s}
                     </button>
                   ))}
                 </div>
               )}
+              <div className="mt-7">{composer}</div>
             </div>
-          )}
+          </div>
+        )}
 
+        {turns.length > 0 && (
+        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="mb-4 flex justify-end">
@@ -350,27 +380,13 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             ),
           )}
         </div>
+        )}
 
-        <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-1.5 pr-1.5 pl-4">
-            <input
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
-              placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
-              disabled={busy}
-              className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-sm"
-            />
-            <button
-              onClick={ask}
-              disabled={busy || !question.trim()}
-              className="flex size-8 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
-              aria-label="Send"
-            >
-              <ArrowUp className="size-4" />
-            </button>
+        {turns.length > 0 && (
+          <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {composer}
           </div>
-        </div>
+        )}
       </div>
 
       {ctxMenu && (

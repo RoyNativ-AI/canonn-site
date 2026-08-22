@@ -62,6 +62,8 @@ export interface Me {
   truncated: number
   by_day: Record<string, UsageDay>
   by_key: Record<string, UsageDay>
+  /** Customer-facing traffic, one entry per assistant, keyed by its name. */
+  by_assistant?: Record<string, UsageDay>
   recent: LogRow[]
 }
 

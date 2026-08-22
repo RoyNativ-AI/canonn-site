@@ -364,6 +364,32 @@ export function Activity({
           </div>
         </div>
 
+        {Object.keys(me?.by_assistant ?? {}).length > 0 && (
+          <div>
+            <div className={cn(LABEL, 'mb-4')}>Assistant traffic</div>
+            <div className="space-y-3">
+              {Object.entries(me?.by_assistant ?? {})
+                .sort((x, y) => y[1].requests - x[1].requests)
+                .slice(0, 8)
+                .map(([name, k]) => {
+                  const total = Object.values(me?.by_assistant ?? {}).reduce((n, v) => n + v.requests, 0)
+                  const share = total ? (k.requests / total) * 100 : 0
+                  return (
+                    <div key={name}>
+                      <div className="mb-1 flex items-baseline justify-between text-sm">
+                        <span className="truncate font-medium">{name}</span>
+                        <span className="ml-3 text-xs text-muted-foreground tabular-nums">{fmt(k.requests)} · {fmt(k.pt + k.ct)} tok</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded bg-secondary">
+                        <div className="h-full rounded" style={{ width: `${share}%`, background: '#c96442' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        )}
+
         <div>
           <div className={cn(LABEL, 'mb-4')}>Latency &amp; cost</div>
           <div className="space-y-2.5">

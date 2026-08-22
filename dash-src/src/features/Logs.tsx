@@ -45,6 +45,22 @@ const STATUS_FILTERS = [
 ] as const
 type StatusFilter = typeof STATUS_FILTERS[number]['id']
 
+// Where a call came from, read off the row's display key: the edge labels
+// playground and assistant traffic; everything else is an API key.
+function rowOrigin(r: LogRow): 'api' | 'playground' | 'assistant' {
+  if (r.key === 'Playground' || r.key.startsWith('playground')) return 'playground'
+  if (/\(assistant\)$/.test(r.key) || r.key.startsWith('share:')) return 'assistant'
+  return 'api'
+}
+
+const ORIGIN_FILTERS = [
+  { id: 'all', label: 'All traffic' },
+  { id: 'api', label: 'API' },
+  { id: 'playground', label: 'Playground' },
+  { id: 'assistant', label: 'Assistants' },
+] as const
+type OriginFilter = typeof ORIGIN_FILTERS[number]['id']
+
 function StatusCell({ status }: { status: 'ok' | 'truncated' | 'failed' }) {
   if (status === 'ok') {
     return (
@@ -79,15 +95,16 @@ export function Logs({
   onIoChanged: () => void
 }) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [originFilter, setOriginFilter] = useState<OriginFilter>('all')
   // The log walks the whole window through /v1/me/logs pages, not just the
   // recency cap /v1/me carries for its summary cards.
   const [logRows, setLogRows] = useState<LogRow[] | null>(null)
   const [nextBefore, setNextBefore] = useState<number | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const allRows = logRows ?? []
-  const rows = statusFilter === 'all'
-    ? allRows
-    : allRows.filter((r) => (statusFilter === 'failed' ? rowStatus(r) === 'failed' : rowStatus(r) !== 'failed'))
+  const rows = allRows.filter((r) =>
+    (originFilter === 'all' || rowOrigin(r) === originFilter)
+    && (statusFilter === 'all' || (statusFilter === 'failed' ? rowStatus(r) === 'failed' : rowStatus(r) !== 'failed')))
   const [detail, setDetail] = useState<LogRow | null>(null)
 
   useEffect(() => {
@@ -187,6 +204,20 @@ export function Logs({
               ))}
             </SelectContent>
           </Select>
+          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
+            {ORIGIN_FILTERS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setOriginFilter(f.id)}
+                className={cn(
+                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
+                  originFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
           <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
             {STATUS_FILTERS.map((f) => (
               <button

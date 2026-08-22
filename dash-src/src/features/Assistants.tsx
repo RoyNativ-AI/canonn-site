@@ -261,6 +261,16 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                 {s.requests > 0 ? ` (${fmt(s.requests_7d)} this week) · ${fmt(s.tokens)} tokens · $${s.spend_usd.toFixed(2)}` : ''}
                 {s.last_ts ? ` · active ${formatDistanceToNowStrict(s.last_ts * 1000, { addSuffix: true })}` : ' · no traffic yet'}
               </div>
+              {!s.hide_branding && s.requests_7d > 0 && (
+                <div className="mt-1 font-mono text-[10.5px] text-muted-foreground">
+                  &ldquo;Powered by Canonn&rdquo; was shown ~{fmt(s.requests_7d)} times this week ·{' '}
+                  {paid ? (
+                    <button onClick={() => openEdit(s)} className="underline underline-offset-2 hover:text-foreground">remove it</button>
+                  ) : (
+                    <a href="#billing" className="underline underline-offset-2 hover:text-foreground">remove it</a>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
               <Button size="sm" variant="outline" className="h-8 gap-1.5 font-mono text-xs" onClick={() => copyLink(s)}>

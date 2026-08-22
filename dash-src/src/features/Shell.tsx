@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useClerk, useSession, useUser } from '@clerk/clerk-react'
-import { fetchMe, SITE_URL, type Me } from '@/lib/api'
+import { billingMe, fetchMe, SITE_URL, type BillingMe, type Me } from '@/lib/api'
 import { Activity } from '@/features/Activity'
 import { Logs } from '@/features/Logs'
 import { Keys } from '@/features/Keys'
@@ -65,6 +65,7 @@ export function Shell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [range, setRange] = useState<{ from: string; to: string }>({ from: '', to: '' })
   const [theme, setTheme] = useState<Theme>(readTheme)
+  const [plan, setPlan] = useState<BillingMe | null>(null)
 
   useEffect(() => {
     applyTheme(theme)
@@ -93,6 +94,13 @@ export function Shell() {
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  useEffect(() => {
+    if (!session) return
+    session.getToken().then((t) => (t ? billingMe(t) : null))
+      .then((p) => p && setPlan(p))
+      .catch(() => { /* the meter is optional */ })
+  }, [session, screen === 'billing'])
 
   // Poll while the tab is visible, refresh instantly on return, sleep when
   // hidden - the standard live-dashboard cadence without websockets.
@@ -175,6 +183,29 @@ export function Shell() {
         </nav>
 
         <div className="px-3 pb-4">
+          {plan && !(plan.credit_usd > 0) && (
+            <button
+              onClick={() => setScreen('billing')}
+              className="mb-2 w-full rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-foreground/30"
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Free tier</span>
+                <span className="font-mono text-[10.5px] text-muted-foreground tabular-nums">
+                  {plan.used_calls_this_month}/{plan.free_tier_calls}
+                </span>
+              </div>
+              <div className="mt-2 h-1 overflow-hidden rounded bg-secondary">
+                <div
+                  className={cn(
+                    'h-full rounded',
+                    plan.used_calls_this_month / plan.free_tier_calls >= 0.8 ? 'bg-[#996c1f]' : 'bg-foreground/50',
+                  )}
+                  style={{ width: `${Math.min(100, (plan.used_calls_this_month / plan.free_tier_calls) * 100)}%` }}
+                />
+              </div>
+              <div className="mt-2 text-xs font-medium">Add credits</div>
+            </button>
+          )}
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] text-muted-foreground transition-colors hover:text-foreground"

@@ -997,7 +997,19 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   </div>
                 ) : (
                   turn.error ? (
-                    <div className="text-sm leading-relaxed text-destructive">{turn.content}</div>
+                    <div>
+                      <div className="text-sm leading-relaxed text-destructive">{turn.content}</div>
+                      {/* The limit moment is the strongest upgrade moment a
+                          console has: make the way out one obvious button. */}
+                      {/credit|limit reached/i.test(turn.content) && (
+                        <a
+                          href="#billing"
+                          className="mt-2 inline-flex items-center rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background"
+                        >
+                          Add credits
+                        </a>
+                      )}
+                    </div>
                   ) : (
                     <Answer text={turn.content} />
                   )

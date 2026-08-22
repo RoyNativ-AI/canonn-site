@@ -113,6 +113,23 @@
     .thinking-dot { animation: none; }
 }
 
+/* The brand marquee under the empty composer: a slow, continuous drift of
+   familiar logos. The track holds two copies of the strip and slides half
+   its width, so the loop is seamless. Hover pauses it for a click. */
+@keyframes brand-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.brand-marquee {
+    animation: brand-marquee 36s linear infinite;
+}
+.brand-marquee:hover {
+    animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+    .brand-marquee { animation: none; }
+}
+
 /* Screen switches settle in rather than snap. Short enough to feel instant. */
 @keyframes screen-in {
     from { opacity: 0; transform: translateY(3px); }

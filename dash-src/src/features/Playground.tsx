@@ -16,8 +16,9 @@ import {
   siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
 } from 'simple-icons'
 
-// The familiar faces under the empty composer - pure recognition, the way a
-// payments page shows card logos. Clicking any of them opens the catalog.
+// The familiar faces under the empty composer - full-color marks drifting in
+// a slow marquee, the way the landing page runs its model strip. Clicking
+// any of them opens the catalog.
 const BRAND_STRIP = [
   { name: 'Gmail', brand: siGmail },
   { name: 'Google Drive', brand: siGoogledrive },
@@ -29,6 +30,10 @@ const BRAND_STRIP = [
   { name: 'Zendesk', brand: siZendesk },
   { name: 'Salesforce', brand: siSalesforce },
   { name: 'Intercom', brand: siIntercom },
+  { name: 'Confluence', brand: siConfluence },
+  { name: 'HubSpot', brand: siHubspot },
+  { name: 'Airtable', brand: siAirtable },
+  { name: 'PostgreSQL', brand: siPostgresql },
 ]
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -831,22 +836,25 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 </div>
               )}
               <div className="mt-6 sm:mt-9">{composer}</div>
-              {/* Recognition strip: gone the moment a conversation starts,
-                  because the whole empty state is. */}
-              <div className="mt-8 flex flex-col items-center gap-3">
+              {/* Recognition marquee: full-color marks drifting by, faded at
+                  the edges. Gone the moment a conversation starts, because
+                  the whole empty state is. */}
+              <div className="mt-8 flex flex-col items-center gap-3.5">
                 <span className="font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase">Bring knowledge from</span>
-                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
-                  {BRAND_STRIP.map(({ name, brand }) => (
-                    <button
-                      key={name}
-                      title={name}
-                      aria-label={`Add a ${name} source`}
-                      onClick={() => { setPicker(true); setForm(null) }}
-                      className="opacity-55 grayscale transition-all hover:opacity-100 hover:grayscale-0"
-                    >
-                      <BrandIcon brand={brand} className="size-[18px]" />
-                    </button>
-                  ))}
+                <div className="w-full max-w-[560px] overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_18%,black_82%,transparent)]">
+                  <div className="brand-marquee flex w-max items-center gap-9 py-1">
+                    {[...BRAND_STRIP, ...BRAND_STRIP].map(({ name, brand }, i) => (
+                      <button
+                        key={`${name}-${i}`}
+                        title={name}
+                        aria-label={`Add a ${name} source`}
+                        onClick={() => { setPicker(true); setForm(null) }}
+                        className="shrink-0 transition-transform hover:scale-125"
+                      >
+                        <BrandIcon brand={brand} className="size-5" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

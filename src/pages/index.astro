@@ -28,7 +28,7 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
       "name": "Canonn R1",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Large Language Model",
-      "operatingSystem": "Cloud API, On-premise (Linux)",
+      "operatingSystem": "Cloud API",
       "url": "https://canonn.ai/",
       "description": "Canonn R1 is a 9B context-faithful large language model that answers strictly from the data you provide instead of its training priors. It scores 89.8-92.9% on FaithEval-counterfactual versus 32-69% for frontier models under production prompts. Served through an OpenAI-compatible API.",
       "softwareVersion": "R1",
@@ -38,7 +38,6 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
         "Cites the exact source passage it answered from",
         "OpenAI-compatible API (base URL https://api.canonn.ai/v1, model canonn-r1)",
         "16,384-token context window",
-        "Private on-premise deployment available under license for zero-trust environments",
         "Prompts not used for training; EU (Finland) inference",
         "Built for RAG, customer support, and document Q&A in finance, healthcare, and legal"
       ],
@@ -48,13 +47,8 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
           "name": "Pay as you go API",
           "priceCurrency": "USD",
           "price": "1.20",
-          "description": "$1.20 per 1M input tokens, $6 per 1M output tokens. Add-ons at $20 per month each: white-label, custom domain, extra assistants. On-premise licence $12,000 per year. All self-serve, no sales call."
+          "description": "$1.20 per 1M input tokens, $6 per 1M output tokens, free tier of 1,000 calls per month with no card. White-label $20 per month, custom domain $20 per month per domain, unlimited assistants free. All self-serve."
         },
-        {
-          "@type": "Offer",
-          "name": "On-premise weights license",
-          "description": "Flat annual license, unlimited tokens, run the same weights on your own single GPU inside your network."
-        }
       ],
       "publisher": {
         "@type": "Organization",
@@ -86,14 +80,6 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Canonn R1 is trained to answer from the supplied context and to abstain when the answer is not present, scoring 89.8 to 91.8 percent on FaithEval-counterfactual versus 38 to 74 percent for frontier models such as GPT-5.6, Claude Opus 5, and Gemini 3.6."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is there an on-premise LLM for finance, healthcare, or legal?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Canonn R1 has open, licensable weights and can run entirely inside your own network on your own GPUs, with the same OpenAI-compatible API as the hosted service, so regulated data never leaves your environment."
           }
         },
         {
@@ -468,8 +454,8 @@ const bodyHtml = `<header class="hero">
 <section id="plans">
   <div class="wrap">
     <div class="tag reveal">Pricing</div>
-    <h2 class="reveal">Three ways to run Canonn. All self-serve.</h2>
-    <p class="sec-lede reveal">Pay for the tokens you use, switch on the extras you want, or license the weights and run it inside your own network. Every one of them starts with a card and a dashboard — there is nobody to call.</p>
+    <h2 class="reveal">Pay for tokens. Everything else is $20.</h2>
+    <p class="sec-lede reveal">Metered per token, with a free tier that needs no card. The extras that make an assistant yours are flat monthly switches in the dashboard. There is nobody to call and nothing to negotiate.</p>
     <div class="plans">
       <div class="plan reveal">
         <div class="ptag">Hosted API</div>
@@ -489,27 +475,14 @@ const bodyHtml = `<header class="hero">
         <div class="ptag">Add-ons</div>
         <h3>Make it yours</h3>
         <div class="price">$20 <span style="font-size:22px;color:var(--dark-mute)">/</span> mo <span style="font-size:22px;color:var(--dark-mute)">each</span></div>
-        <div class="per">switch on in the dashboard · cancel the same way</div>
+        <div class="per">white-label · per domain · switch on and off in the dashboard</div>
         <ul>
           <li><span class="tick">✓</span><span><b>White-label</b> — drop "Powered by Canonn" from every assistant</span></li>
-          <li><span class="tick">✓</span><span><b>Your own domain</b> — chat.yourcompany.com, certificate and all</span></li>
-          <li><span class="tick">✓</span><span><b>Extra assistants</b> — one is free, more are $20 each</span></li>
+          <li><span class="tick">✓</span><span><b>Your own domain</b> — chat.yourcompany.com, certificate and all, $20 per domain</span></li>
+          <li><span class="tick">✓</span><span><b>Unlimited assistants</b>, always free — one for support, one for sales, one per language</span></li>
           <li><span class="tick">✓</span><span>Billed to the same card as usage, no plan to negotiate</span></li>
         </ul>
         <a class="btn btn-dark" href="/dashboard/">Open the dashboard</a>
-      </div>
-      <div class="plan reveal">
-        <div class="ptag">On-premise</div>
-        <h3>License the weights</h3>
-        <div class="price">$12,000 <span style="font-size:22px;color:var(--mute)">/</span> yr</div>
-        <div class="per">flat license · unlimited tokens on your GPUs</div>
-        <ul>
-          <li><span class="tick">✓</span><span><b>Runs inside your network</b>, data never leaves</span></li>
-          <li><span class="tick">✓</span><span><b>Runs on one GPU</b>, weights in your hands</span></li>
-          <li><span class="tick">✓</span><span><b>Model updates</b> included for the license term</span></li>
-          <li><span class="tick">✓</span><span>Checkout online, weights on download — <b>no call required</b></span></li>
-        </ul>
-        <a class="btn btn-p" href="/dashboard/#billing">Buy a license</a>
       </div>
     </div>
   </div>
@@ -521,9 +494,9 @@ const bodyHtml = `<header class="hero">
     <h2 class="reveal">Cheaper. Private. Yours.</h2>
     <div class="prob-grid">
       <div class="pcard reveal"><div class="n">9B</div><h3>Small enough to own</h3><p>A single-GPU model. If your data can never leave your network, the weights fit on one card - no cluster required.</p></div>
-      <div class="pcard reveal"><div class="n">⛓</div><h3>On-prem, zero-trust</h3><p>Runs inside your network. Sensitive data never leaves, opening regulated markets that closed cloud APIs can't serve.</p></div>
+      <div class="pcard reveal"><div class="n">⛓</div><h3>Your data stays yours</h3><p>Sources are fetched to your device or browser and grounded per request. We never train on your content and never hold your provider credentials.</p></div>
       <div class="pcard reveal"><div class="n">◇</div><h3>No prompt engineering</h3><p>Faithfulness is in the weights. No 300-token rulebook on every call, no attention diluted by instructions.</p></div>
-      <div class="pcard reveal"><div class="n">⚡</div><h3>Private deployment</h3><p>For zero-trust environments: a licensed on-premise deployment that runs on a single GPU, inside your network, with nothing leaving it.</p></div>
+      <div class="pcard reveal"><div class="n">⚡</div><h3>Fast because it is small</h3><p>Nine billion parameters answer in about a second, where a frontier model takes several — and the price per million tokens follows the same logic.</p></div>
     </div>
   </div>
 </section>
@@ -915,8 +888,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .bcase .bfoot{padding:12px 20px;font-family:var(--mono);font-size:11.5px;color:var(--mute);background:var(--bg2);border-top:1px solid var(--line2)}
 @media(max-width:640px){.bcase .brow{grid-template-columns:1fr;gap:6px}}
 /* pricing plans */
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
-@media(max-width:1000px){.plans{grid-template-columns:1fr 1fr}}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px}
 @media(max-width:760px){.plans{grid-template-columns:1fr}}
 .plan{border:1px solid var(--line2);border-radius:20px;padding:38px 34px;background:var(--panel);display:flex;flex-direction:column;gap:0}
 .plan.featured{background:var(--dark);color:var(--dark-ink);border-color:var(--dark)}

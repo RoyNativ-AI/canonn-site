@@ -5,10 +5,16 @@ import {
   Archive, ArrowLeftRight, ArrowUp, ArrowUpRight, BarChart3, BookOpen, Braces,
   Check, ChevronDown, ClipboardType, CloudSun, Copy, Database, EllipsisVertical,
   FileCode, FileText, FileType, FolderOpen, GitBranch, Globe, HardDrive, Hash,
-  Headset, History, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
+  History, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
   Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, SquarePen, StickyNote,
   Table, Trash2, Type, Users, X,
 } from 'lucide-react'
+import {
+  siAirtable, siAmazons3, siBox, siConfluence, siDropbox, siGithub, siGitlab,
+  siGooglebigquery, siGoogledocs, siGoogledrive, siHelpscout, siHubspot,
+  siIntercom, siJira, siLinear, siMicrosoftonedrive, siMongodb, siMysql,
+  siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
+} from 'simple-icons'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -41,7 +47,22 @@ interface CatalogItem {
   name: string
   blurb: string
   icon: typeof Globe
+  /** Official mark (Simple Icons, same set the app bundles). Wins over icon. */
+  brand?: { path: string; hex: string }
   action?: LoaderId
+}
+
+// The service's real logo, in its real color - except near-black marks
+// (Notion, GitHub, Zendesk), which follow the theme so dark mode keeps them
+// visible. Mirrors the app's LoaderIcon template-image behavior.
+function BrandIcon({ brand, className }: { brand: { path: string; hex: string }; className?: string }) {
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(brand.hex.slice(i, i + 2), 16))
+  const dark = 0.299 * r + 0.587 * g + 0.114 * b < 70
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className} style={{ fill: dark ? 'var(--foreground)' : `#${brand.hex}` }}>
+      <path d={brand.path} />
+    </svg>
+  )
 }
 
 const CATALOG: { category: string; items: CatalogItem[] }[] = [
@@ -50,7 +71,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages.', icon: Network, action: 'crawl' },
     { name: 'Sitemap', blurb: 'Ingest every URL listed in a sitemap.xml.', icon: List },
     { name: 'RSS / Atom feed', blurb: 'Pull articles from a syndication feed.', icon: Rss },
-    { name: 'YouTube transcript', blurb: 'Import the transcript of a video or playlist.', icon: Play },
+    { name: 'YouTube transcript', blurb: 'Import the transcript of a video or playlist.', icon: Play, brand: siYoutube },
   ] },
   { category: 'Files', items: [
     { name: 'PDF', blurb: 'Contracts, reports, policies — text extracted page by page.', icon: FileText, action: 'pdf' },
@@ -64,51 +85,52 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
   ] },
   { category: 'Cloud storage', items: [
-    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen },
-    { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package },
-    { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive },
-    { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive },
-    { name: 'Amazon S3', blurb: 'Ingest a bucket or prefix using your own keys.', icon: Server },
+    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen, brand: siGoogledrive },
+    { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package, brand: siDropbox },
+    { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive, brand: siMicrosoftonedrive },
+    { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive, brand: siBox },
+    { name: 'Amazon S3', blurb: 'Ingest a bucket or prefix using your own keys.', icon: Server, brand: siAmazons3 },
   ] },
   { category: 'Workspace', items: [
-    { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote },
-    { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen },
-    { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash },
-    { name: 'Google Docs', blurb: 'Individual documents by link.', icon: FileText },
-    { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check },
-    { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight },
-    { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table },
+    { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote, brand: siNotion },
+    { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen, brand: siConfluence },
+    { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash, brand: siSlack },
+    { name: 'Google Docs', blurb: 'Individual documents by link.', icon: FileText, brand: siGoogledocs },
+    { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check, brand: siJira },
+    { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight, brand: siLinear },
+    { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table, brand: siAirtable },
   ] },
   { category: 'Code', items: [
-    { name: 'GitHub', blurb: 'Repository files, READMEs and wikis.', icon: FileCode },
-    { name: 'GitLab', blurb: 'Projects and wikis from GitLab.', icon: GitBranch },
+    { name: 'GitHub', blurb: 'Repository files, READMEs and wikis.', icon: FileCode, brand: siGithub },
+    { name: 'GitLab', blurb: 'Projects and wikis from GitLab.', icon: GitBranch, brand: siGitlab },
     { name: 'Documentation site', blurb: 'Crawl a docs site and keep its page structure.', icon: BookOpen, action: 'crawl' },
   ] },
   { category: 'Support & CRM', items: [
-    { name: 'Zendesk', blurb: 'Public help-centre articles, fetched without a login.', icon: LifeBuoy, action: 'zendesk' },
-    { name: 'Intercom', blurb: 'Articles and saved replies.', icon: MessageSquare },
-    { name: 'HubSpot', blurb: 'Knowledge base and CRM notes.', icon: Users },
-    { name: 'Salesforce', blurb: 'Knowledge articles and case notes.', icon: CloudSun },
-    { name: 'Help Scout', blurb: 'Docs collections and saved replies.', icon: MessageCircle },
+    { name: 'Zendesk', blurb: 'Public help-centre articles, fetched without a login.', icon: LifeBuoy, brand: siZendesk, action: 'zendesk' },
+    { name: 'Intercom', blurb: 'Articles and saved replies.', icon: MessageSquare, brand: siIntercom },
+    { name: 'HubSpot', blurb: 'Knowledge base and CRM notes.', icon: Users, brand: siHubspot },
+    { name: 'Salesforce', blurb: 'Knowledge articles and case notes.', icon: CloudSun, brand: siSalesforce },
+    { name: 'Help Scout', blurb: 'Docs collections and saved replies.', icon: MessageCircle, brand: siHelpscout },
   ] },
   { category: 'Databases & APIs', items: [
-    { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database },
-    { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database },
-    { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf },
-    { name: 'BigQuery', blurb: 'Warehouse tables as knowledge records.', icon: BarChart3 },
+    { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database, brand: siPostgresql },
+    { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database, brand: siMysql },
+    { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf, brand: siMongodb },
+    { name: 'BigQuery', blurb: 'Warehouse tables as knowledge records.', icon: BarChart3, brand: siGooglebigquery },
     { name: 'REST endpoint', blurb: 'Poll a JSON API and map fields to documents.', icon: ArrowLeftRight },
   ] },
 ]
 
 // Source rows carry the loader's face, like the app's LoaderIcon. The API
 // only returns a filename, so the kind is read off it: help-center imports
-// carry "help center" in their title, web pages have no extension, and
-// uploads keep theirs.
-function sourceIcon(filename: string): typeof Globe {
-  if (/help center/i.test(filename)) return Headset
-  if (/\.(csv|json)$/i.test(filename)) return Database
-  if (/\.[a-z0-9]{2,5}$/i.test(filename)) return FileText
-  return Globe
+// carry "help center" in their title (and get the real Zendesk mark), web
+// pages have no extension, and uploads keep theirs.
+function SourceGlyph({ filename, className }: { filename: string; className?: string }) {
+  if (/help center/i.test(filename)) return <BrandIcon brand={siZendesk} className={className} />
+  const Icon = /\.(csv|json)$/i.test(filename) ? Database
+    : /\.[a-z0-9]{2,5}$/i.test(filename) ? FileText
+    : Globe
+  return <Icon className={cn(className, 'text-muted-foreground')} />
 }
 
 // Same starter prompts as the app's empty chat screen.
@@ -443,7 +465,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               className="group flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-secondary/50"
             >
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-background">
-                {(() => { const Icon = sourceIcon(f.filename); return <Icon className="size-3.5 text-muted-foreground" /> })()}
+                <SourceGlyph filename={f.filename} className="size-3.5" />
               </span>
               <div className={cn('min-w-0 flex-1 transition-opacity', disabled.has(f.id) && 'opacity-45')}>
                 <div className="truncate text-[13px] font-medium">{f.filename}</div>
@@ -692,7 +714,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               <div key={category} className="mb-5 last:mb-0">
                 <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">{category}</div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {items.map(({ name, blurb, icon: Icon, action }) => (
+                  {items.map(({ name, blurb, icon: Icon, brand, action }) => (
                     <button
                       key={name}
                       disabled={!action}
@@ -708,7 +730,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                       )}
                     >
                       <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-card">
-                        <Icon className="size-3.5 text-foreground/70" />
+                        {brand
+                          ? <BrandIcon brand={brand} className="size-3.5" />
+                          : <Icon className="size-3.5 text-foreground/70" />}
                       </span>
                       <span className="min-w-0">
                         <span className="flex items-center gap-1.5 text-[13px] font-medium">

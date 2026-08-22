@@ -39,7 +39,7 @@ function rowEndpoint(r: LogRow): string {
 }
 
 const STATUS_FILTERS = [
-  { id: 'all', label: 'All' },
+  { id: 'all', label: 'All statuses' },
   { id: 'ok', label: 'Succeeded' },
   { id: 'failed', label: 'Failed' },
 ] as const
@@ -194,7 +194,7 @@ export function Logs({
             />
           </label>
           <Select value={keyFilter || 'all'} onValueChange={(v) => setKeyFilter(v === 'all' ? '' : v)}>
-            <SelectTrigger className="h-9 w-full min-w-[150px] bg-card font-mono text-xs sm:w-[170px]">
+            <SelectTrigger className="h-9 bg-card font-mono text-xs">
               <SelectValue placeholder="All keys" />
             </SelectTrigger>
             <SelectContent>
@@ -204,34 +204,26 @@ export function Logs({
               ))}
             </SelectContent>
           </Select>
-          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
-            {ORIGIN_FILTERS.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setOriginFilter(f.id)}
-                className={cn(
-                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
-                  originFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
-            {STATUS_FILTERS.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setStatusFilter(f.id)}
-                className={cn(
-                  'flex-1 rounded-md px-3 py-1.5 text-center font-mono text-xs transition-colors sm:flex-initial',
-                  statusFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+          <Select value={originFilter} onValueChange={(v) => setOriginFilter(v as OriginFilter)}>
+            <SelectTrigger className="h-9 bg-card font-mono text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ORIGIN_FILTERS.map((f) => (
+                <SelectItem key={f.id} value={f.id} className="font-mono text-xs">{f.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+            <SelectTrigger className="h-9 bg-card font-mono text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTERS.map((f) => (
+                <SelectItem key={f.id} value={f.id} className="font-mono text-xs">{f.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="flex w-full flex-wrap rounded-lg border border-input bg-card p-0.5 sm:w-auto">
             {RANGES.map((r) => (
               <button

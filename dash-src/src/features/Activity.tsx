@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button'
 import { ArrowDownRight, ArrowUpRight, CalendarRange, Terminal } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { fmt, type Me } from '@/lib/api'
+import { CHAT_URL, fmt, type Me } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const RANGES = [
@@ -73,7 +73,7 @@ function Stat({ label, value, suffix, prev, current, invert, loading }: {
 /** What to do when there is nothing to chart yet - a dashboard's empty state
  *  should teach the next step, not show an empty axis. */
 function GettingStarted() {
-  const snippet = `curl https://api.canonn.ai/v1/chat/completions \\
+  const snippet = `curl ${CHAT_URL} \\
   -H "Authorization: Bearer $CANONN_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{

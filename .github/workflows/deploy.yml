@@ -30,15 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Astro site
+      - name: Build site and dashboard
         run: npm run build
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Astro outputs the full static site (marketing pages + copied
-          # public/ assets, which include the prebuilt /dashboard app,
-          # CNAME, robots.txt, llms.txt, sitemap.xml) to ./dist
+          # ./dist = Astro site + public/ + the dashboard built into /dashboard
           path: ./dist
 
   deploy:

@@ -15,6 +15,7 @@ import {
   billingRemovePm, billingSavePm, billingSetupIntent, fmt,
   type BillingMe, type Me, type SavedCard,
   fetchInvoiceHtml,
+  SITE_URL,
 } from '@/lib/api'
 
 // The Element renders in an iframe: nothing inherits, so fonts and colors
@@ -272,7 +273,7 @@ export function Billing({ me }: { me: Me | null }) {
             if (el) el.scrollIntoView({ behavior: 'smooth' })
             else toast.info('No top-ups yet - your receipts will appear here after your first purchase.')
           } },
-          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open('https://canonn.ai/#plans', '_blank') },
+          { icon: BarChart3, title: 'Pricing', sub: 'View pricing and benchmarks', onClick: () => window.open(`${SITE_URL}/#plans`, '_blank') },
         ].map(({ icon: Icon, title, sub, onClick }) => (
           <button key={title} onClick={onClick} className="flex items-center gap-4 rounded-xl p-2 text-left transition-colors hover:bg-secondary/50">
             <span className="flex size-14 items-center justify-center rounded-xl bg-secondary">

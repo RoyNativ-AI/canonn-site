@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CHAT_URL } from '@/lib/api'
 import { Check, Copy, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -30,7 +31,7 @@ export function QuickStart() {
       2,
     )
     return [
-      "curl --location 'https://api.canonn.ai/v1/chat/completions' \\",
+      `curl --location '${CHAT_URL}' \\`,
       `--header 'Authorization: Bearer ${apiKey.trim() || 'YOUR_KEY'}' \\`,
       "--header 'Content-Type: application/json' \\",
       `--data '${body}'`,
@@ -51,7 +52,7 @@ export function QuickStart() {
       let res: { answer: string; seconds: number }
       if (apiKey.trim()) {
         const t0 = performance.now()
-        const r = await fetch('https://api.canonn.ai/v1/chat/completions', {
+        const r = await fetch(CHAT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey.trim()}` },
           body: JSON.stringify({
@@ -141,7 +142,7 @@ export function QuickStart() {
           </Button>
         </div>
         <pre className="max-h-[420px] overflow-y-auto px-4 py-3.5 font-mono text-xs leading-[1.65] break-all whitespace-pre-wrap">
-{`curl https://api.canonn.ai/v1/chat/completions \\
+{`curl ${CHAT_URL} \\
   -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">{apiKey.trim() || 'YOUR_KEY'}</b>{`" \\
   -d '{"model":"canonn-r1","messages":[
     {"role":"system","content":"`}<span className="text-[#e8b39e]">{esc(data) || 'YOUR DATA'}</span>{`"},

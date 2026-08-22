@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useClerk, useSession, useUser } from '@clerk/clerk-react'
-import { fetchMe, type Me } from '@/lib/api'
+import { fetchMe, SITE_URL, type Me } from '@/lib/api'
 import { Activity } from '@/features/Activity'
 import { Logs } from '@/features/Logs'
 import { Keys } from '@/features/Keys'
@@ -118,7 +118,7 @@ export function Shell() {
           Account settings
         </button>
         <button
-          onClick={() => signOut({ redirectUrl: 'https://canonn.ai' })}
+          onClick={() => signOut({ redirectUrl: SITE_URL })}
           className="w-full px-4 py-2.5 text-left text-sm text-destructive transition-colors hover:bg-secondary"
         >
           Sign out
@@ -128,7 +128,7 @@ export function Shell() {
   )
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className={cn('flex min-h-dvh flex-col', screen === 'playground' && 'h-dvh')}>
       {/* ---- Sidebar (desktop) ---- */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border lg:flex">
         <a href="/" className="flex items-center gap-2.5 px-5 pt-5 font-display text-[16px] font-semibold">
@@ -160,7 +160,7 @@ export function Shell() {
             </div>
           ))}
           <a
-            href="https://canonn.ai/docs/"
+            href={`${SITE_URL}/docs/`}
             target="_blank"
             rel="noreferrer"
             className="mt-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] text-muted-foreground transition-colors hover:text-foreground"
@@ -239,8 +239,15 @@ export function Shell() {
 
       {/* Sticky footer: the content column fills the viewport and main takes
           the slack, so a short screen still pins the footer to the bottom. */}
-      <div className="flex flex-1 flex-col lg:pl-[224px]">
-        <main className="mx-auto w-full max-w-[1100px] flex-1 px-5 py-8 sm:px-8 lg:py-10">
+      <div className="flex min-h-0 flex-1 flex-col lg:pl-[224px]">
+        <main className={cn(
+          'flex w-full flex-1 flex-col',
+          // The playground is a workspace, not a document: it takes the whole
+          // content area edge to edge. Data screens keep a reading width.
+          screen === 'playground'
+            ? 'min-h-0 p-4 sm:p-5'
+            : 'mx-auto max-w-[1100px] px-5 py-8 sm:px-8 lg:py-10',
+        )}>
           {error && (
             <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 font-mono text-xs text-destructive">
               {error}
@@ -248,7 +255,7 @@ export function Shell() {
           )}
           {/* Keyed on the screen so switching settles in with a short fade
               instead of snapping. */}
-          <div key={screen} className="screen-enter">
+          <div key={screen} className={cn('screen-enter', screen === 'playground' && 'flex min-h-0 flex-1 flex-col')}>
             {screen === 'playground' && (
               <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
             )}
@@ -272,8 +279,8 @@ export function Shell() {
         {screen !== 'playground' && <footer className="mx-auto flex w-full max-w-[1100px] flex-col gap-y-1.5 px-5 pt-2 pb-8 font-mono text-[10.5px] text-muted-foreground sm:flex-row sm:items-center sm:px-8">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
             <span>© 2026 Canonn</span>
-            <a href="https://canonn.ai/docs/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
-            <a href="https://canonn.ai/legal/" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
+            <a href={`${SITE_URL}/docs/`} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
+            <a href={`${SITE_URL}/legal/`} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
           </div>
           <span className="sm:ml-auto">api.canonn.ai · canonn-r1</span>
         </footer>}

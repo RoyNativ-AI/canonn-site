@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "dev:dashboard": "npm --prefix dash-src run dev",
+    "build": "astro build && npm run build:dashboard",
+    "build:dashboard": "npm --prefix dash-src ci && npm --prefix dash-src run build && rm -rf dist/dashboard && cp -r dash-src/dist dist/dashboard",
     "preview": "astro preview"
   },
   "devDependencies": {

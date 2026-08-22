@@ -1,4 +1,8 @@
-const API = 'https://api.canonn.ai/v1'
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://api.canonn.ai/v1'
+export const CHAT_URL = `${API_BASE}/chat/completions`
+/** The public site, for links out of the console. */
+export const SITE_URL = 'https://canonn.ai'
+const API = API_BASE
 
 export interface UsageDay { requests: number; pt: number; ct: number }
 export interface LogRow {
@@ -97,7 +101,7 @@ export const fetchLogs = (
   )
 
 export const runDemo = (data: string, question: string) =>
-  fetch('https://api.canonn.ai/v1/demo', {
+  fetch(`${API_BASE}/demo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ data, question }),
@@ -136,7 +140,7 @@ export interface BillingMe {
   transactions: { iid: number; ts: number; amount_usd: number; kind: string; receipt_url: string | null }[]
 }
 export const billingConfig = () =>
-  fetch('https://api.canonn.ai/v1/billing/config').then(async (r) => {
+  fetch(`${API_BASE}/billing/config`).then(async (r) => {
     const b = await r.json()
     if (!r.ok) throw new Error(b.error ?? 'billing not configured')
     return b as { publishable_key: string }

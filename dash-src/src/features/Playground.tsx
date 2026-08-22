@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useUser } from '@clerk/clerk-react'
+import { formatDistanceToNowStrict } from 'date-fns'
 import {
   Archive, ArrowLeftRight, ArrowUp, ArrowUpRight, BarChart3, BookOpen, Braces,
-  Check, ChevronDown, ClipboardType, CloudSun, Copy, Database, FileCode,
-  FileText, FileType, FolderOpen, GitBranch, Globe, HardDrive, Hash,
-  Headset, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
-  Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, StickyNote, Table, Trash2,
-  Type, Users, X,
+  Check, ChevronDown, ClipboardType, CloudSun, Copy, Database, EllipsisVertical,
+  FileCode, FileText, FileType, FolderOpen, GitBranch, Globe, HardDrive, Hash,
+  Headset, History, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
+  Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, SquarePen, StickyNote,
+  Table, Trash2, Type, Users, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -124,7 +126,25 @@ interface Turn {
   error?: boolean
 }
 
+// A finished conversation, as it lives in localStorage. Client-side only:
+// the server never sees or stores chat history. Keyed per Clerk user so two
+// accounts on one machine keep separate lists.
+interface StoredChat {
+  id: string
+  createdAt: number
+  updatedAt: number
+  turns: Turn[]
+}
+
+const MAX_CHATS = 50
+
+function chatTitle(chat: StoredChat): string {
+  const first = chat.turns.find((t) => t.role === 'user')?.content.trim()
+  return first ? (first.length > 64 ? `${first.slice(0, 64)}…` : first) : 'New conversation'
+}
+
 export function Playground({ getToken }: { getToken: () => Promise<string | null> }) {
+  const { user } = useUser()
   const [files, setFiles] = useState<KnowledgeFile[] | null>(null)
   const [turns, setTurns] = useState<Turn[]>([])
   const [question, setQuestion] = useState('')
@@ -152,6 +172,65 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const fileInput = useRef<HTMLInputElement>(null)
   const pdfInput = useRef<HTMLInputElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
+
+  // ---- Conversation history: localStorage per Clerk user, never the server.
+  const storageKey = `pg.chats.${user?.id ?? 'anon'}`
+  const [chats, setChats] = useState<StoredChat[]>([])
+  const [chatId, setChatId] = useState<string | null>(null)
+  const [histOpen, setHistOpen] = useState(false)
+
+  useEffect(() => {
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
+      setChats(Array.isArray(parsed) ? (parsed as StoredChat[]) : [])
+    } catch {
+      setChats([])
+    }
+    setChatId(null)
+    setTurns([])
+  }, [storageKey])
+
+  // Save when a turn completes - never per streamed token. Opening an old
+  // chat re-sets the same turns reference, which the guard treats as "already
+  // saved" so a mere read does not bump the chat to the top of the list.
+  useEffect(() => {
+    if (busy || turns.length === 0) return
+    const existing = chatId ? chats.find((c) => c.id === chatId) : undefined
+    if (existing && existing.turns === turns) return
+    const now = Date.now()
+    const id = chatId ?? crypto.randomUUID()
+    const entry: StoredChat = existing
+      ? { ...existing, turns, updatedAt: now }
+      : { id, createdAt: now, updatedAt: now, turns }
+    const next = [entry, ...chats.filter((c) => c.id !== id)].slice(0, MAX_CHATS)
+    setChats(next)
+    if (!chatId) setChatId(id)
+    try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* quota - keep in memory */ }
+  }, [busy, turns, chatId, chats, storageKey])
+
+  const newChat = () => {
+    if (busy) return
+    setTurns([])
+    setChatId(null)
+    setHistOpen(false)
+  }
+
+  const openChat = (chat: StoredChat) => {
+    if (busy) return
+    setTurns(chat.turns)
+    setChatId(chat.id)
+    setHistOpen(false)
+  }
+
+  const deleteChat = (id: string) => {
+    const next = chats.filter((c) => c.id !== id)
+    setChats(next)
+    try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* quota - keep in memory */ }
+    if (id === chatId) {
+      setChatId(null)
+      setTurns([])
+    }
+  }
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
     const t = await getToken()
@@ -266,10 +345,22 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         className="w-full bg-transparent px-5 pt-4 pb-1.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
       />
       <div className="flex items-center gap-2 px-3 pt-1 pb-3">
-        <button onClick={() => setSrcOpen(true)} className={composerChip}>
-          <Database className="size-3.5" />
-          {inScope.length ? `Sources · ${inScope.length} in scope` : 'Sources'}
+        <button onClick={() => setSrcOpen(true)} className={cn(composerChip, 'min-w-0')}>
+          <Database className="size-3.5 shrink-0" />
+          <span className="truncate">{inScope.length ? `Sources · ${inScope.length} in scope` : 'Sources'}</span>
         </button>
+        {/* Text labels yield to icons on a phone so the toolbar never wraps
+            or scrolls at 375px. */}
+        <button onClick={() => { if (!busy) setHistOpen(true) }} className={composerChip} aria-label="Conversation history">
+          <History className="size-3.5" />
+          <span className="max-sm:hidden">History</span>
+        </button>
+        {turns.length > 0 && (
+          <button onClick={newChat} className={composerChip} aria-label="New chat">
+            <SquarePen className="size-3.5" />
+            <span className="max-sm:hidden">New chat</span>
+          </button>
+        )}
         <div className="flex-1" />
         <button
           onClick={ask}
@@ -361,6 +452,18 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 className="shrink-0 data-[state=checked]:bg-foreground"
                 aria-label={`Include ${f.filename} in answers`}
               />
+              {/* Right-click has no finger: the same menu opens from this
+                  button, always visible on coarse pointers. */}
+              <button
+                onClick={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect()
+                  setCtxMenu({ id: f.id, name: f.filename, x: r.right - 192, y: r.bottom + 4 })
+                }}
+                className="shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100 hover:text-foreground"
+                aria-label={`Options for ${f.filename}`}
+              >
+                <EllipsisVertical className="size-4" />
+              </button>
             </div>
           ))}
           {uploading && (
@@ -379,6 +482,62 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         </div>
       </div>
 
+      {/* ---- History: same drawer pattern as Knowledge. Conversations live
+           in this browser only - localStorage, per signed-in user. ---- */}
+      {histOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setHistOpen(false)} />}
+      <div className={cn(
+        'flex-col border-r border-border bg-card',
+        histOpen ? 'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] shadow-2xl' : 'hidden',
+      )}>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <span className="text-xs font-medium text-muted-foreground">Chats</span>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={newChat}>
+              <SquarePen className="size-3.5" /> New chat
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setHistOpen(false)} aria-label="Close history">
+              <X className="size-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 py-2">
+          {chats.length === 0 && (
+            <div className="px-4 py-8 text-center text-xs text-muted-foreground">
+              No conversations yet.
+              <div className="mt-1 font-mono text-[10.5px] opacity-70">chats stay in this browser</div>
+            </div>
+          )}
+          {chats.map((chat) => (
+            <div
+              key={chat.id}
+              className={cn(
+                'group flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-secondary/50',
+                chat.id === chatId && 'bg-secondary/50',
+              )}
+            >
+              <button onClick={() => openChat(chat)} className="min-w-0 flex-1 text-left">
+                <div className="truncate text-[13px] font-medium">{chatTitle(chat)}</div>
+                <div className="font-mono text-[10.5px] text-muted-foreground">
+                  {formatDistanceToNowStrict(chat.updatedAt, { addSuffix: true })} · {chat.turns.length} {chat.turns.length === 1 ? 'message' : 'messages'}
+                </div>
+              </button>
+              <button
+                onClick={() => deleteChat(chat.id)}
+                className="shrink-0 rounded-md p-1.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100 hover:text-destructive"
+                aria-label={`Delete chat: ${chatTitle(chat)}`}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-border px-4 py-2.5 font-mono text-[10.5px] text-muted-foreground">
+          {chats.length === 0 ? 'Stored on this device only' : `${chats.length} ${chats.length === 1 ? 'chat' : 'chats'} · stored on this device only`}
+        </div>
+      </div>
+
       {/* ---- Chat: the whole canvas, straight on the paper background,
            like the app's chat screen. No card around the conversation. ---- */}
       <div className="flex min-h-0 flex-1 flex-col">
@@ -386,8 +545,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             and the composer together in one centered column. Once the first
             message is sent the composer drops to the bottom like any chat. */}
         {turns.length === 0 && (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8 sm:px-6">
-            <div className="w-full max-w-2xl">
+          // justify-center on a scroll container clips the top once content is
+          // taller than the viewport (small phones, open keyboard); my-auto on
+          // the child centers the same way but degrades to scrollable.
+          <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 py-8 sm:px-6">
+            <div className="my-auto w-full max-w-2xl">
               <div className="mb-5 flex items-center justify-center gap-2.5">
                 <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
                 <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
@@ -427,7 +589,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="mb-5 flex justify-end">
-                <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px]">{turn.content}</div>
+                <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px] break-words whitespace-pre-wrap">{turn.content}</div>
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
@@ -468,9 +630,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
 
       {ctxMenu && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setCtxMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCtxMenu(null) }} />
+          {/* Above the sources drawer (z-50), so a tap anywhere - including
+              inside the drawer - dismisses the menu. */}
+          <div className="fixed inset-0 z-[60]" onClick={() => setCtxMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCtxMenu(null) }} />
           <div
-            className="fixed z-50 w-48 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
+            className="fixed z-[65] w-48 overflow-hidden rounded-xl border border-border bg-card py-1 shadow-lg"
             style={{ left: Math.min(ctxMenu.x, window.innerWidth - 200), top: Math.min(ctxMenu.y, window.innerHeight - 100) }}
           >
             <button
@@ -636,7 +800,7 @@ function Inline({ text }: { text: string }) {
 function Answer({ text }: { text: string }) {
   const blocks = text.split(/\n/)
   return (
-    <div className="space-y-1 text-[15px] leading-[1.7]">
+    <div className="space-y-1 text-[15px] leading-[1.7] break-words">
       {blocks.map((line, i) => {
         const heading = line.match(/^(#{1,6})\s+(.*)$/)
         if (heading) {
@@ -689,7 +853,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
           >
             {c.excerpt && (
               <div className={cn(
-                'mb-2 text-[13px] leading-relaxed whitespace-pre-wrap',
+                'mb-2 text-[13px] leading-relaxed break-words whitespace-pre-wrap',
                 open !== i && 'line-clamp-3',
               )}>
                 {open === i ? c.excerpt : `“${c.excerpt.trim()}”`}

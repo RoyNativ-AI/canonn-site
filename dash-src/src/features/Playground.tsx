@@ -978,7 +978,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             turn.role === 'user' ? (
               <div key={i} className="group/turn mb-5 flex flex-col items-end">
                 <div className="max-w-[85%] rounded-[18px] bg-secondary px-4 py-2.5 text-[15px] break-words whitespace-pre-wrap">{turn.content}</div>
-                <div className="mt-1 flex items-center gap-1.5 pr-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100">
+                <div className="mt-1 flex items-center gap-1.5 pr-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100 pointer-coarse:opacity-100">
                   <CopyAnswer text={turn.content} />
                   {turn.ts && <span className="font-mono text-[10.5px] text-muted-foreground">{fmtTime(turn.ts)}</span>}
                 </div>
@@ -1006,7 +1006,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 {/* Actions live under the message, where every chat keeps
                     them: copy shows on hover, the timestamp stays put. */}
                 {!turn.error && turn.content && !(busy && i === turns.length - 1) && (
-                  <div className="mt-1.5 flex items-center gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100">
+                  <div className="mt-1.5 flex items-center gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100 pointer-coarse:opacity-100">
                     <CopyAnswer text={turn.content} />
                     {turn.ts && <span className="font-mono text-[10.5px] text-muted-foreground">{fmtTime(turn.ts)}</span>}
                   </div>

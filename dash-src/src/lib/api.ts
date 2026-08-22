@@ -412,3 +412,19 @@ export const uploadFromSqlTable = (token: string, engine: SqlEngine, connectionS
     method: 'POST',
     body: JSON.stringify({ [engine]: { connection_string: connectionString, table } }),
   })
+
+// ---- Google "share with Canonn": files shared with our service account stay in sync ----
+
+export interface SharedCandidate { id: string; name: string; mimeType: string; modifiedTime: string; sharedBy: string; folder: string | null }
+export interface SyncedFile { file_id: string; remote_id: string; name: string; mime: string; shared_by: string; modified: string; last_sync: number; status: string }
+export interface SharedState { address: string; emails: string[]; candidates: SharedCandidate[]; synced: SyncedFile[]; warning: string | null }
+
+export const googleSharedState = (token: string) => request<SharedState>('/me/google-shared', token)
+export const googleSharedClaim = (token: string, ids: string[]) =>
+  request<{ imported: { id: string; file_id: string; chunks: number }[]; failed: { id: string; error: string }[] }>('/me/google-shared', token, {
+    method: 'POST', body: JSON.stringify({ ids }),
+  })
+export const googleSharedRefresh = (token: string, fileId: string) =>
+  request<{ file_id: string; chunks: number }>(`/me/google-shared/${fileId}/refresh`, token, { method: 'POST' })
+export const googleSharedStop = (token: string, fileId: string) =>
+  request<{ file_id: string; syncing: false }>(`/me/google-shared/${fileId}`, token, { method: 'DELETE' })

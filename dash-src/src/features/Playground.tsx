@@ -49,7 +49,8 @@ import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
   uploadFromZendesk, uploadTextFile, uploadFromSitemap, uploadFromFeed, uploadFromHelpCenter,
   uploadFromGithub, uploadFromRest, previewSql, uploadFromSql, listSqlTables, uploadFromSqlTable, fmt,
-  type GroundedCitation, type KnowledgeFile, type SqlPreview, type SqlTable,
+  googleSharedState, googleSharedClaim, googleSharedRefresh, googleSharedStop,
+  type GroundedCitation, type KnowledgeFile, type SqlPreview, type SqlTable, type SharedState,
 } from '@/lib/api'
 import { officeToText, imageToText } from '@/lib/office'
 import {
@@ -71,7 +72,7 @@ const ACCENT = '#c96442'
 type LoaderId =
   | 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'office' | 'ocr' | 'sitemap' | 'feed'
   | 'zendesk' | 'intercom' | 'helpscout' | 'hubspot' | 'github' | 'rest' | 'postgres' | 'mysql'
-  | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal'
+  | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal' | 'gshared'
 
 // Google loaders light up only once the dashboard has a client ID.
 const DRIVE_FILTERS: Partial<Record<LoaderId, DriveFilter>> = { gdrive: 'all', gdocs: 'docs', gsheets: 'sheets' }
@@ -110,6 +111,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Google Drive', blurb: 'Pick documents in Google\'s file picker and import them.', icon: FolderOpen, brand: siGoogledrive, action: google('gdrive') },
     { name: 'Google Docs', blurb: 'Docs and Slides, exported as text.', icon: FileText, brand: siGoogledocs, action: google('gdocs') },
     { name: 'Google Sheets', blurb: 'Spreadsheets, flattened row by row.', icon: Table, brand: siGooglesheets, action: google('gsheets') },
+    { name: 'Keep in sync', blurb: 'Share a Sheet, Doc or folder with Canonn\'s address; it stays up to date.', icon: History, brand: siGoogledrive, action: 'gshared' },
     { name: 'Gmail', blurb: 'Messages matching a Gmail search, one record each.', icon: MessageSquare, brand: siGmail, action: google('gmail') },
     { name: 'Google Calendar', blurb: 'Events from the last 90 days and the next 180.', icon: History, brand: siGooglecalendar, action: google('gcal') },
     { name: 'YouTube transcript', blurb: 'Captions of the videos on your own channel.', icon: Play, brand: siYoutube, action: google('youtube') },
@@ -260,6 +262,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [sqlSel, setSqlSel] = useState<Set<string>>(new Set())
   const [sqlAdvanced, setSqlAdvanced] = useState(false)
   const [sqlFilter, setSqlFilter] = useState('')
+  const [shared, setShared] = useState<SharedState | null>(null)
+  const [sharedBusy, setSharedBusy] = useState(false)
+  const [sharedSel, setSharedSel] = useState<Set<string>>(new Set())
   const scroller = useRef<HTMLDivElement>(null)
 
   // ---- Conversation history: localStorage per Clerk user, never the server.
@@ -396,6 +401,34 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         await uploadTextFile(t, file.name.replace(/\.[^.]+$/, '') + '.txt', text)
       }
     })
+
+  // "Share with Canonn": the edge lists files this user's verified e-mails
+  // shared with our service account; claiming imports them and keeps them
+  // in sync. Ownership is decided server-side.
+  async function loadShared() {
+    setSharedBusy(true)
+    try { setShared(await withToken((t) => googleSharedState(t))) } catch (e) { fail(e) } finally { setSharedBusy(false) }
+  }
+
+  const claimShared = () => {
+    const ids = [...sharedSel]
+    setSharedSel(new Set())
+    return ingest(`Importing ${ids.length} ${ids.length === 1 ? 'file' : 'files'}…`, async (t) => {
+      const r = await googleSharedClaim(t, ids)
+      if (r.failed.length) toast.warning(r.failed.map((f) => f.error).join('; '))
+      if (!r.imported.length) throw new Error('Nothing was imported')
+    })
+  }
+
+  async function sharedAction(fileId: string, action: 'refresh' | 'stop') {
+    setSharedBusy(true)
+    try {
+      await withToken<unknown>((t) => (action === 'refresh' ? googleSharedRefresh(t, fileId) : googleSharedStop(t, fileId)))
+      toast.success(action === 'refresh' ? 'Synced' : 'Sync stopped - the source stays as it is')
+      await loadShared()
+      refresh()
+    } catch (e) { fail(e) } finally { setSharedBusy(false) }
+  }
 
   // SQL: the connection string is in formExtra. Connect lists the tables
   // for picking; Advanced exposes a SELECT (formText) with a 5-row preview.
@@ -1051,6 +1084,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         else if (action === 'ocr') { setPicker(false); imageInput.current?.click() }
                         else if (action in DRIVE_FILTERS) void openDrive(action)
                         else if (action === 'youtube') void openYouTube()
+                        else if (action === 'gshared') { setForm('gshared'); setShared(null); setSharedSel(new Set()); void loadShared() }
                         else setForm(action)
                       }}
                       className={cn(
@@ -1205,6 +1239,72 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     )}
                   </>
                 )}
+                {form === 'gshared' && (
+                  <>
+                    {!shared && (
+                      <div className="flex items-center gap-2 py-6 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" /> Checking what you shared…</div>
+                    )}
+                    {shared && (
+                      <>
+                        <div className="rounded-lg border border-border bg-background p-3">
+                          <div className="mb-1 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">1 · Share with this address (Viewer is enough)</div>
+                          <div className="flex items-center gap-2">
+                            <code className="min-w-0 flex-1 truncate font-mono text-xs">{shared.address}</code>
+                            <button onClick={() => { void navigator.clipboard.writeText(shared.address); toast.success('Copied') }} className="text-muted-foreground hover:text-foreground" aria-label="Copy address"><Copy className="size-3.5" /></button>
+                          </div>
+                          <div className="mt-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">2 · Share it from</div>
+                          <div className="text-xs">{shared.emails.length ? shared.emails.join(', ') : 'no verified e-mail on your account'}</div>
+                          <p className="mt-2 text-xs text-muted-foreground">Only files shared from your own e-mail can be imported here, so nobody else's shares ever land in your sources. Sheets, Docs, Slides, text and folders; re-checked every 6 hours.</p>
+                        </div>
+                        {shared.warning && <p className="mt-2 text-xs text-[#c96442]">{shared.warning}</p>}
+
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">3 · Shared with Canonn, not yet imported</div>
+                          <button onClick={() => void loadShared()} disabled={sharedBusy} className="text-xs text-muted-foreground hover:text-foreground">{sharedBusy ? 'Checking…' : 'Refresh'}</button>
+                        </div>
+                        {shared.candidates.length === 0 ? (
+                          <p className="py-3 text-xs text-muted-foreground">Nothing yet. Share a file, then Refresh.</p>
+                        ) : (
+                          <div className="mt-1 max-h-[30vh] overflow-y-auto rounded-lg border border-border">
+                            {shared.candidates.map((c) => {
+                              const on = sharedSel.has(c.id)
+                              return (
+                                <label key={c.id} className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0 hover:bg-muted/40">
+                                  <input type="checkbox" checked={on} onChange={() => setSharedSel((prev) => { const n = new Set(prev); if (on) n.delete(c.id); else n.add(c.id); return n })} className="size-3.5 accent-foreground" />
+                                  <span className="min-w-0 flex-1 truncate text-[13px]">{c.folder ? `${c.folder} / ` : ''}{c.name}</span>
+                                  <span className="shrink-0 font-mono text-[10.5px] text-muted-foreground">{c.mimeType.includes('spreadsheet') ? 'Sheet' : c.mimeType.includes('document') ? 'Doc' : c.mimeType.includes('presentation') ? 'Slides' : 'Text'}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        )}
+                        <Button onClick={() => { void claimShared(); setPicker(false) }} disabled={sharedSel.size === 0 || !!uploading} className="mt-2 h-9 w-full text-sm">
+                          Import and keep in sync ({sharedSel.size})
+                        </Button>
+
+                        {shared.synced.length > 0 && (
+                          <>
+                            <div className="mt-4 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Syncing</div>
+                            <div className="mt-1 rounded-lg border border-border">
+                              {shared.synced.map((f) => (
+                                <div key={f.file_id} className="flex items-center gap-2.5 border-b border-border px-3 py-2 last:border-b-0">
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-[13px]">{f.name}</span>
+                                    <span className={cn('block truncate font-mono text-[10.5px]', f.status.startsWith('error') ? 'text-[#c96442]' : 'text-muted-foreground')}>
+                                      {f.status.startsWith('error') ? f.status : `checked ${formatDistanceToNowStrict(f.last_sync * 1000, { addSuffix: true })}`}
+                                    </span>
+                                  </span>
+                                  <button onClick={() => void sharedAction(f.file_id, 'refresh')} disabled={sharedBusy} className="text-xs text-muted-foreground hover:text-foreground">Sync now</button>
+                                  <button onClick={() => void sharedAction(f.file_id, 'stop')} disabled={sharedBusy} className="text-xs text-muted-foreground hover:text-foreground">Stop</button>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
                 {form === 'gmail' && (
                   <>
                     <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="from:support@acme.com newer_than:90d" className="mb-1 h-9 bg-background font-mono text-xs" />
@@ -1265,7 +1365,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     </div>
                   </>
                 )}
-                {form !== 'youtube' && !((form === 'postgres' || form === 'mysql') && !sqlAdvanced) && <Button
+                {form !== 'youtube' && form !== 'gshared' && !((form === 'postgres' || form === 'mysql') && !sqlAdvanced) && <Button
                   onClick={() => {
                     if (form === 'paste') {
                       const name = (formTitle.trim() || 'Pasted text').slice(0, 80)

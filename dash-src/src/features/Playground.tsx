@@ -111,9 +111,9 @@ function sourceIcon(filename: string): typeof Globe {
 
 // Same starter prompts as the app's empty chat screen.
 const SUGGESTIONS = [
-  'What does our refund policy say?',
-  'Summarise the key obligations in this contract.',
-  'Which clauses mention data retention?',
+  { q: 'What does our refund policy say?', icon: FileText },
+  { q: 'Summarise the key obligations in this contract.', icon: BookOpen },
+  { q: 'Which clauses mention data retention?', icon: Database },
 ]
 
 interface Turn {
@@ -251,35 +251,49 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const scopePassages = inScope.reduce((n, f) => n + f.chunk_count, 0)
 
   // One composer, two homes: centered on the empty screen, pinned to the
-  // bottom once a conversation is running.
+  // bottom once a conversation is running. Two rows, like the serious chat
+  // products: the question on top, the toolbar - sources in, send out -
+  // underneath. Sources live behind it, not beside it.
+  const composerChip = 'flex items-center gap-1.5 rounded-full border border-input px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground'
   const composer = (
-    <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-2 pr-2 pl-5 shadow-sm transition-colors focus-within:border-foreground/40">
+    <div className="rounded-[24px] border border-input bg-card shadow-sm transition-colors focus-within:border-foreground/40">
       <input
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && ask()}
         placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`}…` : 'Ask anything…'}
         disabled={busy}
-        className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
+        className="w-full bg-transparent px-5 pt-4 pb-1.5 text-base outline-none placeholder:text-muted-foreground disabled:opacity-60 sm:text-[15px]"
       />
-      <button
-        onClick={ask}
-        disabled={busy || !question.trim()}
-        className="flex size-9 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
-        aria-label="Send"
-      >
-        <ArrowUp className="size-4" />
-      </button>
+      <div className="flex items-center gap-2 px-3 pt-1 pb-3">
+        <button onClick={() => { setPicker(true); setForm(null) }} className={composerChip}>
+          <Plus className="size-3.5" /> Add source
+        </button>
+        <button onClick={() => setSrcOpen(true)} className={composerChip}>
+          <Database className="size-3.5" />
+          {inScope.length ? `Sources · ${inScope.length} in scope` : 'Sources'}
+        </button>
+        <div className="flex-1" />
+        <button
+          onClick={ask}
+          disabled={busy || !question.trim()}
+          className="flex size-9 items-center justify-center rounded-full bg-foreground text-background transition-opacity disabled:opacity-30"
+          aria-label="Send"
+        >
+          <ArrowUp className="size-4" />
+        </button>
+      </div>
     </div>
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:items-stretch">
-      {/* ---- Sources ---- */}
-      {srcOpen && <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setSrcOpen(false)} />}
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* ---- Sources: a drawer over the chat, not a permanent column. The
+           canvas belongs to the conversation; knowledge slides in on demand. ---- */}
+      {srcOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSrcOpen(false)} />}
       <div className={cn(
-        'shrink-0 flex-col rounded-xl border border-border bg-card lg:flex lg:w-[320px]',
-        srcOpen ? 'fixed inset-x-3 top-20 bottom-6 z-50 flex shadow-2xl lg:static lg:inset-auto lg:shadow-none' : 'hidden lg:flex',
+        'flex-col border-r border-border bg-card',
+        srcOpen ? 'fixed inset-y-0 left-0 z-50 flex w-[360px] max-w-[92vw] shadow-2xl' : 'hidden',
       )}>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-xs font-medium text-muted-foreground">Knowledge</span>
@@ -287,7 +301,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" onClick={() => { setPicker(true); setForm(null) }}>
               <Plus className="size-3.5" /> Add source
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 lg:hidden" onClick={() => setSrcOpen(false)} aria-label="Close sources">
+            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setSrcOpen(false)} aria-label="Close sources">
               <X className="size-4" />
             </Button>
           </div>
@@ -368,48 +382,42 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         </div>
       </div>
 
-      {/* ---- Chat ---- */}
-      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border px-3 py-2 lg:hidden">
-          <button onClick={() => setSrcOpen(true)}
-            className="flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-xs text-muted-foreground active:bg-secondary">
-            <Database className="size-3.5" />
-            {(files ?? []).length ? `Sources · ${inScope.length} in scope` : 'Add sources'}
-          </button>
-          {scopePassages > 0 && <span className="font-mono text-[10.5px] text-muted-foreground">{scopePassages} passages</span>}
-        </div>
+      {/* ---- Chat: the whole canvas, straight on the paper background,
+           like the app's chat screen. No card around the conversation. ---- */}
+      <div className="flex min-h-0 flex-1 flex-col">
         {/* Empty state is a chat home, not a splash: headline, suggestions,
             and the composer together in one centered column. Once the first
             message is sent the composer drops to the bottom like any chat. */}
         {turns.length === 0 && (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 py-8 sm:px-6">
             <div className="w-full max-w-2xl">
-              <div className="mb-4 flex items-center justify-center gap-2.5">
+              <div className="mb-5 flex items-center justify-center gap-2.5">
                 <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
                 <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
               </div>
-              <h2 className="text-center font-display text-[28px] leading-[1.12] font-semibold tracking-tight sm:text-[32px]">
+              <h2 className="text-center font-display text-[28px] leading-[1.12] font-semibold tracking-tight sm:text-[34px]">
                 The model that trusts your data.
               </h2>
               <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
                 {inScope.length
                   ? `${inScope.length} ${inScope.length === 1 ? 'source' : 'sources'} in scope. Every answer shows the passages it came from.`
-                  : 'Add a website or a document under Knowledge, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
+                  : 'Add a website or a document, then ask about it. Canonn answers from what you give it — not from what it remembers.'}
               </p>
               {inScope.length > 0 && (
-                <div className="mt-7 grid gap-2 sm:grid-cols-3">
-                  {SUGGESTIONS.map((s) => (
+                <div className="mt-9 grid gap-2.5 sm:grid-cols-3">
+                  {SUGGESTIONS.map(({ q, icon: Icon }) => (
                     <button
-                      key={s}
-                      onClick={() => setQuestion(s)}
-                      className="rounded-lg border border-border bg-background p-3 text-left text-[13px] leading-snug text-foreground/80 transition-colors hover:border-foreground/30 hover:text-foreground"
+                      key={q}
+                      onClick={() => setQuestion(q)}
+                      className="rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-foreground/30"
                     >
-                      {s}
+                      <Icon className="mb-2.5 size-4 text-muted-foreground" />
+                      <div className="text-[13px] leading-snug text-foreground/85">{q}</div>
                     </button>
                   ))}
                 </div>
               )}
-              <div className="mt-7">{composer}</div>
+              <div className="mt-9">{composer}</div>
             </div>
           </div>
         )}
@@ -455,7 +463,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         )}
 
         {turns.length > 0 && (
-          <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="mx-auto w-full max-w-[760px]">{composer}</div>
           </div>
         )}

@@ -153,7 +153,7 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
   ] },
   { category: 'Support & CRM', items: [
     { name: 'Zendesk', blurb: 'Public help-centre articles, fetched without a login.', icon: LifeBuoy, brand: siZendesk, action: 'zendesk' },
-    { name: 'Intercom', blurb: 'Public help-centre articles, fetched without a login.', icon: MessageSquare, brand: siIntercom, action: 'intercom' },
+    { name: 'Intercom', blurb: 'Public help-centre articles, fetched without a login.', icon: MessageSquare, brand: INTERCOM, action: 'intercom' },
     { name: 'HubSpot', blurb: 'Public knowledge-base articles, fetched without a login.', icon: Users, brand: siHubspot, action: 'hubspot' },
     { name: 'Salesforce', blurb: 'Knowledge articles and case notes.', icon: CloudSun, brand: siSalesforce },
     { name: 'Help Scout', blurb: 'Public Docs articles, fetched without a login.', icon: MessageCircle, brand: siHelpscout, action: 'helpscout' },

@@ -289,7 +289,7 @@ export function Shell() {
             <a href={`${SITE_URL}/docs/`} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Docs</a>
             <a href={`${SITE_URL}/legal/`} target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">Privacy &amp; terms</a>
           </div>
-          <span className="sm:ml-auto" title="Deployed build">api.canonn.ai · canonn-r1 · {__COMMIT__}</span>
+          <span className="sm:ml-auto" title="Deployed build">api.canonn.ai · canonn-r1 · {__BUILD__}</span>
         </footer>}
       </div>
     </div>

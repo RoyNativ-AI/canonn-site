@@ -6,8 +6,8 @@ import {
   Check, ChevronDown, ClipboardType, CloudSun, Copy, Database, EllipsisVertical,
   FileCode, FileText, FileType, FolderOpen, GitBranch, Globe, HardDrive, Hash,
   History, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
-  Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, SquarePen, StickyNote,
-  Table, Trash2, Type, Users, X,
+  Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, Share2, SquarePen,
+  StickyNote, Table, Trash2, Type, Users, X,
 } from 'lucide-react'
 import {
   siAirtable, siAmazons3, siBox, siConfluence, siDropbox, siGithub, siGitlab,
@@ -483,6 +483,21 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           <History className="size-4" strokeWidth={1.75} />
           <span className="max-sm:hidden">History</span>
         </button>
+        {inScope.length > 0 && (
+          <button
+            onClick={() => {
+              // Hand the current scope to the Assistants screen, which opens
+              // its create dialog with these sources preselected.
+              sessionStorage.setItem('assistants.prefill', JSON.stringify(inScope.map((f) => f.id)))
+              window.location.hash = 'assistants'
+            }}
+            className={composerTool}
+            aria-label="Share as an assistant link"
+          >
+            <Share2 className="size-4" strokeWidth={1.75} />
+            <span className="max-sm:hidden">Share</span>
+          </button>
+        )}
         <div className="flex-1" />
         <button
           onClick={ask}

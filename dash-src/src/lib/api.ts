@@ -102,6 +102,32 @@ export const fetchLogs = (
     token,
   )
 
+// ---- Shared assistants: pre-scoped public chat links ----
+
+export interface ShareRow {
+  id: string
+  name: string
+  instructions: string
+  file_ids: string[]
+  daily_cap: number
+  created: number
+  revoked: boolean
+  requests: number
+  url: string
+}
+export const listShares = (token: string) =>
+  request<{ data: ShareRow[] }>('/me/shares', token)
+export const createShare = (token: string, name: string, instructions: string, fileIds: string[], dailyCap?: number) =>
+  request<{ id: string; url: string }>('/me/shares', token, {
+    method: 'POST',
+    body: JSON.stringify({ name, instructions, file_ids: fileIds, daily_cap: dailyCap }),
+  })
+export const revokeShare = (token: string, id: string, revoked = true) =>
+  request<{ id: string; revoked: boolean }>('/me/shares/revoke', token, {
+    method: 'POST',
+    body: JSON.stringify({ id, revoked }),
+  })
+
 export const runDemo = (data: string, question: string) =>
   fetch(`${API_BASE}/demo`, {
     method: 'POST',

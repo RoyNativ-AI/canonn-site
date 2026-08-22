@@ -6,19 +6,23 @@ import { Logs } from '@/features/Logs'
 import { Keys } from '@/features/Keys'
 import { Billing } from '@/features/Billing'
 import { Playground } from '@/features/Playground'
+import { Assistants } from '@/features/Assistants'
 import {
   BookOpen, ChartNoAxesColumn, CreditCard, KeyRound, MessagesSquare,
-  Moon, ScrollText, Sun,
+  Moon, ScrollText, Share2, Sun,
 } from 'lucide-react'
 import { applyTheme, readTheme, type Theme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
-type ScreenId = 'playground' | 'activity' | 'logs' | 'keys' | 'billing'
+type ScreenId = 'playground' | 'assistants' | 'activity' | 'logs' | 'keys' | 'billing'
 
 // Navigation follows what the user is doing, in order: work in the
 // product, watch it run, configure it. Group names stay boring on purpose.
 const NAV: { group: string | null; items: { id: ScreenId; label: string; icon: typeof Moon }[] }[] = [
-  { group: null, items: [{ id: 'playground', label: 'Playground', icon: MessagesSquare }] },
+  { group: null, items: [
+    { id: 'playground', label: 'Playground', icon: MessagesSquare },
+    { id: 'assistants', label: 'Assistants', icon: Share2 },
+  ] },
   { group: 'Monitoring', items: [
     { id: 'activity', label: 'Usage', icon: ChartNoAxesColumn },
     { id: 'logs', label: 'Logs', icon: ScrollText },
@@ -258,6 +262,9 @@ export function Shell() {
           <div key={screen} className={cn('screen-enter', screen === 'playground' && 'flex min-h-0 flex-1 flex-col')}>
             {screen === 'playground' && (
               <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
+            )}
+            {screen === 'assistants' && (
+              <Assistants getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
             )}
             {screen === 'activity' && (
               <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />

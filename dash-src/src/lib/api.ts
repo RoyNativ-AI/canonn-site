@@ -122,20 +122,24 @@ export interface ShareRow {
   url: string
   slug: string | null
   vanity_url: string | null
+  hide_branding: boolean
 }
 export const listShares = (token: string) =>
   request<{ data: ShareRow[] }>('/me/shares', token)
-export const createShare = (token: string, name: string, instructions: string, fileIds: string[], dailyCap?: number, slug?: string) =>
+export const createShare = (token: string, name: string, instructions: string, fileIds: string[], dailyCap?: number, slug?: string, hideBranding?: boolean) =>
   request<{ id: string; url: string; vanity_url: string | null }>('/me/shares', token, {
     method: 'POST',
-    body: JSON.stringify({ name, instructions, file_ids: fileIds, daily_cap: dailyCap, ...(slug ? { slug } : {}) }),
+    body: JSON.stringify({
+      name, instructions, file_ids: fileIds, daily_cap: dailyCap,
+      ...(slug ? { slug } : {}), ...(hideBranding ? { hide_branding: true } : {}),
+    }),
   })
 export const revokeShare = (token: string, id: string, revoked = true) =>
   request<{ id: string; revoked: boolean }>('/me/shares/revoke', token, {
     method: 'POST',
     body: JSON.stringify({ id, revoked }),
   })
-export const updateShare = (token: string, id: string, patch: { name?: string; instructions?: string; daily_cap?: number; slug?: string | null }) =>
+export const updateShare = (token: string, id: string, patch: { name?: string; instructions?: string; daily_cap?: number; slug?: string | null; hide_branding?: boolean }) =>
   request<{ id: string; updated: boolean }>('/me/shares/update', token, {
     method: 'POST',
     body: JSON.stringify({ id, ...patch }),

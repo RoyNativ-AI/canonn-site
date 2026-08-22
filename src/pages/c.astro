@@ -176,6 +176,7 @@ const bodyHtml = `
         el('cname').textContent = meta.name;
         el('cmeta').textContent = 'Grounded assistant · ' + meta.sources + (meta.sources === 1 ? ' source' : ' sources');
         el('chometitle').textContent = meta.name;
+        if (meta.powered_by === false) document.querySelector('.cpow').style.display = 'none';
         document.title = meta.name + ' · Canonn';
         el('cq').focus();
       })

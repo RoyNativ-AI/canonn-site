@@ -264,7 +264,7 @@ export function Shell() {
               <Playground getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
             )}
             {screen === 'assistants' && (
-              <Assistants getToken={() => (session ? session.getToken() : Promise.resolve(null))} />
+              <Assistants getToken={() => (session ? session.getToken() : Promise.resolve(null))} me={me} />
             )}
             {screen === 'activity' && (
               <Activity me={me} days={days} setDays={setDays} keyFilter={keyFilter} setKeyFilter={setKeyFilter} range={range} setRange={setRange} />

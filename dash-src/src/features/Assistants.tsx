@@ -7,10 +7,11 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import {
   createShare, deleteShare, fmt, listFiles, listShares, revokeShare, updateShare,
-  type KnowledgeFile, type ShareRow,
+  type KnowledgeFile, type Me, type ShareRow,
 } from '@/lib/api'
 
 // Shared assistants: a business pre-scopes sources and instructions, then
@@ -20,7 +21,8 @@ import {
 /** The Playground drops file ids here before jumping to this screen. */
 export const SHARE_PREFILL_KEY = 'assistants.prefill'
 
-export function Assistants({ getToken }: { getToken: () => Promise<string | null> }) {
+export function Assistants({ getToken, me }: { getToken: () => Promise<string | null>; me: Me | null }) {
+  const paid = (me?.credit_usd ?? 0) > 0
   const [shares, setShares] = useState<ShareRow[] | null>(null)
   const [files, setFiles] = useState<KnowledgeFile[]>([])
   const [open, setOpen] = useState(false)
@@ -29,6 +31,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [cap, setCap] = useState('500')
   const [slug, setSlug] = useState('')
+  const [hideBranding, setHideBranding] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   // Edit dialog state, and the two-tap delete arm (first tap arms, second
@@ -38,6 +41,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
   const [editInstructions, setEditInstructions] = useState('')
   const [editCap, setEditCap] = useState('500')
   const [editSlug, setEditSlug] = useState('')
+  const [editHideBranding, setEditHideBranding] = useState(false)
   const [armedDelete, setArmedDelete] = useState<string | null>(null)
 
   const withToken = useCallback(async <T,>(fn: (t: string) => Promise<T>): Promise<T> => {
@@ -78,11 +82,12 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
     if (!name.trim() || picked.size === 0 || saving) return
     setSaving(true)
     try {
-      const r = await withToken((t) => createShare(t, name.trim(), instructions.trim(), [...picked], parseInt(cap, 10) || 500, slug.trim() || undefined))
+      const r = await withToken((t) => createShare(t, name.trim(), instructions.trim(), [...picked], parseInt(cap, 10) || 500, slug.trim() || undefined, hideBranding))
       setOpen(false)
       setName('')
       setInstructions('')
       setSlug('')
+      setHideBranding(false)
       setPicked(new Set())
       refresh()
       await navigator.clipboard.writeText(r.vanity_url || r.url).catch(() => {})
@@ -116,6 +121,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
     setEditInstructions(s.instructions)
     setEditCap(String(s.daily_cap))
     setEditSlug(s.slug ?? '')
+    setEditHideBranding(s.hide_branding)
   }
 
   const saveEdit = async () => {
@@ -127,6 +133,7 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
         instructions: editInstructions,
         daily_cap: parseInt(editCap, 10) || undefined,
         slug: editSlug.trim() || null,
+        hide_branding: editHideBranding,
       }))
       setEditing(null)
       refresh()
@@ -252,11 +259,25 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 className="w-full resize-none rounded-lg border border-input bg-background p-2.5 text-[13px] leading-relaxed outline-none focus:border-foreground/40"
               />
             </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Custom link (paid)</label>
+            <div className="rounded-lg border border-border p-3">
+              <div className="mb-2.5 flex items-center justify-between">
+                <span className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Premium</span>
+                {!paid && (
+                  <a href="#billing" className="text-xs font-medium underline underline-offset-2">Add credits to unlock</a>
+                )}
+              </div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Branded link</label>
               <div className="flex items-center gap-1.5">
-                <Input value={editSlug} onChange={(e) => setEditSlug(e.target.value.toLowerCase())} placeholder="grammarly" className="h-9 font-mono text-xs" maxLength={31} />
+                <Input value={editSlug} onChange={(e) => setEditSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className="h-9 font-mono text-xs" maxLength={31} />
                 <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
+              </div>
+              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3">
+                <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
+                <Switch checked={editHideBranding} disabled={!paid} onCheckedChange={setEditHideBranding} className="data-[state=checked]:bg-foreground" />
+              </label>
+              <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-border pt-3">
+                <span className="text-[13px] text-muted-foreground">Your own domain &mdash; chat.yourcompany.com</span>
+                <a href="mailto:hello@canonn.ai?subject=Custom%20domain%20for%20my%20assistant" className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">Enterprise &middot; talk to us</a>
               </div>
             </div>
             <div>
@@ -320,13 +341,26 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
               />
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Custom link (paid)</label>
+            <div className="rounded-lg border border-border p-3">
+              <div className="mb-2.5 flex items-center justify-between">
+                <span className="font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">Premium</span>
+                {!paid && (
+                  <a href="#billing" className="text-xs font-medium underline underline-offset-2">Add credits to unlock</a>
+                )}
+              </div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Branded link</label>
               <div className="flex items-center gap-1.5">
-                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="grammarly" className="h-9 font-mono text-xs" maxLength={31} />
+                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase())} placeholder="grammarly" disabled={!paid} className="h-9 font-mono text-xs" maxLength={31} />
                 <span className="shrink-0 font-mono text-xs text-muted-foreground">.canonn.ai</span>
               </div>
-              <p className="mt-1 text-[10.5px] text-muted-foreground">Optional. A branded subdomain your customers see instead of the token link.</p>
+              <label className="mt-3.5 flex cursor-pointer items-center justify-between gap-3">
+                <span className="text-[13px]">Hide &ldquo;Powered by Canonn&rdquo;</span>
+                <Switch checked={hideBranding} disabled={!paid} onCheckedChange={setHideBranding} className="data-[state=checked]:bg-foreground" />
+              </label>
+              <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-border pt-3">
+                <span className="text-[13px] text-muted-foreground">Your own domain &mdash; chat.yourcompany.com</span>
+                <a href="mailto:hello@canonn.ai?subject=Custom%20domain%20for%20my%20assistant" className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">Enterprise &middot; talk to us</a>
+              </div>
             </div>
 
             <div>

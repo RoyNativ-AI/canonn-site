@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { formatDistanceToNowStrict } from 'date-fns'
 import { Check, Copy, ExternalLink, FileText, Globe, Link2, Lock, Share2, Sparkles, SquarePen, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { track } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -251,6 +252,7 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
       setPicked(new Set())
       refresh()
       await navigator.clipboard.writeText(r.vanity_url || r.url).catch(() => {})
+      track('assistant_created', { sources: picked.size, white_label: hideBranding })
       toast.success('Assistant created - link copied to your clipboard.')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not create the assistant.')

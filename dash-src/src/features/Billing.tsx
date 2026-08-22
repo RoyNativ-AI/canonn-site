@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSession, useUser } from '@clerk/clerk-react'
 import { CreditCard, FileText, BarChart3, Check, Plus, Receipt, RefreshCw, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { track } from '@/lib/analytics'
 import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
@@ -158,6 +159,7 @@ export function Billing({ me }: { me: Me | null }) {
     if (!t) return
     try {
       await billingSavePm(t, pm)
+      track('card_saved')
       toast.success('Card saved.')
       setCardOpen(false)
       setClientSecret(null)
@@ -200,6 +202,7 @@ export function Billing({ me }: { me: Me | null }) {
     setCharging(true)
     try {
       await billingCharge(t, amount)
+      track('credit_added', { amount_usd: amount })
       toast.success(`$${amount} added - the balance updates in a few seconds.`)
       setBuyOpen(false)
       setTimeout(refreshPlan, 2500)

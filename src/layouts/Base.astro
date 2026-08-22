@@ -11,6 +11,7 @@
  *   default   — page body (Header, content, Footer)
  */
 import '../styles/tokens.css';
+import Analytics from '../components/Analytics.astro';
 
 export interface Props {
   title: string;
@@ -43,6 +44,7 @@ const {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href={fontsHref} rel="stylesheet">
 <slot name="head" />
+<Analytics />
 </head>
 <body class={bodyClass}>
 <slot />

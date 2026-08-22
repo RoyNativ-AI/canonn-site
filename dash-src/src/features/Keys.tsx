@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSession } from '@clerk/clerk-react'
 import { Check, Copy, KeyRound, Pencil, ShieldCheck, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { track } from '@/lib/analytics'
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -52,6 +53,7 @@ export function Keys({ me, onChanged }: { me: Me | null; onChanged: () => void }
     try {
       const token = await session.getToken()
       const res = await createKey(token!, trimmed)
+      track('api_key_created')
       setCreateOpen(false)
       setFreshKey(res.key)
       setCopied(false)

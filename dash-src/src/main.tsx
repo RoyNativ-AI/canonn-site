@@ -3,7 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { Toaster } from '@/components/ui/sonner'
 import App from './App'
+import { loadAnalytics } from '@/lib/analytics'
 import './index.css'
+
+// Start the tracker early so the sign-in page itself counts as a funnel step.
+void loadAnalytics()
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 if (!PUBLISHABLE_KEY) throw new Error('VITE_CLERK_PUBLISHABLE_KEY is not set')

@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react'
 import { Shell } from '@/features/Shell'
+import { Identify } from '@/features/Identify'
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
         </div>
       </SignedOut>
       <SignedIn>
+        <Identify />
         <Shell />
       </SignedIn>
     </>

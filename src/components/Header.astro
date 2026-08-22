@@ -28,7 +28,7 @@ const p = (hash: string) => (home ? hash : `/${hash}`);
         <a href="/docs/">API docs</a>
         <a href={p('#plans')}>Pricing</a>
       </div>
-      <a class="navcta" id="navauth" href="/dashboard/">Get the API →</a>
+      <a class="navcta" id="navauth" href="/dashboard/" data-umami-event="signup_click" data-umami-event-placement="nav">Get the API →</a>
     </div>
   </nav>
 )}
@@ -40,7 +40,7 @@ const p = (hash: string) => (home ? hash : `/${hash}`);
     <span class="navsp"></span>
     <a class="navlink" href="/benchmark/">Benchmarks</a>
     <a class="navlink" href="/openapi.yaml">OpenAPI</a>
-    <a class="navcta" href="/dashboard/">Get a key →</a>
+    <a class="navcta" href="/dashboard/" data-umami-event="signup_click" data-umami-event-placement="docs-nav">Get a key →</a>
     <button class="menubtn" id="menubtn">Menu</button>
   </div></nav>
 )}

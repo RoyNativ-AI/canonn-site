@@ -1,0 +1,55 @@
+---
+/**
+ * Umami analytics for the marketing site. Self-hosted, cookie-less, ~2KB.
+ *
+ * Renders nothing unless both env vars are set at build time, so local builds
+ * and forks stay silent. Page views and hash navigation are tracked by the
+ * Umami script itself; product events come from `data-umami-event` attributes
+ * on CTAs and from the small inline script below.
+ *
+ * First-touch attribution (utm_*, referrer, landing page) is stored once in a
+ * first-party cookie on the apex domain so the dashboard (/dashboard/, same
+ * origin) can attach it to the Clerk user at signup. That is the join between
+ * "where a developer came from" and "what they did with the API".
+ */
+const scriptUrl = import.meta.env.PUBLIC_UMAMI_SCRIPT_URL;
+const websiteId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const enabled = Boolean(scriptUrl && websiteId);
+---
+{enabled && (
+  <script is:inline defer src={scriptUrl} data-website-id={websiteId} data-domains="canonn.ai,www.canonn.ai"></script>
+)}
+<script is:inline>
+(function () {
+  var NAME = 'cn_attr';
+  var TTL_DAYS = 90;
+  if (document.cookie.split('; ').some(function (c) { return c.indexOf(NAME + '=') === 0; })) return;
+  var q = new URLSearchParams(location.search);
+  var attr = {};
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'ref'].forEach(function (k) {
+    var v = q.get(k);
+    if (v) attr[k] = v.slice(0, 120);
+  });
+  try {
+    var ref = document.referrer ? new URL(document.referrer).hostname : '';
+    if (ref && ref !== location.hostname) attr.referrer = ref;
+  } catch (e) { /* opaque referrer */ }
+  attr.landing = location.pathname;
+  attr.ts = Math.floor(Date.now() / 1000);
+  var domain = location.hostname.endsWith('canonn.ai') ? '; Domain=canonn.ai' : '';
+  document.cookie = NAME + '=' + encodeURIComponent(JSON.stringify(attr)) +
+    '; Max-Age=' + TTL_DAYS * 86400 + '; Path=/' + domain + '; SameSite=Lax' +
+    (location.protocol === 'https:' ? '; Secure' : '');
+})();
+// pricing_view fires once when the plans section is actually seen, not on page load.
+(function () {
+  var el = document.getElementById('plans');
+  if (!el || !('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    if (!entries.some(function (e) { return e.isIntersecting; })) return;
+    io.disconnect();
+    if (window.umami) window.umami.track('pricing_view');
+  }, { threshold: 0.4 });
+  io.observe(el);
+})();
+</script>

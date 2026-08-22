@@ -45,6 +45,7 @@ import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { track } from '@/lib/analytics'
 import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
   uploadFromZendesk, uploadTextFile, uploadFromSitemap, uploadFromFeed, uploadFromHelpCenter,
@@ -546,6 +547,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     try {
       const token = await getToken()
       if (!token) throw new Error('sign in required')
+      track('playground_message', { grounded, sources: scope.length })
       for await (const event of streamChat(token, [...history, { role: 'user', content: q }], grounded ? scope : null)) {
         setTurns((ts) => {
           const next = [...ts]

@@ -669,7 +669,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() }
         }}
         onBlur={() => setMention(null)}
-        placeholder={inScope.length ? `Ask about your ${inScope.length === 1 ? 'source' : `${inScope.length} sources`} — @ targets one…` : 'Ask anything…'}
+        placeholder="Ask anything…"
         disabled={busy}
         rows={2}
         className={cn(

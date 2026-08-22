@@ -547,9 +547,11 @@ export function Assistants({ getToken, me }: { getToken: () => Promise<string | 
                   </div>
                 </div>
 
-                {/* The address is the product: one inset field, copyable and
-                    openable without hunting through a row of buttons. */}
-                <div className="mt-3.5 flex max-w-xl items-center gap-1 rounded-lg border border-border bg-background py-1 pr-1 pl-2.5">
+                {/* The address is the product: one field, copyable and
+                    openable without hunting through a row of buttons. The
+                    border alone delimits it - a fill would make it read as a
+                    disabled input sitting on the card. */}
+                <div className="mt-3.5 flex max-w-xl items-center gap-1 rounded-lg border border-border py-1 pr-1 pl-2.5">
                   {primary.own
                     ? <Globe className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
                     : <Link2 className="size-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} />}

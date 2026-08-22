@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ArrowUp, Check, ChevronDown, ClipboardType, Copy, FileText, Globe, Headset,
-  Database, Link2, Loader2, Network, Plus, Trash2, Upload, X,
+  Archive, ArrowLeftRight, ArrowUp, ArrowUpRight, BarChart3, BookOpen, Braces,
+  Check, ChevronDown, ClipboardType, CloudSun, Copy, Database, FileCode,
+  FileText, FileType, FolderOpen, GitBranch, Globe, HardDrive, Hash,
+  Headset, Leaf, LifeBuoy, Link2, List, Loader2, MessageCircle, MessageSquare,
+  Mic, Network, Package, Play, Plus, Rss, ScanLine, Server, StickyNote, Table, Trash2,
+  Type, Users, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -27,19 +31,72 @@ const ACCENT = '#c96442'
 
 type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk'
 
-const LOADERS: { id: LoaderId; name: string; blurb: string; icon: typeof Globe }[] = [
-  { id: 'upload', name: 'Upload files', blurb: 'txt · md · json · html — 1 MB each', icon: Upload },
-  { id: 'pdf', name: 'PDF', blurb: 'Text extracted in your browser, page by page', icon: FileText },
-  { id: 'paste', name: 'Paste text', blurb: 'A policy, an email thread, a snippet of notes', icon: ClipboardType },
-  { id: 'web', name: 'Web page', blurb: 'Fetch one URL and strip it to clean text', icon: Link2 },
-  { id: 'crawl', name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages', icon: Network },
-  { id: 'zendesk', name: 'Zendesk Help Center', blurb: 'Every public article, straight from the API', icon: Headset },
-]
+// The app's loader catalog (LoaderCatalog.swift), mirrored: the same
+// categories, names, and summaries. Loaders with an `action` run on the API
+// today; the rest are listed honestly as Preview, exactly like the app marks
+// connectors that need a workspace connection.
+interface CatalogItem {
+  name: string
+  blurb: string
+  icon: typeof Globe
+  action?: LoaderId
+}
 
-// The rest of the app's loader catalog. Connector sync lands on the API
-// next; until then the catalog is honest about where each one runs.
-const COMING = ['Notion', 'Google Drive', 'Slack', 'GitHub', 'Confluence', 'Jira',
-  'Intercom', 'HubSpot', 'Salesforce', 'Dropbox', 'Linear', 'Airtable']
+const CATALOG: { category: string; items: CatalogItem[] }[] = [
+  { category: 'Web', items: [
+    { name: 'Web page', blurb: 'Fetch one URL and strip it to clean text.', icon: Link2, action: 'web' },
+    { name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages.', icon: Network, action: 'crawl' },
+    { name: 'Sitemap', blurb: 'Ingest every URL listed in a sitemap.xml.', icon: List },
+    { name: 'RSS / Atom feed', blurb: 'Pull articles from a syndication feed.', icon: Rss },
+    { name: 'YouTube transcript', blurb: 'Import the transcript of a video or playlist.', icon: Play },
+  ] },
+  { category: 'Files', items: [
+    { name: 'PDF', blurb: 'Contracts, reports, policies — text extracted page by page.', icon: FileText, action: 'pdf' },
+    { name: 'Text & Markdown', blurb: 'Plain .txt, .md and .html documents.', icon: Type, action: 'upload' },
+    { name: 'CSV & spreadsheets', blurb: 'Row data flattened into readable records.', icon: Table, action: 'upload' },
+    { name: 'JSON & XML', blurb: 'Structured exports, flattened key by key.', icon: Braces, action: 'upload' },
+    { name: 'HTML archive', blurb: 'Saved pages, help-centre exports.', icon: FileCode, action: 'upload' },
+    { name: 'Paste text', blurb: 'Drop in a policy, an email thread, a snippet of notes.', icon: ClipboardType, action: 'paste' },
+    { name: 'Word & PowerPoint', blurb: '.docx and .pptx, text extracted on device.', icon: FileType },
+    { name: 'Scanned images', blurb: 'OCR for photographed or scanned documents.', icon: ScanLine },
+    { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
+  ] },
+  { category: 'Cloud storage', items: [
+    { name: 'Google Drive', blurb: 'Connect your Drive and import documents directly.', icon: FolderOpen },
+    { name: 'Dropbox', blurb: 'Pick documents straight from your Dropbox folder.', icon: Package },
+    { name: 'OneDrive / SharePoint', blurb: 'Pick documents from your Microsoft 365 libraries.', icon: HardDrive },
+    { name: 'Box', blurb: 'Pick documents straight from your Box folder.', icon: Archive },
+    { name: 'Amazon S3', blurb: 'Ingest a bucket or prefix using your own keys.', icon: Server },
+  ] },
+  { category: 'Workspace', items: [
+    { name: 'Notion', blurb: 'Pages and databases from a workspace.', icon: StickyNote },
+    { name: 'Confluence', blurb: 'Spaces and pages from Atlassian.', icon: BookOpen },
+    { name: 'Slack', blurb: 'Channel history as searchable knowledge.', icon: Hash },
+    { name: 'Google Docs', blurb: 'Individual documents by link.', icon: FileText },
+    { name: 'Jira', blurb: 'Issues, descriptions and comments.', icon: Check },
+    { name: 'Linear', blurb: 'Issues and project documents.', icon: ArrowUpRight },
+    { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table },
+  ] },
+  { category: 'Code', items: [
+    { name: 'GitHub', blurb: 'Repository files, READMEs and wikis.', icon: FileCode },
+    { name: 'GitLab', blurb: 'Projects and wikis from GitLab.', icon: GitBranch },
+    { name: 'Documentation site', blurb: 'Crawl a docs site and keep its page structure.', icon: BookOpen, action: 'crawl' },
+  ] },
+  { category: 'Support & CRM', items: [
+    { name: 'Zendesk', blurb: 'Public help-centre articles, fetched without a login.', icon: LifeBuoy, action: 'zendesk' },
+    { name: 'Intercom', blurb: 'Articles and saved replies.', icon: MessageSquare },
+    { name: 'HubSpot', blurb: 'Knowledge base and CRM notes.', icon: Users },
+    { name: 'Salesforce', blurb: 'Knowledge articles and case notes.', icon: CloudSun },
+    { name: 'Help Scout', blurb: 'Docs collections and saved replies.', icon: MessageCircle },
+  ] },
+  { category: 'Databases & APIs', items: [
+    { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database },
+    { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database },
+    { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf },
+    { name: 'BigQuery', blurb: 'Warehouse tables as knowledge records.', icon: BarChart3 },
+    { name: 'REST endpoint', blurb: 'Poll a JSON API and map fields to documents.', icon: ArrowLeftRight },
+  ] },
+]
 
 // Source rows carry the loader's face, like the app's LoaderIcon. The API
 // only returns a filename, so the kind is read off it: help-center imports
@@ -437,7 +494,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         // catalog never opens underneath the Knowledge panel.
         <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setPicker(false)}>
           <div
-            className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-xl"
+            className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -445,37 +502,44 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               <button onClick={() => setPicker(false)} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
             </div>
 
-            {!form && (
-              <>
+            {!form && CATALOG.map(({ category, items }) => (
+              <div key={category} className="mb-5 last:mb-0">
+                <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">{category}</div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {LOADERS.map(({ id, name, blurb, icon: Icon }) => (
+                  {items.map(({ name, blurb, icon: Icon, action }) => (
                     <button
-                      key={id}
+                      key={name}
+                      disabled={!action}
                       onClick={() => {
-                        if (id === 'upload') { setPicker(false); fileInput.current?.click() }
-                        else if (id === 'pdf') { setPicker(false); pdfInput.current?.click() }
-                        else setForm(id)
+                        if (!action) return
+                        if (action === 'upload') { setPicker(false); fileInput.current?.click() }
+                        else if (action === 'pdf') { setPicker(false); pdfInput.current?.click() }
+                        else setForm(action)
                       }}
-                      className="rounded-lg border border-border bg-background p-3 text-left transition-colors hover:border-foreground/30"
+                      className={cn(
+                        'flex items-start gap-2.5 rounded-lg border border-border bg-background p-3 text-left transition-colors',
+                        action ? 'hover:border-foreground/30' : 'opacity-55',
+                      )}
                     >
-                      <Icon className="mb-2 size-4 text-foreground/70" />
-                      <div className="text-[13px] font-medium">{name}</div>
-                      <div className="mt-0.5 text-xs leading-snug text-muted-foreground">{blurb}</div>
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-card">
+                        <Icon className="size-3.5 text-foreground/70" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-1.5 text-[13px] font-medium">
+                          {name}
+                          {!action && (
+                            <span className="rounded-full border border-border px-1.5 py-px font-mono text-[10.5px] text-muted-foreground">Preview</span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                          {action ? blurb : 'Needs a workspace connection.'}
+                        </span>
+                      </span>
                     </button>
                   ))}
                 </div>
-                <div className="mt-4 mb-2 text-xs font-medium text-muted-foreground">
-                  In the app · coming to the API
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {COMING.map((name) => (
-                    <span key={name} className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
+              </div>
+            ))}
 
             {form && (
               <div>

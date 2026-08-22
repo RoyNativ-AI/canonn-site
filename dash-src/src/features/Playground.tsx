@@ -594,16 +594,24 @@ function Answer({ text }: { text: string }) {
 }
 
 function Citations({ citations }: { citations: GroundedCitation[] }) {
+  // Closed by default: the answer stands on its own, and one quiet line
+  // says the evidence is there for whoever wants to inspect it.
+  const [expanded, setExpanded] = useState(false)
   const [open, setOpen] = useState<number | null>(null)
   const sources = new Set(citations.map((c) => c.file_id)).size
   return (
-    <div className="mt-3">
-      <div className="mb-2 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase">
-        Answered from {sources} {sources === 1 ? 'source' : 'sources'}
-      </div>
+    <div className="mt-2.5">
+      <button
+        onClick={() => { setExpanded(!expanded); setOpen(null) }}
+        className="flex items-center gap-1.5 rounded-md py-0.5 font-mono text-[10.5px] tracking-[0.11em] text-muted-foreground uppercase transition-colors hover:text-foreground"
+      >
+        <span className="size-1.5 rounded-full" style={{ background: ACCENT }} />
+        {sources} {sources === 1 ? 'source' : 'sources'}
+        <ChevronDown className={cn('size-3 transition-transform', expanded && 'rotate-180')} />
+      </button>
       {/* Evidence as quote cards, matching the app: collapsed shows the line
           the answer drew on, tapping opens the full passage in place. */}
-      <div className="space-y-2">
+      {expanded && <div className="mt-2 space-y-2">
         {citations.slice(0, 6).map((c, i) => (
           <button
             key={`${c.file_id}-${c.ordinal}`}
@@ -626,7 +634,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
             </div>
           </button>
         ))}
-      </div>
+      </div>}
     </div>
   )
 }

@@ -29,6 +29,15 @@ function rowStatus(r: LogRow): 'ok' | 'truncated' | 'failed' {
   return 'ok'
 }
 
+// The API route behind a row. Rows logged before the endpoint column existed
+// are derived from their mode: only generations were metered back then.
+function rowEndpoint(r: LogRow): string {
+  if (r.endpoint) return r.endpoint.replace(/^\/v1/, '')
+  if (r.mode === 'demo') return '/demo'
+  if (r.mode === 'playground') return '/me/chat'
+  return '/chat/completions'
+}
+
 const STATUS_FILTERS = [
   { id: 'all', label: 'All' },
   { id: 'ok', label: 'Succeeded' },
@@ -215,7 +224,7 @@ export function Logs({
             <TableRow>
               <TableHead>Time</TableHead>
               <TableHead>Key</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead>Endpoint</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead className="text-right">Latency</TableHead>
               <TableHead className="text-right">Speed</TableHead>
@@ -267,7 +276,7 @@ export function Logs({
                     {new Date(r.ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell className="max-w-[130px] truncate text-[13px] text-muted-foreground">{r.key}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground">{r.mode || '·'}</TableCell>
+                  <TableCell className="font-mono text-xs whitespace-nowrap text-muted-foreground">{rowEndpoint(r)}</TableCell>
                   <TableCell className="text-right font-mono text-xs whitespace-nowrap">
                     {fmt(r.pt)} <span className="text-muted-foreground">→</span> {fmt(r.ct)}
                   </TableCell>
@@ -358,6 +367,7 @@ export function Logs({
                 <dl className="space-y-2 text-sm">
                   {[
                     ['Model ID', 'canonn-r1'],
+                    ['Endpoint', detail.endpoint || `/v1${rowEndpoint(detail)}`],
                     ['Type', detail.mode || '·'],
                     ['HTTP status', detail.status ? String(detail.status) : '·'],
                     ['Finish reason', detail.finish ?? 'stop'],

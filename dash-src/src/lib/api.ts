@@ -13,6 +13,8 @@ export interface LogRow {
   model?: string
   /** What kind of call this was: grounded | balanced | extraction | playground | demo. */
   mode?: string
+  /** API route that served the call, e.g. /v1/chat/completions. */
+  endpoint?: string
   pt: number
   ct: number
   ms: number

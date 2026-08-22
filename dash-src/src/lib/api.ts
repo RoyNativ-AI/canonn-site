@@ -113,6 +113,10 @@ export interface ShareRow {
   created: number
   revoked: boolean
   requests: number
+  requests_7d: number
+  tokens: number
+  spend_usd: number
+  last_ts: number | null
   url: string
   slug: string | null
   vanity_url: string | null

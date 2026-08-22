@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { formatDistanceToNowStrict } from 'date-fns'
 import { Check, Copy, ExternalLink, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import {
-  createShare, deleteShare, listFiles, listShares, revokeShare, updateShare,
+  createShare, deleteShare, fmt, listFiles, listShares, revokeShare, updateShare,
   type KnowledgeFile, type ShareRow,
 } from '@/lib/api'
 
@@ -195,7 +196,12 @@ export function Assistants({ getToken }: { getToken: () => Promise<string | null
                 )}
               </div>
               <div className="mt-1 font-mono text-[10.5px] text-muted-foreground">
-                {s.vanity_url ? `${s.slug}.canonn.ai · ` : ''}{s.file_ids.length} {s.file_ids.length === 1 ? 'source' : 'sources'} · {s.requests} {s.requests === 1 ? 'message' : 'messages'} · cap {s.daily_cap}/day
+                {s.vanity_url ? `${s.slug}.canonn.ai · ` : ''}{s.file_ids.length} {s.file_ids.length === 1 ? 'source' : 'sources'} · cap {s.daily_cap}/day
+              </div>
+              <div className="mt-0.5 font-mono text-[10.5px] text-muted-foreground">
+                {fmt(s.requests)} {s.requests === 1 ? 'message' : 'messages'}
+                {s.requests > 0 ? ` (${fmt(s.requests_7d)} this week) · ${fmt(s.tokens)} tokens · $${s.spend_usd.toFixed(2)}` : ''}
+                {s.last_ts ? ` · active ${formatDistanceToNowStrict(s.last_ts * 1000, { addSuffix: true })}` : ' · no traffic yet'}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">

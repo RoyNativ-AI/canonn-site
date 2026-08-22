@@ -48,7 +48,7 @@ const headExtra = `<link rel="canonical" href="https://canonn.ai/">
           "name": "Pay as you go API",
           "priceCurrency": "USD",
           "price": "1.20",
-          "description": "$1.20 per 1M input tokens, $6 per 1M output tokens. No seats, no minimums. Free tier of 1,000 calls per month with no credit card."
+          "description": "Assistants from $99 per month including 5,000 answers, then $0.02 per answer. Hosted API metered at $1.20 per 1M input tokens and $6 per 1M output tokens. Free tier, no credit card."
         },
         {
           "@type": "Offer",
@@ -468,9 +468,22 @@ const bodyHtml = `<header class="hero">
 <section id="plans">
   <div class="wrap">
     <div class="tag reveal">Pricing</div>
-    <h2 class="reveal">Two ways to run Canonn.</h2>
-    <p class="sec-lede reveal">Start on the hosted API and pay for exactly what you use, or license the weights and run it inside your own network with no per-token bill at all.</p>
+    <h2 class="reveal">Three ways to run Canonn.</h2>
+    <p class="sec-lede reveal">Publish an assistant and pay per answer, call the API and pay per token, or license the weights and run it inside your own network with no bill per anything.</p>
     <div class="plans">
+      <div class="plan featured reveal">
+        <div class="ptag">Assistant</div>
+        <h3>Pay per answer</h3>
+        <div class="price">$99 <span style="font-size:22px;color:var(--dark-mute)">/</span> mo</div>
+        <div class="per">5,000 answers included · $0.02 each after</div>
+        <ul>
+          <li><span class="tick">✓</span><span><b>Two cents an answer</b>, at any volume — a support pipeline on Claude runs about six</span></li>
+          <li><span class="tick">✓</span><span><b>Your brand, not ours</b>: no "Powered by Canonn", your own subdomain and custom domain</span></li>
+          <li><span class="tick">✓</span><span><b>One call, not nine</b> — no leak check, no retry loop, no separate translate or citation step</span></li>
+          <li><span class="tick">✓</span><span><b>Free tier</b>: 500 answers a month, no card</span></li>
+        </ul>
+        <a class="btn btn-p" href="/dashboard/">Publish an assistant</a>
+      </div>
       <div class="plan reveal">
         <div class="ptag">Hosted API</div>
         <h3>Pay as you go</h3>
@@ -484,7 +497,7 @@ const bodyHtml = `<header class="hero">
         </ul>
         <a class="btn btn-p" href="/dashboard/">Get an API key</a>
       </div>
-      <div class="plan featured reveal">
+      <div class="plan reveal">
         <div class="ptag">On-premise</div>
         <h3>License the weights</h3>
         <div class="price">Annual</div>
@@ -495,7 +508,7 @@ const bodyHtml = `<header class="hero">
           <li><span class="tick">✓</span><span><b>Model updates</b> included for the license term</span></li>
           <li><span class="tick">✓</span><span>For <b>regulated industries</b>: finance, healthcare, legal</span></li>
         </ul>
-        <a class="btn btn-dark" href="mailto:hello@canonn.ai?subject=Canonn%20weights%20license">Talk to us</a>
+        <a class="btn btn-p" href="mailto:hello@canonn.ai?subject=Canonn%20weights%20license">Talk to us</a>
       </div>
     </div>
   </div>
@@ -901,7 +914,8 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.8vw,44px);l
 .bcase .bfoot{padding:12px 20px;font-family:var(--mono);font-size:11.5px;color:var(--mute);background:var(--bg2);border-top:1px solid var(--line2)}
 @media(max-width:640px){.bcase .brow{grid-template-columns:1fr;gap:6px}}
 /* pricing plans */
-.plans{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:52px}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
+@media(max-width:1000px){.plans{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.plans{grid-template-columns:1fr}}
 .plan{border:1px solid var(--line2);border-radius:20px;padding:38px 34px;background:var(--panel);display:flex;flex-direction:column;gap:0}
 .plan.featured{background:var(--dark);color:var(--dark-ink);border-color:var(--dark)}

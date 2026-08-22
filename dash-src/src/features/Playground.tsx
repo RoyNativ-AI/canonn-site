@@ -762,7 +762,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 {/* Actions live under the message, where every chat keeps
                     them: copy shows on hover, the timestamp stays put. */}
                 {!turn.error && turn.content && !(busy && i === turns.length - 1) && (
-                  <div className="mt-1.5 flex items-center gap-1.5">
+                  <div className="mt-1.5 flex items-center gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/turn:opacity-100">
                     <CopyAnswer text={turn.content} />
                     {turn.ts && <span className="font-mono text-[10.5px] text-muted-foreground">{fmtTime(turn.ts)}</span>}
                   </div>
@@ -927,7 +927,7 @@ function CopyAnswer({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
       }}
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase opacity-0 transition-opacity group-hover/turn:opacity-100 hover:text-foreground focus:opacity-100"
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase hover:text-foreground"
       aria-label="Copy answer"
     >
       {copied ? <Check className="size-3 text-foreground" /> : <Copy className="size-3" />}

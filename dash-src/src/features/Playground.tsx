@@ -15,6 +15,21 @@ import {
   siIntercom, siJira, siLinear, siMicrosoftonedrive, siMongodb, siMysql,
   siNotion, siPostgresql, siSalesforce, siSlack, siYoutube, siZendesk,
 } from 'simple-icons'
+
+// The familiar faces under the empty composer - pure recognition, the way a
+// payments page shows card logos. Clicking any of them opens the catalog.
+const BRAND_STRIP = [
+  { name: 'Gmail', brand: siGmail },
+  { name: 'Google Drive', brand: siGoogledrive },
+  { name: 'YouTube', brand: siYoutube },
+  { name: 'Notion', brand: siNotion },
+  { name: 'Slack', brand: siSlack },
+  { name: 'GitHub', brand: siGithub },
+  { name: 'Dropbox', brand: siDropbox },
+  { name: 'Zendesk', brand: siZendesk },
+  { name: 'Salesforce', brand: siSalesforce },
+  { name: 'Intercom', brand: siIntercom },
+]
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -816,6 +831,24 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 </div>
               )}
               <div className="mt-6 sm:mt-9">{composer}</div>
+              {/* Recognition strip: gone the moment a conversation starts,
+                  because the whole empty state is. */}
+              <div className="mt-8 flex flex-col items-center gap-3">
+                <span className="font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase">Bring knowledge from</span>
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
+                  {BRAND_STRIP.map(({ name, brand }) => (
+                    <button
+                      key={name}
+                      title={name}
+                      aria-label={`Add a ${name} source`}
+                      onClick={() => { setPicker(true); setForm(null) }}
+                      className="opacity-55 grayscale transition-all hover:opacity-100 hover:grayscale-0"
+                    >
+                      <BrandIcon brand={brand} className="size-[18px]" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}

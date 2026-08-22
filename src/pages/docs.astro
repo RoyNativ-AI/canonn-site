@@ -207,6 +207,22 @@ console.log(answer.choices[<span class="n">0</span>].message.content);</pre>
   <span class="k">"chunk_count"</span>: 12
 }</pre></div>
 
+      <h3>Sources the server fetches for you</h3>
+      <p>Send a JSON body instead of a file and the edge pulls the content itself — public pages only, bounded, one record per page, article or file so citations point at whole documents. The response is the same file object.</p>
+      <table>
+        <thead><tr><th>Body</th><th>What you get</th></tr></thead>
+        <tbody>
+          <tr><td><code>{"url": "https://…", "crawl": true}</code></td><td>One page, or a same-site crawl of up to 8 pages.</td></tr>
+          <tr><td><code>{"sitemap": "https://…/sitemap.xml"}</code></td><td>Every page the sitemap lists, up to 60. Sitemap indexes are followed one level.</td></tr>
+          <tr><td><code>{"feed": "https://…/rss"}</code></td><td>RSS 2.0 or Atom, up to 40 items; teaser-only items are fetched from their link.</td></tr>
+          <tr><td><code>{"zendesk": "support.acme.com"}</code></td><td>Every article of a public Zendesk help center.</td></tr>
+          <tr><td><code>{"helpcenter": {"provider": "intercom", "url": "https://help.acme.com/en/"}}</code></td><td>Public Intercom, Help Scout (<code>"helpscout"</code>) or HubSpot (<code>"hubspot"</code>) help centers, up to 150 articles. A path such as <code>/en/</code> keeps one language.</td></tr>
+          <tr><td><code>{"github": "owner/repo"}</code></td><td>README, <code>docs/</code> and every Markdown file of a public repository, up to 80 files.</td></tr>
+          <tr><td><code>{"rest": {"url": "https://…", "authorization": "Bearer …"}}</code></td><td>One JSON response, flattened into records. The header is used for that request only and never stored.</td></tr>
+          <tr><td><code>{"filename": "faq.csv", "content": "…"}</code></td><td>Text you extracted yourself — how the dashboard sends PDFs, Office files, scanned pages and Google Workspace documents, which it reads in the browser.</td></tr>
+        </tbody>
+      </table>
+
       <h3>Manage</h3>
       <table>
         <thead><tr><th>Route</th><th>Description</th></tr></thead>

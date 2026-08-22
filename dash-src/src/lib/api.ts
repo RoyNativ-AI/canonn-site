@@ -355,3 +355,23 @@ export const fetchInvoiceHtml = async (token: string, iid: number) => {
   if (!r.ok) throw new Error('could not load the invoice')
   return r.text()
 }
+
+// ---- No-auth source loaders (fetched by the edge, never by the browser) ----
+
+export const uploadFromSitemap = (token: string, url: string) =>
+  request<KnowledgeFile>('/files', token, { method: 'POST', body: JSON.stringify({ sitemap: url }) })
+
+export const uploadFromFeed = (token: string, url: string) =>
+  request<KnowledgeFile>('/files', token, { method: 'POST', body: JSON.stringify({ feed: url }) })
+
+export const uploadFromHelpCenter = (token: string, provider: 'intercom' | 'helpscout' | 'hubspot', url: string) =>
+  request<KnowledgeFile>('/files', token, { method: 'POST', body: JSON.stringify({ helpcenter: { provider, url } }) })
+
+export const uploadFromGithub = (token: string, repo: string) =>
+  request<KnowledgeFile>('/files', token, { method: 'POST', body: JSON.stringify({ github: repo }) })
+
+export const uploadFromRest = (token: string, url: string, authorization?: string) =>
+  request<KnowledgeFile>('/files', token, {
+    method: 'POST',
+    body: JSON.stringify({ rest: { url, ...(authorization ? { authorization } : {}) } }),
+  })

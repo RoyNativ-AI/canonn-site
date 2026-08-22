@@ -43,9 +43,11 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import {
   deleteFile, listFiles, streamChat, uploadBinaryFile, uploadFromUrl,
-  uploadFromZendesk, uploadTextFile,
+  uploadFromZendesk, uploadTextFile, uploadFromSitemap, uploadFromFeed, uploadFromHelpCenter,
+  uploadFromGithub, uploadFromRest,
   type GroundedCitation, type KnowledgeFile,
 } from '@/lib/api'
+import { officeToText, imageToText } from '@/lib/office'
 import {
   googleConfigured, driveConfigured, googleDisconnect, driveDownload, drivePick, driveToken,
   youtubeOwnVideos, youtubeToken, youtubeTranscript, gmailSearch, gmailToken, calendarEvents, calendarToken,
@@ -62,7 +64,10 @@ import {
 // backed by your data".
 const ACCENT = '#c96442'
 
-type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk' | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal'
+type LoaderId =
+  | 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'office' | 'ocr' | 'sitemap' | 'feed'
+  | 'zendesk' | 'intercom' | 'helpscout' | 'hubspot' | 'github' | 'rest'
+  | 'gdrive' | 'gdocs' | 'gsheets' | 'youtube' | 'gmail' | 'gcal'
 
 // Google loaders light up only once the dashboard has a client ID.
 const DRIVE_FILTERS: Partial<Record<LoaderId, DriveFilter>> = { gdrive: 'all', gdocs: 'docs', gsheets: 'sheets' }
@@ -109,8 +114,8 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
   { category: 'Web', items: [
     { name: 'Web page', blurb: 'Fetch one URL and strip it to clean text.', icon: Link2, action: 'web' },
     { name: 'Website crawl', blurb: 'Follow links from a starting page, up to 8 pages.', icon: Network, action: 'crawl' },
-    { name: 'Sitemap', blurb: 'Ingest every URL listed in a sitemap.xml.', icon: List },
-    { name: 'RSS / Atom feed', blurb: 'Pull articles from a syndication feed.', icon: Rss },
+    { name: 'Sitemap', blurb: 'Every page a sitemap.xml lists, up to 60.', icon: List, action: 'sitemap' },
+    { name: 'RSS / Atom feed', blurb: 'The latest articles of a feed, one record each.', icon: Rss, action: 'feed' },
   ] },
   { category: 'Files', items: [
     { name: 'PDF', blurb: 'Contracts, reports, policies — text extracted page by page.', icon: FileText, action: 'pdf' },
@@ -119,8 +124,8 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'JSON & XML', blurb: 'Structured exports, flattened key by key.', icon: Braces, action: 'upload' },
     { name: 'HTML archive', blurb: 'Saved pages, help-centre exports.', icon: FileCode, action: 'upload' },
     { name: 'Paste text', blurb: 'Drop in a policy, an email thread, a snippet of notes.', icon: ClipboardType, action: 'paste' },
-    { name: 'Word & PowerPoint', blurb: '.docx and .pptx, text extracted on device.', icon: FileType },
-    { name: 'Scanned images', blurb: 'OCR for photographed or scanned documents.', icon: ScanLine },
+    { name: 'Word & PowerPoint', blurb: '.docx and .pptx, text extracted in your browser.', icon: FileType, action: 'office' },
+    { name: 'Scanned images', blurb: 'OCR in your browser for photographed or scanned pages.', icon: ScanLine, action: 'ocr' },
     { name: 'Audio & meetings', blurb: 'Transcribe recordings and calls into text.', icon: Mic },
   ] },
   { category: 'Cloud storage', items: [
@@ -138,22 +143,22 @@ const CATALOG: { category: string; items: CatalogItem[] }[] = [
     { name: 'Airtable', blurb: 'Bases and tables as records.', icon: Table, brand: siAirtable },
   ] },
   { category: 'Code', items: [
-    { name: 'GitHub', blurb: 'Repository files, READMEs and wikis.', icon: FileCode, brand: siGithub },
+    { name: 'GitHub', blurb: 'READMEs and docs of a public repository.', icon: FileCode, brand: siGithub, action: 'github' },
     { name: 'GitLab', blurb: 'Projects and wikis from GitLab.', icon: GitBranch, brand: siGitlab },
     { name: 'Documentation site', blurb: 'Crawl a docs site and keep its page structure.', icon: BookOpen, action: 'crawl' },
   ] },
   { category: 'Support & CRM', items: [
     { name: 'Zendesk', blurb: 'Public help-centre articles, fetched without a login.', icon: LifeBuoy, brand: siZendesk, action: 'zendesk' },
-    { name: 'Intercom', blurb: 'Articles and saved replies.', icon: MessageSquare, brand: siIntercom },
-    { name: 'HubSpot', blurb: 'Knowledge base and CRM notes.', icon: Users, brand: siHubspot },
+    { name: 'Intercom', blurb: 'Public help-centre articles, fetched without a login.', icon: MessageSquare, brand: siIntercom, action: 'intercom' },
+    { name: 'HubSpot', blurb: 'Public knowledge-base articles, fetched without a login.', icon: Users, brand: siHubspot, action: 'hubspot' },
     { name: 'Salesforce', blurb: 'Knowledge articles and case notes.', icon: CloudSun, brand: siSalesforce },
-    { name: 'Help Scout', blurb: 'Docs collections and saved replies.', icon: MessageCircle, brand: siHelpscout },
+    { name: 'Help Scout', blurb: 'Public Docs articles, fetched without a login.', icon: MessageCircle, brand: siHelpscout, action: 'helpscout' },
   ] },
   { category: 'Databases & APIs', items: [
     { name: 'PostgreSQL', blurb: 'Materialise a query result as documents.', icon: Database, brand: siPostgresql },
     { name: 'MySQL', blurb: 'Same as Postgres, against a MySQL instance.', icon: Database, brand: siMysql },
     { name: 'MongoDB', blurb: 'Collections mapped to documents.', icon: Leaf, brand: siMongodb },
-    { name: 'REST endpoint', blurb: 'Poll a JSON API and map fields to documents.', icon: ArrowLeftRight },
+    { name: 'REST endpoint', blurb: 'One JSON response, flattened into records.', icon: ArrowLeftRight, action: 'rest' },
   ] },
 ]
 
@@ -242,6 +247,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
   const [ctxMenu, setCtxMenu] = useState<{ id: string; name: string; x: number; y: number } | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
   const pdfInput = useRef<HTMLInputElement>(null)
+  const officeInput = useRef<HTMLInputElement>(null)
+  const imageInput = useRef<HTMLInputElement>(null)
+  const [formExtra, setFormExtra] = useState('')
   const scroller = useRef<HTMLDivElement>(null)
 
   // ---- Conversation history: localStorage per Clerk user, never the server.
@@ -361,6 +369,21 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
     ingest('Extracting PDF…', async (t) => {
       for (const file of Array.from(list)) {
         await uploadTextFile(t, file.name.replace(/\.pdf$/i, '.txt'), await extractPdf(file))
+      }
+    })
+
+  const addOffice = (list: FileList) =>
+    ingest('Extracting text…', async (t) => {
+      for (const file of Array.from(list)) {
+        await uploadTextFile(t, file.name.replace(/\.(docx|pptx)$/i, '.txt'), await officeToText(file))
+      }
+    })
+
+  const addImages = (list: FileList) =>
+    ingest('Recognising text…', async (t) => {
+      for (const file of Array.from(list)) {
+        const text = await imageToText(file, (p) => setUploading(`Recognising text… ${Math.round(p * 100)}%`))
+        await uploadTextFile(t, file.name.replace(/\.[^.]+$/, '') + '.txt', text)
       }
     })
 
@@ -646,6 +669,10 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           onChange={(e) => e.target.files?.length && addFiles(e.target.files)} />
         <input ref={pdfInput} type="file" multiple accept=".pdf" className="hidden"
           onChange={(e) => e.target.files?.length && addPdfs(e.target.files)} />
+        <input ref={officeInput} type="file" multiple accept=".docx,.pptx" className="hidden"
+          onChange={(e) => e.target.files?.length && addOffice(e.target.files)} />
+        <input ref={imageInput} type="file" multiple accept="image/*" className="hidden"
+          onChange={(e) => e.target.files?.length && addImages(e.target.files)} />
 
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
@@ -973,6 +1000,8 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                         if (!action) return
                         if (action === 'upload') { setPicker(false); fileInput.current?.click() }
                         else if (action === 'pdf') { setPicker(false); pdfInput.current?.click() }
+                        else if (action === 'office') { setPicker(false); officeInput.current?.click() }
+                        else if (action === 'ocr') { setPicker(false); imageInput.current?.click() }
                         else if (action in DRIVE_FILTERS) void openDrive(action)
                         else if (action === 'youtube') void openYouTube()
                         else setForm(action)
@@ -1024,6 +1053,31 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 )}
                 {form === 'crawl' && (
                   <p className="mb-1 text-xs text-muted-foreground">Follows same-site links from this page, up to 8 pages.</p>
+                )}
+                {(form === 'sitemap' || form === 'feed') && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder={form === 'sitemap' ? 'https://example.com/sitemap.xml' : 'https://example.com/feed.xml'} className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-xs text-muted-foreground">{form === 'sitemap' ? 'Up to 60 pages, each saved as its own record. Sitemap indexes are followed one level.' : 'RSS 2.0 or Atom. Teaser-only items are fetched from their link.'}</p>
+                  </>
+                )}
+                {(form === 'intercom' || form === 'helpscout' || form === 'hubspot') && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder={form === 'intercom' ? 'https://help.acme.com/en/' : form === 'helpscout' ? 'https://docs.acme.com' : 'https://knowledge.acme.com'} className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-xs text-muted-foreground">Public help centers only — every article, one record each, up to 150. A path like /en/ keeps one language.</p>
+                  </>
+                )}
+                {form === 'github' && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="owner/repo or https://github.com/owner/repo" className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-xs text-muted-foreground">Public repositories: README, docs/ and every Markdown file, up to 80 files.</p>
+                  </>
+                )}
+                {form === 'rest' && (
+                  <>
+                    <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="https://api.example.com/v1/items" className="mb-2 h-9 bg-background font-mono text-xs" />
+                    <Input value={formExtra} onChange={(e) => setFormExtra(e.target.value)} placeholder="Authorization header (optional): Bearer …" className="mb-1 h-9 bg-background font-mono text-xs" />
+                    <p className="mb-1 text-xs text-muted-foreground">One JSON response, flattened key by key. The header is used for this request only and never stored.</p>
+                  </>
                 )}
                 {form === 'gmail' && (
                   <>
@@ -1093,6 +1147,11 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     } else if (form === 'web') ingest('Fetching page…', (t) => uploadFromUrl(t, formText.trim(), false))
                     else if (form === 'crawl') ingest('Crawling…', (t) => uploadFromUrl(t, formText.trim(), true))
                     else if (form === 'zendesk') ingest('Importing articles…', (t) => uploadFromZendesk(t, formText.trim()))
+                    else if (form === 'sitemap') ingest('Reading sitemap…', (t) => uploadFromSitemap(t, formText.trim()))
+                    else if (form === 'feed') ingest('Reading feed…', (t) => uploadFromFeed(t, formText.trim()))
+                    else if (form === 'intercom' || form === 'helpscout' || form === 'hubspot') ingest('Importing articles…', (t) => uploadFromHelpCenter(t, form, formText.trim()))
+                    else if (form === 'github') ingest('Reading repository…', (t) => uploadFromGithub(t, formText.trim()))
+                    else if (form === 'rest') { const auth = formExtra.trim(); setFormExtra(''); ingest('Fetching JSON…', (t) => uploadFromRest(t, formText.trim(), auth || undefined)) }
                     else if (form === 'gmail') {
                       const query = formText.trim()
                       ingest('Reading Gmail…', async (t) => {

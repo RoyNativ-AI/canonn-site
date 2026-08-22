@@ -24,7 +24,7 @@ const ELEMENT_FONTS = [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Schib
 const ELEMENT_APPEARANCE = {
   theme: 'stripe' as const,
   variables: {
-    colorPrimary: '#c96442',
+    colorPrimary: '#1f1d1a',
     colorText: '#262625',
     colorTextSecondary: '#6f6b66',
     colorBackground: '#ffffff',
@@ -230,7 +230,7 @@ export function Billing({ me }: { me: Me | null }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="mb-2 font-display text-xl font-semibold">Pay as you go</div>
-          <div className="font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
+          <div className="font-mono text-xs tracking-[0.1em] text-muted-foreground uppercase">API credit balance</div>
           <div className="mt-1 font-display text-5xl font-semibold tracking-tight sm:text-6xl">
             <span className="text-3xl text-muted-foreground">$</span>{balance.toFixed(2)}
           </div>
@@ -250,7 +250,7 @@ export function Billing({ me }: { me: Me | null }) {
           <div className="flex-1">
             <div className="flex items-center gap-2 font-medium">
               Auto-reload credits
-              <span className={`rounded px-1.5 py-0.5 font-mono text-[10px] ${plan?.auto_recharge ? 'bg-[#3f7d54]/15 text-[#3f7d54]' : 'bg-secondary text-muted-foreground'}`}>
+              <span className={`rounded px-1.5 py-0.5 font-mono text-[10.5px] ${plan?.auto_recharge ? 'bg-[#3f7d54]/15 text-[#3f7d54]' : 'bg-secondary text-muted-foreground'}`}>
                 {plan?.auto_recharge ? 'ON' : 'OFF'}
               </span>
             </div>
@@ -434,7 +434,7 @@ export function Billing({ me }: { me: Me | null }) {
                 </span>
                 {c.is_default
                   ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-2.5 py-1 font-mono text-[10px] whitespace-nowrap text-[#3f7d54]">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#3f7d54]/30 bg-[#3f7d54]/10 px-2.5 py-1 font-mono text-[10.5px] whitespace-nowrap text-[#3f7d54]">
                       <Check className="size-3" /> primary
                     </span>
                   )

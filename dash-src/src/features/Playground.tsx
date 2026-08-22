@@ -20,6 +20,9 @@ import {
 // for answers. Same visual language as the app - terracotta only where the
 // eye should go, mono uppercase labels, citation cards under every answer.
 
+// Terracotta is reserved for evidence - citation markers and source indices.
+// Actions, focus, and chrome use ink, so the accent only ever means "this is
+// backed by your data".
 const ACCENT = '#c96442'
 
 type LoaderId = 'upload' | 'paste' | 'web' | 'crawl' | 'pdf' | 'zendesk'
@@ -232,7 +235,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               className="w-full rounded-xl border border-dashed border-border px-4 py-8 text-center text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
             >
               Drop documents here, or add a source.
-              <div className="mt-1 font-mono text-[10px] opacity-70">files · pdf · web · zendesk</div>
+              <div className="mt-1 font-mono text-[10.5px] opacity-70">files · pdf · web · zendesk</div>
             </button>
           )}
           {files?.map((f) => (
@@ -253,7 +256,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
               <Switch
                 checked={!disabled.has(f.id)}
                 onCheckedChange={() => toggleScope(f.id)}
-                className="shrink-0 data-[state=checked]:bg-[#c96442]"
+                className="shrink-0 data-[state=checked]:bg-foreground"
                 aria-label={`Include ${f.filename} in answers`}
               />
             </div>
@@ -282,14 +285,14 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
             <Database className="size-3.5" />
             {(files ?? []).length ? `Sources · ${inScope.length} in scope` : 'Add sources'}
           </button>
-          {scopePassages > 0 && <span className="font-mono text-[10px] text-muted-foreground">{scopePassages} passages</span>}
+          {scopePassages > 0 && <span className="font-mono text-[10.5px] text-muted-foreground">{scopePassages} passages</span>}
         </div>
         <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {turns.length === 0 && (
             <div className="mx-auto flex h-full max-w-md flex-col justify-center">
               <div className="mb-4 flex items-center gap-2.5">
                 <div className="flex size-[26px] items-center justify-center rounded-md bg-foreground text-[13px] font-bold text-background">C</div>
-                <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
+                <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Canonn R1</span>
               </div>
               <h2 className="font-display text-[30px] leading-[1.12] font-semibold tracking-tight sm:text-[34px]">
                 The model that trusts your data.
@@ -318,7 +321,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
           {turns.map((turn, i) =>
             turn.role === 'user' ? (
               <div key={i} className="mb-4 flex justify-end">
-                <div className="max-w-[85%] rounded-xl bg-secondary px-4 py-2.5 text-[14px]">{turn.content}</div>
+                <div className="max-w-[85%] rounded-xl bg-secondary px-4 py-2.5 text-sm">{turn.content}</div>
               </div>
             ) : (
               <div key={i} className="group/turn mb-6">
@@ -339,7 +342,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   </div>
                 ) : (
                   turn.error ? (
-                    <div className="text-[14.5px] leading-relaxed text-destructive">{turn.content}</div>
+                    <div className="text-sm leading-relaxed text-destructive">{turn.content}</div>
                   ) : (
                     <Answer text={turn.content} />
                   )
@@ -351,7 +354,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
         </div>
 
         <div className="border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-2 rounded-full border border-input bg-background py-1.5 pr-1.5 pl-4">
+          <div className="flex items-center gap-2 rounded-[22px] border border-input bg-background py-1.5 pr-1.5 pl-4">
             <input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
@@ -426,9 +429,9 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                       }}
                       className="rounded-xl border border-border bg-background p-3 text-left transition-colors hover:border-foreground/30"
                     >
-                      <Icon className="mb-2 size-4" style={{ color: ACCENT }} />
+                      <Icon className="mb-2 size-4 text-foreground/70" />
                       <div className="text-[13px] font-medium">{name}</div>
-                      <div className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">{blurb}</div>
+                      <div className="mt-0.5 text-xs leading-snug text-muted-foreground">{blurb}</div>
                     </button>
                   ))}
                 </div>
@@ -437,7 +440,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {COMING.map((name) => (
-                    <span key={name} className="rounded-full border border-border px-2.5 py-1 text-[11.5px] text-muted-foreground">
+                    <span key={name} className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
                       {name}
                     </span>
                   ))}
@@ -456,7 +459,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                       onChange={(e) => setFormText(e.target.value)}
                       rows={8}
                       placeholder="Paste the text to answer from…"
-                      className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
+                      className="w-full resize-none rounded-lg border border-input bg-background p-2.5 font-mono text-xs leading-relaxed outline-none focus:border-foreground/40"
                     />
                   </>
                 )}
@@ -464,12 +467,12 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                   <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="https://example.com/help" className="mb-1 h-9 bg-background font-mono text-xs" />
                 )}
                 {form === 'crawl' && (
-                  <p className="mb-1 text-[11.5px] text-muted-foreground">Follows same-site links from this page, up to 8 pages.</p>
+                  <p className="mb-1 text-xs text-muted-foreground">Follows same-site links from this page, up to 8 pages.</p>
                 )}
                 {form === 'zendesk' && (
                   <>
                     <Input value={formText} onChange={(e) => setFormText(e.target.value)} placeholder="support.yourcompany.com or subdomain" className="mb-1 h-9 bg-background font-mono text-xs" />
-                    <p className="mb-1 text-[11.5px] text-muted-foreground">Public help centers only — every article via the Zendesk API.</p>
+                    <p className="mb-1 text-xs text-muted-foreground">Public help centers only — every article via the Zendesk API.</p>
                   </>
                 )}
                 <Button
@@ -483,8 +486,7 @@ export function Playground({ getToken }: { getToken: () => Promise<string | null
                     setPicker(false)
                   }}
                   disabled={!formText.trim() || !!uploading}
-                  className="mt-2 h-9 w-full text-sm text-white"
-                  style={{ background: ACCENT }}
+                  className="mt-2 h-9 w-full text-sm"
                 >
                   Add source
                 </Button>
@@ -508,10 +510,10 @@ function CopyAnswer({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
       }}
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-[10px] tracking-[0.08em] text-muted-foreground uppercase opacity-0 transition-opacity group-hover/turn:opacity-100 hover:text-foreground focus:opacity-100"
+      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase opacity-0 transition-opacity group-hover/turn:opacity-100 hover:text-foreground focus:opacity-100"
       aria-label="Copy answer"
     >
-      {copied ? <Check className="size-3" style={{ color: ACCENT }} /> : <Copy className="size-3" />}
+      {copied ? <Check className="size-3 text-foreground" /> : <Copy className="size-3" />}
       {copied ? 'Copied' : 'Copy'}
     </button>
   )
@@ -524,9 +526,9 @@ function Inline({ text }: { text: string }) {
       {parts.map((part, i) => {
         if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
         if (/^`[^`]+`$/.test(part)) {
-          return <code key={i} className="rounded bg-secondary px-1 py-0.5 font-mono text-[12.5px]">{part.slice(1, -1)}</code>
+          return <code key={i} className="rounded bg-secondary px-1 py-0.5 font-mono text-xs">{part.slice(1, -1)}</code>
         }
-        if (/^\[\d+\]$/.test(part)) return <sup key={i} className="font-mono text-[11px] font-semibold" style={{ color: ACCENT }}>{part}</sup>
+        if (/^\[\d+\]$/.test(part)) return <sup key={i} className="font-mono text-xs font-semibold" style={{ color: ACCENT }}>{part}</sup>
         return <span key={i}>{part}</span>
       })}
     </>
@@ -536,12 +538,12 @@ function Inline({ text }: { text: string }) {
 function Answer({ text }: { text: string }) {
   const blocks = text.split(/\n/)
   return (
-    <div className="space-y-1 text-[14.5px] leading-relaxed">
+    <div className="space-y-1 text-sm leading-relaxed">
       {blocks.map((line, i) => {
         const heading = line.match(/^(#{1,6})\s+(.*)$/)
         if (heading) {
           return (
-            <div key={i} className={cn('pt-1 font-semibold', heading[1].length <= 2 ? 'text-[16px]' : 'text-[14.5px]')}>
+            <div key={i} className={cn('pt-1 font-semibold', heading[1].length <= 2 ? 'text-[16px]' : 'text-sm')}>
               <Inline text={heading[2]} />
             </div>
           )
@@ -581,7 +583,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
           >
             {c.excerpt && (
               <div className={cn(
-                'mb-2 text-[13.5px] leading-relaxed whitespace-pre-wrap',
+                'mb-2 text-[13px] leading-relaxed whitespace-pre-wrap',
                 open !== i && 'line-clamp-3',
               )}>
                 {open === i ? c.excerpt : `“${c.excerpt.trim()}”`}
@@ -590,7 +592,7 @@ function Citations({ citations }: { citations: GroundedCitation[] }) {
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10.5px] font-semibold" style={{ color: ACCENT }}>{i + 1}</span>
               <span className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-muted-foreground">{c.filename}</span>
-              <span className="font-mono text-[10px] text-muted-foreground">§{c.ordinal + 1}</span>
+              <span className="font-mono text-[10.5px] text-muted-foreground">§{c.ordinal + 1}</span>
               <ChevronDown className={cn('size-3.5 text-muted-foreground transition-transform', open === i && 'rotate-180')} />
             </div>
           </button>

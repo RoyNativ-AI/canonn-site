@@ -87,13 +87,13 @@ export function QuickStart() {
             value={data}
             onChange={(e) => setData(e.target.value)}
             rows={8}
-            className="w-full resize-none rounded-xl border border-input bg-card p-3 font-mono text-xs leading-relaxed outline-none focus:border-[#c96442]"
+            className="w-full resize-none rounded-xl border border-input bg-card p-3 font-mono text-xs leading-relaxed outline-none focus:border-foreground/40"
             placeholder="The knowledge to answer from…"
           />
         </div>
         <div>
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-            API key <span className="normal-case tracking-normal text-[#c96442]">(required, runs on your key)</span>
+            API key <span className="normal-case tracking-normal text-foreground">(required, runs on your key)</span>
           </label>
           <Input
             value={apiKey}
@@ -120,7 +120,7 @@ export function QuickStart() {
           <span className="size-2.5 rounded-full bg-[#ff5f57]" />
           <span className="size-2.5 rounded-full bg-[#febc2e]" />
           <span className="size-2.5 rounded-full bg-[#28c840]" />
-          <span className="ml-2 shrink-0 font-mono text-[11px] whitespace-nowrap text-white/40">quick start</span>
+          <span className="ml-2 shrink-0 font-mono text-xs whitespace-nowrap text-white/40">quick start</span>
           <Button
             size="sm"
             variant="ghost"
@@ -134,13 +134,13 @@ export function QuickStart() {
             size="sm"
             onClick={handleRun}
             disabled={running || !data.trim() || !question.trim() || !apiKey.trim()}
-            className="h-6.5 shrink-0 gap-1 bg-[#c96442] px-2.5 font-mono text-[10.5px] whitespace-nowrap text-white hover:bg-[#b4533a]"
+            className="h-6.5 shrink-0 gap-1 px-2.5 font-mono text-[10.5px] whitespace-nowrap"
           >
             <Play className="size-3" />
             {running ? 'Running…' : 'Run it now'}
           </Button>
         </div>
-        <pre className="max-h-[420px] overflow-y-auto px-4 py-3.5 font-mono text-[11.5px] leading-[1.65] break-all whitespace-pre-wrap">
+        <pre className="max-h-[420px] overflow-y-auto px-4 py-3.5 font-mono text-xs leading-[1.65] break-all whitespace-pre-wrap">
 {`curl https://api.canonn.ai/v1/chat/completions \\
   -H "Authorization: Bearer `}<b className="font-medium text-[#a9c9a4]">{apiKey.trim() || 'YOUR_KEY'}</b>{`" \\
   -d '{"model":"canonn-r1","messages":[

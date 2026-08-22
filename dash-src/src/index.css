@@ -54,12 +54,14 @@
     --secondary-foreground: #1f1d1a;
     --muted: #efe9df;
     --muted-foreground: #7c766c;
-    --accent: #f6e5dd;
-    --accent-foreground: #c96442;
-    --destructive: #b4533a;
+    /* Failure is crimson, never terracotta: the brand accent means "backed
+       by your data" and an error may not wear the same color. */
+    --accent: #efe9df;
+    --accent-foreground: #1f1d1a;
+    --destructive: #b02e3d;
     --border: #e3ddd3;
     --input: #d9d3c9;
-    --ring: #c96442;
+    --ring: #1f1d1a;
     --radius: 0.75rem;
 }
 
@@ -76,12 +78,12 @@
     --secondary-foreground: #f3efe8;
     --muted: #2b2621;
     --muted-foreground: #9a938a;
-    --accent: #3a2620;
-    --accent-foreground: #e8b39e;
-    --destructive: #e08b6d;
+    --accent: #2b2621;
+    --accent-foreground: #f3efe8;
+    --destructive: #e2727f;
     --border: rgba(247, 244, 238, .12);
     --input: rgba(247, 244, 238, .18);
-    --ring: #c96442;
+    --ring: #f3efe8;
 }
 
 @layer base {

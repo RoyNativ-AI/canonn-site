@@ -132,7 +132,7 @@ export function Shell() {
       {/* ---- Sidebar (desktop) ---- */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[224px] flex-col border-r border-border lg:flex">
         <a href="/" className="flex items-center gap-2.5 px-5 pt-5 font-display text-[16px] font-semibold">
-          <img src="/assets/canon-logo.png" alt="" className="size-6 rounded-[5px] object-cover" />
+          <img src="/assets/canon-logo.png" alt="" className="size-6 rounded-sm object-cover" />
           Canonn
         </a>
 
@@ -140,14 +140,14 @@ export function Shell() {
           {NAV.map(({ group, items }) => (
             <div key={group ?? 'root'}>
               {group && (
-                <div className="px-2.5 pt-6 pb-1.5 text-[11px] font-medium text-muted-foreground/70">{group}</div>
+                <div className="px-2.5 pt-6 pb-1.5 text-xs font-medium text-muted-foreground/70">{group}</div>
               )}
               {items.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setScreen(id)}
                   className={cn(
-                    'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left text-[13.5px] transition-colors',
+                    'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left text-[13px] transition-colors',
                     screen === id
                       ? 'bg-secondary font-medium text-foreground'
                       : 'text-muted-foreground hover:text-foreground',
@@ -163,7 +163,7 @@ export function Shell() {
             href="https://canonn.ai/docs/"
             target="_blank"
             rel="noreferrer"
-            className="mt-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13.5px] text-muted-foreground transition-colors hover:text-foreground"
+            className="mt-6 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] text-muted-foreground transition-colors hover:text-foreground"
           >
             <BookOpen className="size-4" strokeWidth={1.75} />
             Docs
@@ -173,7 +173,7 @@ export function Shell() {
         <div className="px-3 pb-4">
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13.5px] text-muted-foreground transition-colors hover:text-foreground"
+            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] text-muted-foreground transition-colors hover:text-foreground"
           >
             {theme === 'dark' ? <Sun className="size-4" strokeWidth={1.75} /> : <Moon className="size-4" strokeWidth={1.75} />}
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
@@ -184,10 +184,10 @@ export function Shell() {
               className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-secondary"
               aria-label="Account menu"
             >
-              <span className="flex size-6.5 shrink-0 items-center justify-center rounded-full bg-[#c96442] text-[12px] font-semibold text-white">
+              <span className="flex size-6.5 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
                 {(email[0] ?? '?').toUpperCase()}
               </span>
-              <span className="truncate text-[12.5px] text-muted-foreground">{email}</span>
+              <span className="truncate text-xs text-muted-foreground">{email}</span>
             </button>
             {accountMenu}
           </div>
@@ -197,8 +197,8 @@ export function Shell() {
       {/* ---- Header (mobile) ---- */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md lg:hidden">
         <div className="flex h-14 items-center gap-4 px-4 sm:px-6">
-          <a href="/" className="flex shrink-0 items-center gap-2.5 font-display text-[17px] font-semibold">
-            <img src="/assets/canon-logo.png" alt="" className="size-6.5 rounded-[5px] object-cover" />
+          <a href="/" className="flex shrink-0 items-center gap-2.5 font-display text-[16px] font-semibold">
+            <img src="/assets/canon-logo.png" alt="" className="size-6.5 rounded-sm object-cover" />
             Canonn
           </a>
           <div className="flex-1" />
@@ -212,7 +212,7 @@ export function Shell() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="flex size-8 items-center justify-center rounded-full bg-[#c96442] text-[13px] font-semibold text-white"
+              className="flex size-8 items-center justify-center rounded-full bg-foreground text-[13px] font-semibold text-background"
               aria-label="Account menu"
             >
               {(email[0] ?? '?').toUpperCase()}
@@ -231,7 +231,7 @@ export function Shell() {
               )}
             >
               {label}
-              {screen === id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[#c96442]" />}
+              {screen === id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-foreground" />}
             </button>
           ))}
         </nav>

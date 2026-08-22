@@ -16,7 +16,7 @@ export default function App() {
               signUpForceRedirectUrl="/dashboard/"
               appearance={{
                 variables: {
-                  colorPrimary: '#c96442',
+                  colorPrimary: '#1f1d1a',
                   colorText: '#1f1d1a',
                   borderRadius: '12px',
                   fontFamily: "'Schibsted Grotesk', sans-serif",
@@ -32,17 +32,17 @@ export default function App() {
                 <br />
                 <span className="text-[#e8b39e]">trusts your data.</span>
               </div>
-              <div className="mt-9 rounded-2xl bg-[#fdfdfc] p-6 text-left shadow-[0_40px_90px_rgba(0,0,0,0.5)]">
+              <div className="mt-9 rounded-xl bg-[#fdfdfc] p-6 text-left shadow-[0_40px_90px_rgba(0,0,0,0.5)]">
                 <div className="flex items-center gap-2.5 text-sm font-semibold text-[#1f1d1a]">
                   Canonn R1
-                  <span className="rounded-full bg-[rgba(63,125,84,0.13)] px-2.5 py-0.5 font-mono text-[10px] font-medium text-[#3f7d54]">
+                  <span className="rounded-full bg-[rgba(63,125,84,0.13)] px-2.5 py-0.5 font-mono text-[10.5px] font-medium text-[#3f7d54]">
                     ✓ grounded in your data
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-[#403c36]">"Yes, SSO is included in the Business plan."</p>
                 <div className="mt-3 flex items-baseline gap-2.5 font-mono">
                   <span className="text-3xl font-medium text-[#3f7d54]">91.9%</span>
-                  <span className="text-[11px] text-[#7c766c]">grounded · production prompt</span>
+                  <span className="text-xs text-[#7c766c]">grounded · production prompt</span>
                 </div>
               </div>
             </div>

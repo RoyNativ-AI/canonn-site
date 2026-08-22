@@ -235,9 +235,9 @@ export function Logs({
           {detail && (
             <div className="space-y-6 pb-8">
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] text-primary">canonn-r1</span>
+                <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-xs text-primary">canonn-r1</span>
                 {detail.stream && (
-                  <span className="rounded-full bg-secondary px-3 py-1 font-mono text-[11px]">stream</span>
+                  <span className="rounded-full bg-secondary px-3 py-1 font-mono text-xs">stream</span>
                 )}
               </div>
 
@@ -248,14 +248,14 @@ export function Logs({
                   { l: 'Cost', v: detail.cost !== undefined ? `$${detail.cost.toFixed(4)}` : '·' },
                 ].map((s) => (
                   <div key={s.l} className="min-w-0 rounded-xl border border-border bg-card p-3">
-                    <div className="font-mono text-[9.5px] tracking-[0.1em] text-muted-foreground uppercase">{s.l}</div>
-                    <div className="mt-1 font-display text-[15px] font-semibold whitespace-nowrap">{s.v}</div>
+                    <div className="font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground uppercase">{s.l}</div>
+                    <div className="mt-1 font-display text-sm font-semibold whitespace-nowrap">{s.v}</div>
                   </div>
                 ))}
               </div>
 
               <div className="rounded-xl border border-border bg-card p-3">
-                <div className="font-mono text-[9.5px] tracking-[0.1em] text-muted-foreground uppercase">Tokens</div>
+                <div className="font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground uppercase">Tokens</div>
                 <div className="mt-1 font-display text-lg font-semibold tabular-nums">
                   {fmt(detail.pt)} <span className="text-muted-foreground">→</span> {fmt(detail.ct)}
                 </div>
@@ -326,7 +326,7 @@ export function Logs({
                   <div className="space-y-3">
                     <JsonView title="Prompt" value={io.prompt} />
                     <div className="overflow-hidden rounded-xl border border-border bg-card">
-                      <div className="border-b border-border px-3 py-2 font-mono text-[9.5px] tracking-[0.14em] text-muted-foreground uppercase">Completion</div>
+                      <div className="border-b border-border px-3 py-2 font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase">Completion</div>
                       <div className="max-h-72 overflow-auto p-3 text-sm leading-relaxed whitespace-pre-wrap">{io.completion}</div>
                     </div>
                   </div>

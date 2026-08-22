@@ -92,7 +92,7 @@ function GettingStarted() {
         <p className="mt-1 mb-4 text-sm text-muted-foreground">
           Charts fill in as soon as traffic arrives. Create a key under API keys, then:
         </p>
-        <pre className="overflow-x-auto rounded-xl border border-border bg-secondary/50 p-4 font-mono text-[11.5px] leading-relaxed">{snippet}</pre>
+        <pre className="overflow-x-auto rounded-xl border border-border bg-secondary/50 p-4 font-mono text-xs leading-relaxed">{snippet}</pre>
         <p className="mt-4 text-xs text-muted-foreground">
           OpenAI-compatible: point any SDK at api.canonn.ai and keep your existing code.
         </p>
@@ -202,12 +202,12 @@ export function Activity({
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {[14, 60, 90].map((d) => (
-                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-7 text-[11px]">
+                      <Button key={d} size="sm" variant="outline" onClick={() => { setRange({ from: '', to: '' }); setDays(d) }} className="h-7 text-xs">
                         Last {d}d
                       </Button>
                     ))}
                     {(range.from || range.to) && (
-                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-7 text-[11px] text-destructive">
+                      <Button size="sm" variant="ghost" onClick={() => setRange({ from: '', to: '' })} className="h-7 text-xs text-destructive">
                         Clear
                       </Button>
                     )}
@@ -232,7 +232,7 @@ export function Activity({
             <Delta prev={prev?.spend_usd} current={me.spend_usd} invert className="text-sm" />
           </div>
         )}
-        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12.5px] text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="relative flex size-1.5">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#3f7d54] opacity-60" />
@@ -254,17 +254,17 @@ export function Activity({
             ? buckets.map((d) => (
                 <div
                   key={d}
-                  className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/55 hover:bg-[#c96442]"
+                  className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/55 hover:bg-foreground/75"
                   style={{ height: `${(cost(d) / maxCost) * 100}%` }}
                 >
-                  <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
+                  <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-xs whitespace-nowrap group-hover:block">
                     {d} · ${cost(d).toFixed(3)} · {me!.by_day[d].requests} req
                   </span>
                 </div>
               ))
             : GHOST_BARS(37)}
         </div>
-        <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground">
+        <div className="mt-2 flex justify-between font-mono text-[10.5px] text-muted-foreground">
           <span>{buckets[0] ?? ''}</span>
           <span>{buckets[buckets.length - 1] ?? ''}</span>
         </div>
@@ -288,9 +288,9 @@ export function Activity({
           <div className={LABEL}>Requests {days === 1 ? 'by hour' : 'by day'}</div>
           <div className="mt-4 flex h-[130px] items-end gap-1 border-b border-border pb-0.5">
             {buckets.map((d) => (
-              <div key={d} className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/50 hover:bg-[#c96442]"
+              <div key={d} className="group relative min-h-0.5 flex-1 rounded-t bg-[#b3a894]/50 hover:bg-foreground/75"
                    style={{ height: `${(me!.by_day[d].requests / maxReq) * 100}%` }}>
-                <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
+                <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-xs whitespace-nowrap group-hover:block">
                   {d} · {me!.by_day[d].requests} req
                 </span>
               </div>
@@ -309,7 +309,7 @@ export function Activity({
                 <div key={d} className="group relative flex min-h-0.5 flex-1 flex-col justify-end" style={{ height: `${(total / maxTok) * 100}%` }}>
                   <div className="w-full rounded-t bg-[#3f7d54]/70" style={{ height: `${total ? (b.ct / total) * 100 : 0}%` }} />
                   <div className="w-full bg-[#b3a894]/55" style={{ height: `${total ? (b.pt / total) * 100 : 0}%` }} />
-                  <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-[11px] whitespace-nowrap group-hover:block">
+                  <span className="absolute bottom-full left-1/2 z-10 mb-1.5 hidden -translate-x-1/2 rounded-lg border border-border bg-popover px-2.5 py-1 font-mono text-xs whitespace-nowrap group-hover:block">
                     {d} · in {fmt(b.pt)} · out {fmt(b.ct)}
                   </span>
                 </div>
@@ -317,7 +317,7 @@ export function Activity({
             })}
             {buckets.length === 0 && GHOST_BARS(43)}
           </div>
-          <div className="mt-2.5 flex items-center gap-4 text-[11px] text-muted-foreground">
+          <div className="mt-2.5 flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#b3a894]/55" /> input</span>
             <span className="flex items-center gap-1.5"><span className="size-2 rounded-sm bg-[#3f7d54]/70" /> output</span>
           </div>
